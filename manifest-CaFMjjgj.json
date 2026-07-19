@@ -1,6 +1,6 @@
 {
-  "name": "MindSpark",
-  "short_name": "MindSpark",
+  "name": "KnowledgeCatalog",
+  "short_name": "KCat",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
