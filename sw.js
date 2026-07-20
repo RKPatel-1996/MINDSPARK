@@ -1,5 +1,12 @@
-const CACHE_NAME = "knowledgecatalog-v2";
-const urlsToCache = ["/", "/index.html", "/manifest.json", "/icon.svg"];
+const CACHE_NAME = "knowledgecatalog-v5";
+const urlsToCache = [
+  "/",
+  "/index.html",
+  "/manifest.json",
+  "/icon.svg",
+  "/icon-192.png",
+  "/icon-512.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
