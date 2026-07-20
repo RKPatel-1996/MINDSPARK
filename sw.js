@@ -1,4 +1,4 @@
-const CACHE_NAME = "mindspark-v1";
+const CACHE_NAME = "knowledgecatalog-v2";
 const urlsToCache = ["/", "/index.html", "/manifest.json", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -10,6 +10,16 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // For navigation requests, fallback to index.html
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match("/index.html");
+      }),
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) {
