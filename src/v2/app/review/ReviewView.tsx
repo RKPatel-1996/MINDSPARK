@@ -9,8 +9,50 @@ import rehypeKatex from 'rehype-katex';
 import { Flag, Info, CheckCircle2, RotateCcw, Sparkles, BookOpen, Loader2, AlertTriangle } from 'lucide-react';
 import type { ReviewQueueState, ReviewSubmissionInput } from '../../application/types';
 import type { ReviewRating } from '../../domain/event';
+import type { SourceReference } from '../../domain/knowledge';
 
 type ReviewState = 'question' | 'answered';
+
+function getDisplayableSources(sources: SourceReference[] | undefined): SourceReference[] {
+  return (sources ?? []).filter((source) => Boolean(
+    source.title?.trim() || source.citation?.trim() || source.url,
+  ));
+}
+
+const SourcesSection: React.FC<{ sources: SourceReference[] | undefined }> = ({ sources }) => {
+  const displayableSources = getDisplayableSources(sources);
+  if (displayableSources.length === 0) return null;
+
+  return (
+    <div className="mt-6 p-5 rounded-xl border border-[var(--border-color)] bg-[var(--surface-color)] font-content">
+      <h3 className="font-semibold text-xs text-[var(--muted-color)] mb-3 uppercase tracking-wider font-ui">
+        Sources
+      </h3>
+      <div className="space-y-3">
+        {displayableSources.map((source, index) => (
+          <div key={`${source.url ?? source.title ?? source.citation ?? 'source'}-${index}`} className="text-sm">
+            {source.title?.trim() && (
+              <div className="font-medium text-[var(--text-color)]">{source.title}</div>
+            )}
+            {source.citation?.trim() && (
+              <p className="mt-1 text-[var(--muted-color)]">{source.citation}</p>
+            )}
+            {source.url && (
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block break-all text-[var(--color-primary)] hover:underline"
+              >
+                {source.url}
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export const ReviewView: React.FC = () => {
   const { reviewService, seedLibrary, refreshCount, isSignedOut, isUnconfigured, isEphemeralDev, isDev, syncState, pendingWritesCount, syncError } = useApplication();
@@ -762,6 +804,8 @@ export const ReviewView: React.FC = () => {
                   )}
                 </div>
               )}
+
+              <SourcesSection sources={knowledgeItem.sources} />
             </div>
           )}
         </div>

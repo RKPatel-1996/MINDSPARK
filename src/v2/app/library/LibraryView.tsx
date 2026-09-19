@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import type { KnowledgeItemWithCards } from '../../application/types';
-import type { KnowledgeItem, KnowledgeStatus } from '../../domain/knowledge';
+import type { KnowledgeItem, KnowledgeStatus, SourceReference } from '../../domain/knowledge';
 import type { CardType } from '../../domain/card';
 import { validateTaxonomy, type TaxonomyRegistry, type TaxonomyReference } from '../../domain/taxonomy';
 import { CANONICAL_TAXONOMY_REGISTRY } from '../../application/canonicalTaxonomy';
@@ -45,6 +45,50 @@ const BULK_LIFECYCLE_ERROR_MESSAGES: Record<BulkLifecycleErrorCode, string> = {
   authentication_required: 'Sign in to perform bulk lifecycle actions.',
   configuration_required: 'Configure cloud persistence before performing bulk lifecycle actions.',
   persistence_failure: 'The bulk lifecycle action could not be saved. Please try again.',
+};
+
+function getDisplayableSources(sources: SourceReference[] | undefined): SourceReference[] {
+  return (sources ?? []).filter((source) => Boolean(
+    source.title?.trim() || source.citation?.trim() || source.url,
+  ));
+}
+
+const SourcesSection: React.FC<{ sources: SourceReference[] | undefined }> = ({ sources }) => {
+  const displayableSources = getDisplayableSources(sources);
+  if (displayableSources.length === 0) return null;
+
+  return (
+    <div>
+      <h4 className="text-xs font-semibold text-[var(--muted-color)] uppercase tracking-wider mb-3 font-ui">
+        Sources
+      </h4>
+      <div className="space-y-3">
+        {displayableSources.map((source, index) => (
+          <div
+            key={`${source.url ?? source.title ?? source.citation ?? 'source'}-${index}`}
+            className="p-4 rounded-xl bg-[var(--bg-color)] border border-[var(--border-color)] text-sm font-content"
+          >
+            {source.title?.trim() && (
+              <div className="font-medium text-[var(--text-color)]">{source.title}</div>
+            )}
+            {source.citation?.trim() && (
+              <p className="mt-1 text-[var(--muted-color)]">{source.citation}</p>
+            )}
+            {source.url && (
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block break-all text-[var(--color-primary)] hover:underline"
+              >
+                {source.url}
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export const LibraryView: React.FC = () => {
@@ -1170,6 +1214,8 @@ export const LibraryView: React.FC = () => {
                       </div>
                     </div>
                   )}
+
+                  <SourcesSection sources={selectedItem.item.sources} />
 
                   <div>
                     <h4 className="text-xs font-semibold text-[var(--muted-color)] uppercase tracking-wider mb-3 font-ui">
