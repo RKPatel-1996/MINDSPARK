@@ -7,6 +7,7 @@ import type {
   SchedulerParameterSetRepository,
   SettingsRepository,
 } from '../repository/interfaces';
+import { BulkLifecycleError } from '../../domain/lifecycle';
 
 export const CONFIG_REQUIRED_MSG =
   'Configuration required: Firebase Firestore credentials are not configured. Cloud persistence is unavailable and ephemeral mutations are disabled.';
@@ -38,6 +39,9 @@ export function createUnconfiguredRepositories(): Repositories {
     },
     updateStatus: async () => {
       throw new Error(CONFIG_REQUIRED_MSG);
+    },
+    bulkUpdateStatusAtomic: async () => {
+      throw new BulkLifecycleError('configuration_required', CONFIG_REQUIRED_MSG);
     },
   };
 

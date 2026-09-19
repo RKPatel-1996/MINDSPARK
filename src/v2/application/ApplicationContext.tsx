@@ -12,7 +12,7 @@ import { bootstrapUserRepositories } from './bootstrapService';
 import { seedInitialLibrary, importDraftPayload, inspectImportDraft, DuplicateImportError, type SeedImportResult, type ImportDraftInspection } from './importService';
 import type { TransformDraftResult } from '../import/transformDraft';
 import type { KnowledgeStatus } from '../domain/knowledge';
-import type { LifecycleTransitionResult } from '../domain/lifecycle';
+import type { BulkLifecycleResult, LifecycleTransitionResult } from '../domain/lifecycle';
 import { observeAuthState, isFirebaseConfigured, getCurrentUser } from '../auth/firebaseAuth';
 
 export interface ApplicationContextValue {
@@ -39,6 +39,10 @@ export interface ApplicationContextValue {
   refreshCount: number;
   triggerRefresh: () => void;
   transitionKnowledgeItemLifecycle: (itemId: string, targetStatus: KnowledgeStatus) => Promise<LifecycleTransitionResult>;
+  bulkTransitionKnowledgeItemStatus: (
+    itemIds: readonly string[],
+    targetStatus: KnowledgeStatus
+  ) => Promise<BulkLifecycleResult>;
   seedLibrary: () => Promise<SeedImportResult>;
   importPacket: (payload: unknown) => Promise<TransformDraftResult>;
   inspectImportPacket: (payload: unknown) => Promise<ImportDraftInspection>;
@@ -204,6 +208,17 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({ childr
     [libraryService, triggerRefresh]
   );
 
+  const bulkTransitionKnowledgeItemStatus = useCallback(
+    async (itemIds: readonly string[], targetStatus: KnowledgeStatus): Promise<BulkLifecycleResult> => {
+      const result = await libraryService.bulkTransitionKnowledgeItemStatus(itemIds, targetStatus);
+      if (result.success) {
+        triggerRefresh();
+      }
+      return result;
+    },
+    [libraryService, triggerRefresh]
+  );
+
   const value: ApplicationContextValue = useMemo(
     () => ({
       repos,
@@ -229,6 +244,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({ childr
       refreshCount,
       triggerRefresh,
       transitionKnowledgeItemLifecycle,
+      bulkTransitionKnowledgeItemStatus,
       seedLibrary,
       importPacket,
       inspectImportPacket,
@@ -256,6 +272,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({ childr
       refreshCount,
       triggerRefresh,
       transitionKnowledgeItemLifecycle,
+      bulkTransitionKnowledgeItemStatus,
       seedLibrary,
       importPacket,
       inspectImportPacket,

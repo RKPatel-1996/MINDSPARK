@@ -4,7 +4,10 @@ import type { ReviewCard } from '../domain/card';
 import type { CardState } from '../domain/cardState';
 import { knowledgeItemSchema } from '../domain/knowledge';
 import {
+  BulkLifecycleError,
+  normalizeBulkLifecycleItemIds,
   validateLifecycleTransition,
+  type BulkLifecycleResult,
   type LifecycleTransitionResult,
 } from '../domain/lifecycle';
 import { reconcileCardHistory } from '../reconciliation';
@@ -182,6 +185,35 @@ export class LibraryService {
           type: 'persistence_failure',
           message,
         },
+      };
+    }
+  }
+
+  async bulkTransitionKnowledgeItemStatus(
+    itemIds: readonly string[],
+    targetStatus: KnowledgeStatus
+  ): Promise<BulkLifecycleResult> {
+    try {
+      const normalizedIds = normalizeBulkLifecycleItemIds(itemIds);
+      const updatedAt = new Date().toISOString();
+      const items = await this.repos.knowledge.bulkUpdateStatusAtomic(
+        normalizedIds,
+        targetStatus,
+        updatedAt
+      );
+      return { success: true, items };
+    } catch (error: unknown) {
+      if (error instanceof BulkLifecycleError) {
+        return { success: false, error };
+      }
+
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        error: new BulkLifecycleError(
+          'persistence_failure',
+          `Bulk lifecycle persistence failed: ${message}`
+        ),
       };
     }
   }

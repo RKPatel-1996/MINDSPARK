@@ -16,6 +16,11 @@ import type { ReviewCard } from '../../domain/card';
 import type { ReviewEvent } from '../../domain/event';
 import { taxonomyRegistrySchema, type TaxonomyRegistry } from '../../domain/taxonomy';
 import type { SchedulerParameterSet } from '../../domain/schedulerParameterSet';
+import {
+  BulkLifecycleError,
+  normalizeBulkLifecycleItemIds,
+  validateLifecycleTransition,
+} from '../../domain/lifecycle';
 
 export class InMemoryKnowledgeRepository implements KnowledgeRepository {
   private items = new Map<string, KnowledgeItem>();
@@ -87,6 +92,49 @@ export class InMemoryKnowledgeRepository implements KnowledgeRepository {
       throw new Error(`KnowledgeItem ${id} not found`);
     }
     this.items.set(id, { ...item, status, updatedAt });
+  }
+
+  async bulkUpdateStatusAtomic(
+    itemIds: readonly string[],
+    targetStatus: KnowledgeStatus,
+    updatedAt: string
+  ): Promise<KnowledgeItem[]> {
+    const normalizedIds = normalizeBulkLifecycleItemIds(itemIds);
+    const currentItems = normalizedIds.map((itemId) => {
+      const item = this.items.get(itemId);
+      if (!item) {
+        throw new BulkLifecycleError(
+          'item_not_found',
+          `KnowledgeItem "${itemId}" was not found.`,
+          { itemId }
+        );
+      }
+      return item;
+    });
+
+    // Resolve and validate the complete operation before mutating the backing map.
+    for (const item of currentItems) {
+      const validation = validateLifecycleTransition(item.status, targetStatus);
+      if ('error' in validation) {
+        throw new BulkLifecycleError(
+          'invalid_transition',
+          validation.error.message,
+          { itemId: item.id, from: item.status, to: targetStatus }
+        );
+      }
+    }
+
+    const updatedItems = currentItems.map((item) => ({
+      ...item,
+      status: targetStatus,
+      updatedAt,
+    }));
+
+    for (const item of updatedItems) {
+      this.items.set(item.id, JSON.parse(JSON.stringify(item)));
+    }
+
+    return updatedItems.map((item) => JSON.parse(JSON.stringify(item)));
   }
 
   async archive(id: string): Promise<void> {

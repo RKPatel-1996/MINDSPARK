@@ -1,4 +1,89 @@
 import type { KnowledgeStatus, KnowledgeItem } from './knowledge';
+import { isValidId } from './id';
+
+export const MAX_BULK_LIFECYCLE_ITEMS = 100;
+
+export type BulkLifecycleErrorCode =
+  | 'empty_selection'
+  | 'invalid_item_id'
+  | 'too_many_items'
+  | 'item_not_found'
+  | 'invalid_transition'
+  | 'authentication_required'
+  | 'configuration_required'
+  | 'persistence_failure';
+
+export interface BulkLifecycleErrorDetails {
+  readonly itemId?: string;
+  readonly from?: KnowledgeStatus;
+  readonly to?: KnowledgeStatus;
+}
+
+/** Stable typed failure shared by bulk lifecycle domain, service, and repositories. */
+export class BulkLifecycleError extends Error {
+  readonly code: BulkLifecycleErrorCode;
+  readonly itemId?: string;
+  readonly from?: KnowledgeStatus;
+  readonly to?: KnowledgeStatus;
+
+  constructor(code: BulkLifecycleErrorCode, message: string, details: BulkLifecycleErrorDetails = {}) {
+    super(message);
+    this.name = 'BulkLifecycleError';
+    this.code = code;
+    this.itemId = details.itemId;
+    this.from = details.from;
+    this.to = details.to;
+  }
+}
+
+export type BulkLifecycleResult =
+  | { success: true; items: KnowledgeItem[] }
+  | { success: false; error: BulkLifecycleError };
+
+/**
+ * Pure normalization boundary for atomic bulk lifecycle operations.
+ * IDs retain first-occurrence order after trimming and deterministic de-duplication.
+ */
+export function normalizeBulkLifecycleItemIds(itemIds: readonly unknown[]): string[] {
+  if (!Array.isArray(itemIds) || itemIds.length === 0) {
+    throw new BulkLifecycleError('empty_selection', 'Select at least one KnowledgeItem.');
+  }
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+
+  for (const rawId of itemIds) {
+    if (typeof rawId !== 'string') {
+      throw new BulkLifecycleError('invalid_item_id', 'Every KnowledgeItem ID must be a valid opaque UUID.');
+    }
+
+    const itemId = rawId.trim();
+    if (!itemId || !isValidId(itemId)) {
+      throw new BulkLifecycleError(
+        'invalid_item_id',
+        `KnowledgeItem ID "${itemId}" is not a valid opaque UUID.`,
+        itemId ? { itemId } : {}
+      );
+    }
+
+    if (!seen.has(itemId)) {
+      seen.add(itemId);
+      normalized.push(itemId);
+      if (normalized.length > MAX_BULK_LIFECYCLE_ITEMS) {
+        throw new BulkLifecycleError(
+          'too_many_items',
+          `Bulk lifecycle operations are limited to ${MAX_BULK_LIFECYCLE_ITEMS} unique KnowledgeItems.`
+        );
+      }
+    }
+  }
+
+  if (normalized.length === 0) {
+    throw new BulkLifecycleError('empty_selection', 'Select at least one KnowledgeItem.');
+  }
+
+  return normalized;
+}
 
 export type LifecycleAction =
   | 'mark_needs_attention'

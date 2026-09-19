@@ -7,6 +7,7 @@ import type {
   SchedulerParameterSetRepository,
   SettingsRepository,
 } from '../repository/interfaces';
+import { BulkLifecycleError } from '../../domain/lifecycle';
 
 const AUTH_REQUIRED_MSG = 'Authentication required: Sign in to perform mutations in your cloud library.';
 
@@ -37,6 +38,9 @@ export function createSignedOutRepositories(): Repositories {
     },
     updateStatus: async () => {
       throw new Error(AUTH_REQUIRED_MSG);
+    },
+    bulkUpdateStatusAtomic: async () => {
+      throw new BulkLifecycleError('authentication_required', AUTH_REQUIRED_MSG);
     },
   };
 

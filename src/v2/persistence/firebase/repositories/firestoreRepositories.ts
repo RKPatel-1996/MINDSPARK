@@ -39,6 +39,11 @@ import {
   eventWatermarkSchema
 } from '../../../domain/event';
 import {
+  BulkLifecycleError,
+  normalizeBulkLifecycleItemIds,
+  validateLifecycleTransition,
+} from '../../../domain/lifecycle';
+import {
   mapKnowledgeItemToDTO,
   mapDTOToKnowledgeItem,
   mapReviewCardToDTO,
@@ -96,6 +101,50 @@ export class FirestoreKnowledgeRepository implements KnowledgeRepository {
 
   async updateStatus(id: string, status: KnowledgeStatus, updatedAt: string): Promise<void> {
     await updateDoc(doc(this.getCollection(), id), { status, updatedAt });
+  }
+
+  async bulkUpdateStatusAtomic(
+    itemIds: readonly string[],
+    targetStatus: KnowledgeStatus,
+    updatedAt: string
+  ): Promise<KnowledgeItem[]> {
+    const normalizedIds = normalizeBulkLifecycleItemIds(itemIds);
+    const itemRefs = normalizedIds.map((itemId) => doc(this.getCollection(), itemId));
+
+    return runTransaction(this.db, async (transaction) => {
+      // Firestore requires every transactional read to precede every write.
+      const snapshots = await Promise.all(itemRefs.map((itemRef) => transaction.get(itemRef)));
+      const currentItems = snapshots.map((snapshot, index) => {
+        const itemId = normalizedIds[index];
+        if (!snapshot.exists()) {
+          throw new BulkLifecycleError(
+            'item_not_found',
+            `KnowledgeItem "${itemId}" was not found.`,
+            { itemId }
+          );
+        }
+        return mapDTOToKnowledgeItem(snapshot.data());
+      });
+
+      for (const item of currentItems) {
+        const validation = validateLifecycleTransition(item.status, targetStatus);
+        if ('error' in validation) {
+          throw new BulkLifecycleError(
+            'invalid_transition',
+            validation.error.message,
+            { itemId: item.id, from: item.status, to: targetStatus }
+          );
+        }
+      }
+
+      const updatedItems = currentItems.map((item) => ({
+        ...item,
+        status: targetStatus,
+        updatedAt,
+      }));
+      itemRefs.forEach((itemRef) => transaction.update(itemRef, { status: targetStatus, updatedAt }));
+      return updatedItems;
+    });
   }
 
   async archive(id: string): Promise<void> {

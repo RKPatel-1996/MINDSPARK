@@ -29,6 +29,11 @@ export interface KnowledgeRepository {
   update(item: KnowledgeItem): Promise<void>;
   archive(id: string): Promise<void>;
   updateStatus(id: string, status: KnowledgeStatus, updatedAt: string): Promise<void>;
+  bulkUpdateStatusAtomic(
+    itemIds: readonly string[],
+    targetStatus: KnowledgeStatus,
+    updatedAt: string
+  ): Promise<KnowledgeItem[]>;
 }
 
 export interface ReviewCardRepository {
