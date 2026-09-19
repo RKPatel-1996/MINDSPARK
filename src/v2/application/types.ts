@@ -45,10 +45,20 @@ export interface KnowledgeItemWithCards {
   reconciliationErrors?: Record<string, string>;
 }
 
+export interface WeakAreaInsight {
+  domainId: string;
+  domainName: string;
+  topicId: string;
+  topicName: string;
+  reviewedCardCount: number;
+  averageRetrievability: number;
+}
+
 export interface InsightsSummary {
   totalActiveItems: number;
   totalActiveCards: number;
   averageRetrievability: number | null;
+  weakAreas: WeakAreaInsight[];
   needsReviewCount: number;
   reviewedTodayCount: number;
   stageCounts: {

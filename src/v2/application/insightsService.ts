@@ -2,13 +2,21 @@ import type { Repositories, InsightsSummary } from './types';
 import { reconcileCardHistory } from '../reconciliation';
 import { calculateRetrievability, DEFAULT_FSRS_CONFIG } from '../engine/fsrsAdapter';
 
+interface WeakAreaAccumulator {
+  domainId: string;
+  topicId: string;
+  reviewedCardCount: number;
+  totalRetrievability: number;
+}
+
 export class InsightsService {
   constructor(private repos: Repositories) {}
 
   async getInsights(): Promise<InsightsSummary> {
-    const [items, cards] = await Promise.all([
+    const [items, cards, taxonomy] = await Promise.all([
       this.repos.knowledge.list(),
       this.repos.reviewCards.list(),
+      this.repos.taxonomy.get(),
     ]);
 
     // Distinguish active items from needs_review items and archived items
@@ -28,6 +36,8 @@ export class InsightsService {
 
     let totalRetrievability = 0;
     let cardCountForR = 0;
+    const activeItemsById = new Map(activeItems.map((item) => [item.id, item]));
+    const weakAreasByDomainAndTopic = new Map<string, Map<string, WeakAreaAccumulator>>();
 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -54,6 +64,29 @@ export class InsightsService {
           const r = calculateRetrievability(state, now, DEFAULT_FSRS_CONFIG);
           totalRetrievability += r;
           cardCountForR++;
+
+          const item = activeItemsById.get(card.knowledgeItemId);
+          if (item) {
+            let topicsById = weakAreasByDomainAndTopic.get(item.taxonomy.domainId);
+            if (!topicsById) {
+              topicsById = new Map();
+              weakAreasByDomainAndTopic.set(item.taxonomy.domainId, topicsById);
+            }
+
+            let weakArea = topicsById.get(item.taxonomy.topicId);
+            if (!weakArea) {
+              weakArea = {
+                domainId: item.taxonomy.domainId,
+                topicId: item.taxonomy.topicId,
+                reviewedCardCount: 0,
+                totalRetrievability: 0,
+              };
+              topicsById.set(item.taxonomy.topicId, weakArea);
+            }
+
+            weakArea.reviewedCardCount++;
+            weakArea.totalRetrievability += r;
+          }
         }
       } else {
         reconciliationErrors.push({
@@ -69,11 +102,32 @@ export class InsightsService {
       : null;
 
     const needsReviewCount = items.filter((i) => i.status === 'needs_review').length;
+    const domainNames = new Map(taxonomy?.domains.map((domain) => [domain.id, domain.name]));
+    const topicNames = new Map(taxonomy?.topics.map((topic) => [topic.id, topic.name]));
+    const weakAreas = Array.from(weakAreasByDomainAndTopic.values())
+      .flatMap((topicsById) => Array.from(topicsById.values()))
+      .map((weakArea) => ({
+        domainId: weakArea.domainId,
+        domainName: domainNames.get(weakArea.domainId) ?? weakArea.domainId,
+        topicId: weakArea.topicId,
+        topicName: topicNames.get(weakArea.topicId) ?? weakArea.topicId,
+        reviewedCardCount: weakArea.reviewedCardCount,
+        averageRetrievability: Math.round(
+          (weakArea.totalRetrievability / weakArea.reviewedCardCount) * 100,
+        ),
+      }))
+      .sort((left, right) => (
+        left.averageRetrievability - right.averageRetrievability
+        || right.reviewedCardCount - left.reviewedCardCount
+        || left.topicId.localeCompare(right.topicId)
+      ))
+      .slice(0, 5);
 
     return {
       totalActiveItems: activeItems.length,
       totalActiveCards: activeCards.length,
       averageRetrievability,
+      weakAreas,
       needsReviewCount,
       reviewedTodayCount,
       stageCounts,
