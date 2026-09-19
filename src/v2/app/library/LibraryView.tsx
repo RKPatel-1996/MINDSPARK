@@ -19,6 +19,7 @@ import {
   type LibrarySort,
 } from '../../application/libraryQuery';
 import { TaxonomyBrowser } from './TaxonomyBrowser';
+import { LibraryImagesSection } from './LibraryImagesSection';
 import { MAX_BULK_LIFECYCLE_ITEMS, type BulkLifecycleErrorCode } from '../../domain/lifecycle';
 
 type StatusTab = 'current' | 'needs_review' | 'archived';
@@ -96,6 +97,7 @@ export const LibraryView: React.FC = () => {
   const {
     repos,
     libraryService,
+    imageAttachmentService,
     seedLibrary,
     refreshCount,
     triggerRefresh,
@@ -1217,6 +1219,27 @@ export const LibraryView: React.FC = () => {
                   )}
 
                   <SourcesSection sources={selectedItem.item.sources} />
+
+                  <LibraryImagesSection
+                    item={selectedItem.item}
+                    cards={selectedItem.cards}
+                    service={imageAttachmentService}
+                    isReadOnly={isReadOnly}
+                    onImagesChanged={(images) => {
+                      setSelectedItem((previous) => (
+                        previous
+                          ? {
+                              ...previous,
+                              item: {
+                                ...previous.item,
+                                images,
+                              },
+                            }
+                          : previous
+                      ));
+                      triggerRefresh();
+                    }}
+                  />
 
                   <div>
                     <h4 className="text-xs font-semibold text-[var(--muted-color)] uppercase tracking-wider mb-3 font-ui">
