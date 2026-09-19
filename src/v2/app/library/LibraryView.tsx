@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useApplication } from '../../application';
-import { Search, Book, AlertTriangle, Archive, Filter, X, Sparkles, Loader2, Edit3, Check, Tag, CheckCircle, RotateCcw } from 'lucide-react';
+import { Search, Book, AlertTriangle, Archive, Filter, X, Sparkles, Loader2, Edit3, Check, Tag, CheckCircle, RotateCcw, Plus } from 'lucide-react';
 import { useShortcut } from '../shortcuts/useShortcut';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -20,6 +20,7 @@ import {
 } from '../../application/libraryQuery';
 import { TaxonomyBrowser } from './TaxonomyBrowser';
 import { LibraryImagesSection } from './LibraryImagesSection';
+import { ImportKnowledgeSection } from '../settings/ImportKnowledgeSection';
 import { MAX_BULK_LIFECYCLE_ITEMS, type BulkLifecycleErrorCode } from '../../domain/lifecycle';
 
 type StatusTab = 'current' | 'needs_review' | 'archived';
@@ -113,6 +114,7 @@ export const LibraryView: React.FC = () => {
   const [itemsWithCards, setItemsWithCards] = useState<KnowledgeItemWithCards[]>([]);
   const [loading, setLoading] = useState(true);
   const [registry, setRegistry] = useState<TaxonomyRegistry>(CANONICAL_TAXONOMY_REGISTRY);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -408,6 +410,45 @@ export const LibraryView: React.FC = () => {
     setIsEditing(false);
   });
 
+  // Ctrl+I shortcut to open Import dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+        const target = e.target as HTMLElement | null;
+        if (
+          target &&
+          (target.tagName === 'INPUT' ||
+           target.tagName === 'TEXTAREA' ||
+           target.tagName === 'SELECT' ||
+           target.isContentEditable)
+        ) {
+          return;
+        }
+        e.preventDefault();
+        setIsImportOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Escape key handler to close Import dialog (works even when focused in inputs/textareas)
+  useEffect(() => {
+    if (!isImportOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsImportOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape, true);
+    return () => window.removeEventListener('keydown', handleEscape, true);
+  }, [isImportOpen]);
+
   // Edit taxonomy options
   const availableEditTopics = useMemo(() => {
     return (registry.topics ?? []).filter((t) => t.domainId === editDomainId);
@@ -550,6 +591,17 @@ export const LibraryView: React.FC = () => {
             >
               {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
             </span>
+            <button
+              type="button"
+              id="library-import-btn"
+              data-testid="library-import-btn"
+              onClick={() => setIsImportOpen(true)}
+              aria-label="Import knowledge"
+              title="Import knowledge"
+              className="p-2 border border-[var(--border-color)] hover:border-[var(--muted-color)] text-[var(--muted-color)] hover:text-[var(--text-color)] bg-[var(--bg-color)] rounded-xl transition-colors cursor-pointer flex items-center justify-center shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -1342,6 +1394,46 @@ export const LibraryView: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal Dialog */}
+      {isImportOpen && (
+        <div
+          id="import-modal-backdrop"
+          data-testid="import-modal-backdrop"
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsImportOpen(false);
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Import knowledge"
+            data-testid="import-modal-dialog"
+            className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col paper-shadow overflow-hidden my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 md:p-6 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--elevated-color)] shrink-0">
+              <h2 className="text-lg font-semibold font-ui">Import Knowledge</h2>
+              <button
+                type="button"
+                id="import-modal-close-btn"
+                data-testid="import-modal-close-btn"
+                onClick={() => setIsImportOpen(false)}
+                aria-label="Close import dialog"
+                className="p-2 text-[var(--muted-color)] hover:text-[var(--text-color)] rounded-lg hover:bg-[var(--surface-color)] transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 md:p-6 overflow-y-auto flex-1">
+              <ImportKnowledgeSection />
+            </div>
           </div>
         </div>
       )}
