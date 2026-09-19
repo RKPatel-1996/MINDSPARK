@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useApplication } from '../../application';
 import { Search, Book, AlertTriangle, Archive, Filter, X, Sparkles, Loader2, Edit3, Check, Tag, CheckCircle, RotateCcw } from 'lucide-react';
 import { useShortcut } from '../shortcuts/useShortcut';
@@ -19,6 +19,7 @@ import {
   type LibrarySort,
 } from '../../application/libraryQuery';
 import { TaxonomyBrowser } from './TaxonomyBrowser';
+import { MAX_BULK_LIFECYCLE_ITEMS, type BulkLifecycleErrorCode } from '../../domain/lifecycle';
 
 type StatusTab = 'current' | 'needs_review' | 'archived';
 
@@ -35,6 +36,17 @@ const CARD_TYPE_OPTIONS: Array<{ type: CardType; label: string }> = [
   { type: 'true_false', label: 'True / False' },
 ];
 
+const BULK_LIFECYCLE_ERROR_MESSAGES: Record<BulkLifecycleErrorCode, string> = {
+  empty_selection: 'Select at least one item before continuing.',
+  invalid_item_id: 'One or more selected items are invalid. Refresh and try again.',
+  too_many_items: `Select no more than ${MAX_BULK_LIFECYCLE_ITEMS} items at once.`,
+  item_not_found: 'One or more selected items are no longer available. Refresh and try again.',
+  invalid_transition: 'The selected items cannot be changed from their current status.',
+  authentication_required: 'Sign in to perform bulk lifecycle actions.',
+  configuration_required: 'Configure cloud persistence before performing bulk lifecycle actions.',
+  persistence_failure: 'The bulk lifecycle action could not be saved. Please try again.',
+};
+
 export const LibraryView: React.FC = () => {
   const {
     repos,
@@ -43,6 +55,7 @@ export const LibraryView: React.FC = () => {
     refreshCount,
     triggerRefresh,
     transitionKnowledgeItemLifecycle,
+    bulkTransitionKnowledgeItemStatus,
     isSignedOut,
     isUnconfigured,
     isEphemeralDev,
@@ -67,6 +80,9 @@ export const LibraryView: React.FC = () => {
   // Selection Mode State (UI session state only, not persisted)
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkLifecycleError, setBulkLifecycleError] = useState<string | null>(null);
+  const [isBulkLifecyclePending, setIsBulkLifecyclePending] = useState(false);
+  const bulkOperationInFlightRef = useRef(false);
 
   // Selected item / edit state
   const [selectedItem, setSelectedItem] = useState<KnowledgeItemWithCards | null>(null);
@@ -234,30 +250,85 @@ export const LibraryView: React.FC = () => {
   }, [visibleItemIds]);
 
   const toggleItemSelection = useCallback((itemId: string) => {
+    if (isBulkLifecyclePending) return;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(itemId)) {
         next.delete(itemId);
       } else {
+        if (next.size >= MAX_BULK_LIFECYCLE_ITEMS) {
+          setBulkLifecycleError(`Select no more than ${MAX_BULK_LIFECYCLE_ITEMS} items at once.`);
+          return prev;
+        }
         next.add(itemId);
       }
       return next;
     });
-  }, []);
+  }, [isBulkLifecyclePending]);
 
   const handleSelectVisible = useCallback(() => {
+    if (isBulkLifecyclePending) return;
+    if (filteredItems.length > MAX_BULK_LIFECYCLE_ITEMS) {
+      setBulkLifecycleError(`Select visible is limited to ${MAX_BULK_LIFECYCLE_ITEMS} items.`);
+      return;
+    }
+    setBulkLifecycleError(null);
     setSelectedIds(new Set(filteredItems.map((b) => b.item.id)));
-  }, [filteredItems]);
+  }, [filteredItems, isBulkLifecyclePending]);
 
   const handleEnterSelectMode = useCallback(() => {
     setIsSelecting(true);
     setSelectedIds(new Set());
+    setBulkLifecycleError(null);
   }, []);
 
   const handleCancelSelectMode = useCallback(() => {
+    if (isBulkLifecyclePending) return;
     setIsSelecting(false);
     setSelectedIds(new Set());
-  }, []);
+    setBulkLifecycleError(null);
+  }, [isBulkLifecyclePending]);
+
+  const bulkTargetStatus: KnowledgeStatus = statusTab === 'archived' ? 'active' : 'archived';
+  const bulkActionLabel = bulkTargetStatus === 'archived' ? 'Archive selected' : 'Restore selected';
+
+  const handleBulkLifecycleAction = useCallback(async () => {
+    if (
+      isReadOnly ||
+      isBulkLifecyclePending ||
+      bulkOperationInFlightRef.current ||
+      selectedIds.size === 0
+    ) {
+      return;
+    }
+
+    const itemIds = Array.from(selectedIds);
+    bulkOperationInFlightRef.current = true;
+    setBulkLifecycleError(null);
+    setIsBulkLifecyclePending(true);
+    try {
+      const result = await bulkTransitionKnowledgeItemStatus(itemIds, bulkTargetStatus);
+      if ('error' in result) {
+        setBulkLifecycleError(BULK_LIFECYCLE_ERROR_MESSAGES[result.error.code]);
+        return;
+      }
+
+      setSelectedIds(new Set());
+      setIsSelecting(false);
+      setBulkLifecycleError(null);
+    } catch {
+      setBulkLifecycleError(BULK_LIFECYCLE_ERROR_MESSAGES.persistence_failure);
+    } finally {
+      bulkOperationInFlightRef.current = false;
+      setIsBulkLifecyclePending(false);
+    }
+  }, [
+    bulkTargetStatus,
+    bulkTransitionKnowledgeItemStatus,
+    isBulkLifecyclePending,
+    isReadOnly,
+    selectedIds,
+  ]);
 
   // Contextual taxonomy counts reusing queryLibraryItems semantics
   const taxonomyCounts = useMemo(() => {
@@ -512,26 +583,36 @@ export const LibraryView: React.FC = () => {
                   id="library-select-visible-btn"
                   data-testid="select-visible-btn"
                   onClick={handleSelectVisible}
+                  disabled={isBulkLifecyclePending}
                   className="px-2.5 py-1 text-xs font-medium font-ui border border-[var(--border-color)] hover:border-[var(--muted-color)] bg-[var(--bg-color)] text-[var(--text-color)] rounded-lg transition-colors cursor-pointer"
                 >
                   Select visible
                 </button>
 
-                {/* Neutral future-action placeholder */}
-                {selectedIds.size > 0 && (
-                  <div
-                    data-testid="neutral-action-area"
-                    className="text-xs text-[var(--muted-color)] font-ui italic px-1.5"
-                  >
-                    <span>Actions</span>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  id="library-bulk-lifecycle-action-btn"
+                  data-testid="bulk-lifecycle-action-btn"
+                  onClick={handleBulkLifecycleAction}
+                  disabled={isReadOnly || isBulkLifecyclePending || selectedIds.size === 0}
+                  className="px-2.5 py-1 text-xs font-medium font-ui border border-[var(--border-color)] bg-[var(--bg-color)] text-[var(--text-color)] rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {isBulkLifecyclePending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                  ) : bulkTargetStatus === 'archived' ? (
+                    <Archive className="w-3.5 h-3.5" aria-hidden="true" />
+                  ) : (
+                    <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                  )}
+                  {bulkActionLabel}
+                </button>
 
                 <button
                   type="button"
                   id="library-cancel-select-btn"
                   data-testid="cancel-select-btn"
                   onClick={handleCancelSelectMode}
+                  disabled={isBulkLifecyclePending}
                   className="px-2.5 py-1 text-xs font-medium font-ui border border-[var(--border-color)] text-[var(--muted-color)] hover:text-[var(--text-color)] hover:bg-[var(--bg-color)] rounded-lg transition-colors cursor-pointer"
                 >
                   Cancel
@@ -550,6 +631,12 @@ export const LibraryView: React.FC = () => {
             )}
           </div>
         </div>
+
+        {isSelecting && bulkLifecycleError && (
+          <p data-testid="bulk-lifecycle-error" role="alert" className="mt-3 text-xs text-[var(--color-danger)] font-ui">
+            {bulkLifecycleError}
+          </p>
+        )}
 
         {/* Collapsible Filter Panel */}
         {showFilters && (
@@ -780,13 +867,16 @@ export const LibraryView: React.FC = () => {
                   data-testid={`knowledge-item-card-${item.id}`}
                   onClick={() => {
                     if (isSelecting) {
-                      toggleItemSelection(item.id);
+                      if (!isBulkLifecyclePending) {
+                        toggleItemSelection(item.id);
+                      }
                     } else {
                       handleOpenDetail(bundle);
                     }
                   }}
                   role={isSelecting ? 'button' : undefined}
                   aria-selected={isSelecting ? isSelected : undefined}
+                  aria-disabled={isSelecting && isBulkLifecyclePending ? true : undefined}
                   aria-label={isSelecting ? `${isSelected ? 'Deselect' : 'Select'} ${item.title}` : undefined}
                   className={`p-5 rounded-xl border transition-all cursor-pointer paper-shadow flex flex-col justify-between group ${
                     isSelected
@@ -801,6 +891,7 @@ export const LibraryView: React.FC = () => {
                           <input
                             type="checkbox"
                             checked={isSelected}
+                            disabled={isBulkLifecyclePending}
                             onClick={(e) => e.stopPropagation()}
                             onChange={() => toggleItemSelection(item.id)}
                             aria-label={`Select ${item.title}`}

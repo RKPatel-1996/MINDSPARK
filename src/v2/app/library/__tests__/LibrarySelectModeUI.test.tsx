@@ -316,7 +316,7 @@ describe('Library Select Mode UI (Task 5-1)', () => {
     expect(checkbox2.checked).toBe(true);
   });
 
-  it('10. no bulk lifecycle mutation is performed in this task', async () => {
+  it('10. selecting alone performs no lifecycle mutation until an explicit bulk action is activated', async () => {
     renderLibrary();
 
     await waitFor(() => {
@@ -326,13 +326,11 @@ describe('Library Select Mode UI (Task 5-1)', () => {
     fireEvent.click(screen.getByTestId('library-select-mode-btn'));
     fireEvent.click(screen.getByTestId('select-visible-btn'));
 
-    // Neutral action area is displayed, but no bulk mutation controls exist
-    expect(screen.getByTestId('neutral-action-area')).toBeDefined();
-    expect(screen.queryByRole('button', { name: /Archive selected/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /Archive selected/i })).toBeDefined();
     expect(screen.queryByRole('button', { name: /Restore selected/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /Mark resolved selected/i })).toBeNull();
 
-    // Repository status remains unchanged
+    // Repository status remains unchanged until Archive selected is explicitly activated.
     const items = await repos.knowledge.list();
     const activeItems = items.filter((i) => i.status === 'active');
     expect(activeItems.length).toBe(2);
