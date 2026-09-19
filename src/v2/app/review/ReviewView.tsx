@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useInRouterContext } from 'react-router-dom';
 import { useApplication } from '../../application';
 import { useShortcut } from '../shortcuts/useShortcut';
@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { Flag, Info, CheckCircle2, RotateCcw, Sparkles, BookOpen, Loader2, AlertTriangle } from 'lucide-react';
-import type { ReviewQueueState } from '../../application/types';
+import type { ReviewQueueState, ReviewSubmissionInput } from '../../application/types';
 import type { ReviewRating } from '../../domain/event';
 
 type ReviewState = 'question' | 'answered';
@@ -26,6 +26,9 @@ export const ReviewView: React.FC = () => {
   const [isSeeding, setIsSeeding] = useState(false);
   const [focusCardIndex, setFocusCardIndex] = useState(1);
   const [focusSetComplete, setFocusSetComplete] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const submissionInFlightRef = useRef(false);
 
   const loadNextCard = useCallback(async () => {
     try {
@@ -73,11 +76,34 @@ export const ReviewView: React.FC = () => {
     }
   };
 
+  const submitCurrentReview = useCallback(async (submission: ReviewSubmissionInput) => {
+    if (submissionInFlightRef.current) return;
+
+    submissionInFlightRef.current = true;
+    setSubmissionError(null);
+    setIsSubmittingReview(true);
+    try {
+      await reviewService.submitReview(submission);
+      if (focusCardIndex >= 5) {
+        setFocusSetComplete(true);
+      } else {
+        setFocusCardIndex((prev) => prev + 1);
+        await loadNextCard();
+      }
+    } catch {
+      // Keep the active queue/card and all answer state intact so the user can retry.
+      setSubmissionError('Review could not be saved. Try again.');
+    } finally {
+      submissionInFlightRef.current = false;
+      setIsSubmittingReview(false);
+    }
+  }, [focusCardIndex, loadNextCard, reviewService]);
+
   const handleContinue = async (isCorrect: boolean, guessed = false) => {
     if (!activeCard || !activeItem || !activeState || isSignedOut || (isUnconfigured && !isEphemeralDev)) return;
 
     const rating: ReviewRating = isCorrect ? (guessed ? 'hard' : 'good') : 'again';
-    await reviewService.submitReview({
+    await submitCurrentReview({
       card: activeCard,
       knowledgeItem: activeItem,
       currentState: activeState,
@@ -85,18 +111,12 @@ export const ReviewView: React.FC = () => {
       objectiveCorrect: isCorrect,
       guessedOrStruggled: guessed,
     });
-    if (focusCardIndex >= 5) {
-      setFocusSetComplete(true);
-    } else {
-      setFocusCardIndex((prev) => prev + 1);
-      await loadNextCard();
-    }
   };
 
   const handleRating = async (rating: ReviewRating) => {
     if (!activeCard || !activeItem || !activeState || isSignedOut || (isUnconfigured && !isEphemeralDev)) return;
 
-    await reviewService.submitReview({
+    await submitCurrentReview({
       card: activeCard,
       knowledgeItem: activeItem,
       currentState: activeState,
@@ -104,12 +124,6 @@ export const ReviewView: React.FC = () => {
       objectiveCorrect: null,
       guessedOrStruggled: rating === 'hard' || rating === 'again',
     });
-    if (focusCardIndex >= 5) {
-      setFocusSetComplete(true);
-    } else {
-      setFocusCardIndex((prev) => prev + 1);
-      await loadNextCard();
-    }
   };
 
   const handleContinueReviewing = async () => {
@@ -689,6 +703,7 @@ export const ReviewView: React.FC = () => {
                     {isCorrect && (
                       <button
                         onClick={() => handleContinue(true, true)}
+                        disabled={isSubmittingReview}
                         className="px-6 py-3 border border-[var(--border-color)] bg-[var(--surface-color)] text-[var(--text-color)] rounded-xl font-medium font-ui hover:bg-[var(--border-color)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                       >
                         I guessed
@@ -696,6 +711,7 @@ export const ReviewView: React.FC = () => {
                     )}
                     <button
                       onClick={() => handleContinue(isCorrect, false)}
+                      disabled={isSubmittingReview}
                       className="px-8 py-3 bg-[var(--color-action-primary-bg)] text-[var(--color-action-primary-text)] rounded-xl font-medium font-ui focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] hover:opacity-90 transition-opacity"
                     >
                       Continue
@@ -746,6 +762,11 @@ export const ReviewView: React.FC = () => {
       {/* Footer Controls */}
       <div className="border-t border-[var(--border-color)] bg-[var(--surface-color)] p-4 md:p-6 flex-none pb-safe">
         <div className="max-w-2xl mx-auto">
+          {submissionError && (
+            <p data-testid="review-submission-error" role="alert" className="mb-3 text-center text-sm text-[var(--color-error)] font-ui">
+              {submissionError}
+            </p>
+          )}
           {/* MCQ / TrueFalse Check Answer Button */}
           {reviewState === 'question' && (card.type === 'mcq' || card.type === 'true_false') && (
             <div className="flex justify-center">
@@ -778,6 +799,7 @@ export const ReviewView: React.FC = () => {
             <div className="grid grid-cols-4 gap-2 md:gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <button
                 onClick={() => handleRating('again')}
+                disabled={isSubmittingReview}
                 className="py-3 px-2 border border-[var(--border-color)] bg-[var(--surface-color)] rounded-xl font-medium hover:bg-[var(--color-soft-error)] hover:text-[var(--color-error)] hover:border-[var(--color-error)] transition-colors flex flex-col items-center justify-center font-ui"
               >
                 <span className="mb-1 text-sm md:text-base font-semibold">Again</span>
@@ -785,6 +807,7 @@ export const ReviewView: React.FC = () => {
               </button>
               <button
                 onClick={() => handleRating('hard')}
+                disabled={isSubmittingReview}
                 className="py-3 px-2 border border-[var(--border-color)] bg-[var(--surface-color)] rounded-xl font-medium hover:bg-[var(--color-soft-warning)] hover:text-[var(--color-warning)] hover:border-[var(--color-warning)] transition-colors flex flex-col items-center justify-center font-ui"
               >
                 <span className="mb-1 text-sm md:text-base font-semibold">Hard</span>
@@ -792,6 +815,7 @@ export const ReviewView: React.FC = () => {
               </button>
               <button
                 onClick={() => handleRating('good')}
+                disabled={isSubmittingReview}
                 className="py-3 px-2 border border-[var(--border-color)] bg-[var(--surface-color)] rounded-xl font-medium hover:bg-[var(--color-soft-success)] hover:text-[var(--color-success)] hover:border-[var(--color-success)] transition-colors flex flex-col items-center justify-center font-ui"
               >
                 <span className="mb-1 text-sm md:text-base font-semibold">Good</span>
@@ -799,6 +823,7 @@ export const ReviewView: React.FC = () => {
               </button>
               <button
                 onClick={() => handleRating('easy')}
+                disabled={isSubmittingReview}
                 className="py-3 px-2 border border-[var(--border-color)] bg-[var(--surface-color)] rounded-xl font-medium hover:bg-[var(--color-soft-primary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-colors flex flex-col items-center justify-center font-ui"
               >
                 <span className="mb-1 text-sm md:text-base font-semibold">Easy</span>
