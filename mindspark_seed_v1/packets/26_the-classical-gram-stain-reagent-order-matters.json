@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "The classical Gram-stain reagent order matters",
+    "content": "A standard Gram-stain sequence is crystal violet, iodine, decolorizer, then counterstain such as safranin.",
+    "explanationMarkdown": "Each reagent has a different role: primary stain, mordant, differential decolorization, and counterstaining of cells that lost the primary stain.",
+    "taxonomy": {
+      "domainId": "microbiology",
+      "topicId": "laboratory-methods",
+      "subtopicId": "staining"
+    },
+    "tags": [
+      "workflow",
+      "definition"
+    ]
+  },
+  "cards": [
+    {
+      "type": "flashcard",
+      "front": "What is the usual order of the major Gram-stain steps?",
+      "back": "Crystal violet → iodine → decolorizer → counterstain (commonly safranin)."
+    }
+  ]
+}

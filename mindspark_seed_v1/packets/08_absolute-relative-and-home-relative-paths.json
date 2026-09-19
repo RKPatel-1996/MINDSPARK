@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "Absolute, relative, and home-relative paths",
+    "content": "An absolute path starts from `/`; a relative path is resolved from the current working directory; `~` is shell-expanded to the user's home directory when used in an appropriate unquoted shell context.",
+    "explanationMarkdown": "Examples:\n\n```text\n/home/rkpatel/project/file.txt   absolute\n./file.txt                       relative to current directory\n../file.txt                      relative to parent directory\n~/project                        shell shorthand based on home directory\n```\n\n`~` expansion is performed by the shell; it is not a literal filesystem directory named `~` in normal use.",
+    "taxonomy": {
+      "domainId": "computing",
+      "topicId": "linux",
+      "subtopicId": "filesystem-permissions"
+    },
+    "tags": [
+      "definition",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "Which statement about shell paths is correct?",
+      "options": [
+        "An absolute path is resolved from the current working directory.",
+        "A relative path always begins with `/`.",
+        "`~` is normally expanded by the shell to the user's home directory, while a relative path is resolved from the current working directory.",
+        "`..` always refers to the user's home directory."
+      ],
+      "correctOptionIndex": 2,
+      "explanation": "Absolute paths begin from the filesystem root `/`; relative paths are resolved from the current directory; shell tilde expansion normally maps `~` to the user's home directory."
+    }
+  ]
+}

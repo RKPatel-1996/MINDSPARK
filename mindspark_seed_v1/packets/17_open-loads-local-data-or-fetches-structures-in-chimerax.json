@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "`open` loads local data or fetches structures in ChimeraX",
+    "content": "The ChimeraX `open` command reads local files, URLs, or supported database identifiers. A four-character PDB identifier can be fetched directly, for example `open 2hyy`.",
+    "explanationMarkdown": "Examples:\n\n```text\nopen 2hyy\nopen ~/structures/model.cif\n```\n\nChimeraX can infer many formats from file suffixes, and database identifiers can be combined with source prefixes when needed. This is ChimeraX syntax; do not substitute legacy UCSF Chimera-specific commands without checking compatibility.",
+    "taxonomy": {
+      "domainId": "structural-biology",
+      "topicId": "chimerax",
+      "subtopicId": "commands"
+    },
+    "tags": [
+      "command",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "flashcard",
+      "front": "Which ChimeraX command can fetch/open a PDB structure such as 2hyy?",
+      "back": "`open 2hyy`"
+    }
+  ]
+}

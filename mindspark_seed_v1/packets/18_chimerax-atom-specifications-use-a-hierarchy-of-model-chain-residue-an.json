@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "ChimeraX atom specifications use a hierarchy of model, chain, residue, and atom",
+    "content": "Common ChimeraX hierarchical atom-spec symbols are `#` for model, `/` for chain, `:` for residue, and `@` for atom.",
+    "explanationMarkdown": "Examples include:\n\n```text\n#1\n/A\n:45\n@CA\n#1/A:45@CA\n```\n\nThe hierarchy lets commands target anything from an entire model down to a specific atom. A combined specification can therefore express a precise structural subset without first creating a separate object.",
+    "taxonomy": {
+      "domainId": "structural-biology",
+      "topicId": "chimerax",
+      "subtopicId": "selection-display"
+    },
+    "tags": [
+      "definition",
+      "command"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "Which ChimeraX atom-spec mapping is correct?",
+      "options": [
+        "`#` model, `/` chain, `:` residue, `@` atom",
+        "`#` atom, `/` residue, `:` chain, `@` model",
+        "`#` chain, `/` model, `:` atom, `@` residue",
+        "`#` residue, `/` atom, `:` model, `@` chain"
+      ],
+      "correctOptionIndex": 0,
+      "explanation": "ChimeraX hierarchical specifications use # model, / chain, : residue, and @ atom."
+    }
+  ]
+}

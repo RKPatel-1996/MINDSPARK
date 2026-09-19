@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "Parent and child processes have separate process state",
+    "content": "A child process has its own process state. It may inherit values such as environment variables and working directory initially, but later changes to those values do not automatically alter the parent's state.",
+    "explanationMarkdown": "When a shell launches another program, the new process starts with inherited state such as environment variables and current working directory. It then runs independently.\n\nThis explains why:\n\n```bash\nbash -c 'cd /tmp'\n```\n\ndoes not move the parent shell, and why changing an exported variable inside a child does not rewrite the parent's variable.",
+    "taxonomy": {
+      "domainId": "computing",
+      "topicId": "linux",
+      "subtopicId": "processes"
+    },
+    "tags": [
+      "concept",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "A Bash shell launches `bash -c 'cd /tmp; export X=child'`. After that child exits, what should you expect in the parent shell?",
+      "options": [
+        "The parent is now in `/tmp` and `X` is `child`.",
+        "The parent keeps its previous working directory and environment unless it changed them itself.",
+        "The parent keeps its directory but automatically receives `X=child`.",
+        "The parent receives both changes only if the child exited with status 0."
+      ],
+      "correctOptionIndex": 1,
+      "explanation": "The child can change its own directory and environment, but these changes do not propagate upward to the parent process."
+    }
+  ]
+}

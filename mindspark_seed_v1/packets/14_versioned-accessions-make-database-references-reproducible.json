@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Versioned accessions make database references reproducible",
+    "content": "A stable database accession identifies a record, while a version suffix distinguishes sequence revisions. Recording the version used in an analysis helps others recover the same sequence rather than a later revision.",
+    "explanationMarkdown": "For reproducibility, it is better to record the exact accession/version used in a workflow rather than only a gene name or informal label.\n\nThe general principle extends beyond sequence databases: analysis inputs should be identified precisely enough that the same input can be retrieved later.",
+    "taxonomy": {
+      "domainId": "bioinformatics",
+      "topicId": "sequence-analysis",
+      "subtopicId": "databases"
+    },
+    "tags": [
+      "workflow",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "Why is recording a versioned sequence accession useful for reproducible bioinformatics?",
+      "answerGuidance": "Because the accession identifies the database record and the version distinguishes revisions, allowing the exact sequence used in the original analysis to be recovered."
+    }
+  ]
+}

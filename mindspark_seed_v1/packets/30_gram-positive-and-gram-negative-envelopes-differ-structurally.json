@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Gram-positive and Gram-negative envelopes differ structurally",
+    "content": "Gram-positive bacteria typically have a thick peptidoglycan layer and no Gram-negative-type outer membrane; Gram-negative bacteria have a thinner peptidoglycan layer plus an outer membrane containing lipopolysaccharide.",
+    "explanationMarkdown": "These envelope differences influence staining behavior and interactions with the environment.\n\nThe distinction is more informative than simply saying one group has “more wall.” Gram-negative cells possess an additional outer membrane, with the peptidoglycan located in the periplasmic region between the inner and outer membranes.",
+    "taxonomy": {
+      "domainId": "microbiology",
+      "topicId": "fundamentals",
+      "subtopicId": "cell-structure"
+    },
+    "tags": [
+      "comparison",
+      "concept"
+    ]
+  },
+  "cards": [
+    {
+      "type": "flashcard",
+      "front": "What is the key envelope difference between typical Gram-positive and Gram-negative bacteria?",
+      "back": "Gram-positive: thick peptidoglycan, no Gram-negative outer membrane. Gram-negative: thin peptidoglycan plus an outer membrane containing LPS."
+    }
+  ]
+}

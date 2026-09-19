@@ -1,0 +1,6 @@
+{
+  "name": "Remix: Remix: MindSpark",
+  "description": "convert the remix: mindspark android app to windows installable app \n\nkeep all the features same \n",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

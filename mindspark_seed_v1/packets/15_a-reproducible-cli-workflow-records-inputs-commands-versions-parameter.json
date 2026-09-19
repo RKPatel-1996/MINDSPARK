@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "A reproducible CLI workflow records inputs, commands, versions, parameters, and outputs",
+    "content": "Reproducibility requires more than saving the final result. A workflow should preserve input identity, exact commands/parameters, tool versions, relevant environment/reference versions, and output provenance.",
+    "explanationMarkdown": "A practical minimum record for a command-line analysis includes:\n\n- exact input files or stable accessions/checksums\n- exact command lines and parameters\n- program and database/reference versions\n- environment information where it affects behavior\n- output filenames and a traceable mapping from inputs to outputs\n\nA shell history alone is usually insufficient because it may omit environment state, software versions, input provenance, and failed intermediate attempts.",
+    "taxonomy": {
+      "domainId": "bioinformatics",
+      "topicId": "workflow-fundamentals",
+      "subtopicId": "reproducibility"
+    },
+    "tags": [
+      "workflow",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "What information should you preserve so a command-line bioinformatics analysis can be reproduced later?",
+      "answerGuidance": "Include exact inputs/provenance, commands and parameters, tool versions, database/reference versions, relevant environment details, and traceable outputs."
+    }
+  ]
+}

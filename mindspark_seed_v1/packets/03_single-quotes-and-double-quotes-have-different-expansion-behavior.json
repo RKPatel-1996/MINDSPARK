@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "Single quotes and double quotes have different expansion behavior",
+    "content": "In Bash, single quotes preserve enclosed characters literally, while double quotes still allow parameter expansion and command substitution but prevent ordinary word splitting and pathname expansion of the quoted result.",
+    "explanationMarkdown": "Compare:\n\n```bash\nx=hello\nprintf '%s\\n' '$x'\nprintf '%s\\n' \"$x\"\n```\n\nThe first prints `$x`; the second prints `hello`.\n\nDouble quotes are often the safe default around expansions such as `\"$variable\"` because the expanded value is kept as one argument (except for special constructs such as `\"$@\"`).",
+    "taxonomy": {
+      "domainId": "computing",
+      "topicId": "linux",
+      "subtopicId": "shell"
+    },
+    "tags": [
+      "comparison",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "In Bash, which statement about quoting is correct?",
+      "options": [
+        "Single quotes allow variable expansion, while double quotes suppress it.",
+        "Both single and double quotes suppress all shell expansion.",
+        "Single quotes keep their contents literal, while double quotes still allow parameter expansion and command substitution.",
+        "Double quotes force pathname expansion but single quotes do not."
+      ],
+      "correctOptionIndex": 2,
+      "explanation": "Single quotes are literal. Double quotes still permit parameter expansion and command substitution while protecting the expanded text from ordinary splitting and globbing."
+    }
+  ]
+}

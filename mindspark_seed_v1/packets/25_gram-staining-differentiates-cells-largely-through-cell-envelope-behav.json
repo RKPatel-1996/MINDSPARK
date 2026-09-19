@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Gram staining differentiates cells largely through cell-envelope behavior during decolorization",
+    "content": "Gram-positive cells typically retain the crystal-violet–iodine complex after decolorization because of their thick peptidoglycan-rich wall, whereas Gram-negative cells are decolorized and then take up the counterstain.",
+    "explanationMarkdown": "The decisive step is decolorization.\n\nIn the classical sequence:\n\n1. crystal violet stains cells\n2. iodine forms a crystal-violet–iodine complex\n3. alcohol/acetone decolorizer differentially removes the primary stain complex\n4. counterstain colors the decolorized Gram-negative cells\n\nA poor decolorization step can therefore cause false Gram reactions.",
+    "taxonomy": {
+      "domainId": "microbiology",
+      "topicId": "laboratory-methods",
+      "subtopicId": "staining"
+    },
+    "tags": [
+      "concept",
+      "workflow"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "Why do Gram-positive cells usually remain purple after Gram staining while Gram-negative cells become counterstain-colored?",
+      "answerGuidance": "Explain that the crystal-violet–iodine complex is retained more effectively by the thick Gram-positive peptidoglycan during decolorization, while Gram-negative cells are decolorized and then take up the counterstain."
+    }
+  ]
+}

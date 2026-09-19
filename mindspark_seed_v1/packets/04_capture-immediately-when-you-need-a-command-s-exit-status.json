@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Capture `$?` immediately when you need a command's exit status",
+    "content": "`$?` expands to the exit status of the most recently completed foreground pipeline. Running another command changes what `$?` refers to, so a status that matters should be saved immediately.",
+    "explanationMarkdown": "If a script needs the status of a particular command, capture it before executing something else:\n\n```bash\ngrep 'pattern' file.txt\nstatus=$?\n\nprintf 'grep exit status: %d\\n' \"$status\"\n```\n\n`$?` is not a history of statuses. It is only the status of the most recent relevant command/pipeline.",
+    "taxonomy": {
+      "domainId": "computing",
+      "topicId": "linux",
+      "subtopicId": "shell"
+    },
+    "tags": [
+      "command",
+      "workflow"
+    ]
+  },
+  "cards": [
+    {
+      "type": "flashcard",
+      "front": "In Bash, what does `$?` contain, and when should you save it?",
+      "back": "The exit status of the most recently completed foreground pipeline; save it immediately if you need it, before another command overwrites that status."
+    }
+  ]
+}

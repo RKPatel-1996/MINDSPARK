@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Hiding a structure is not the same as deleting it",
+    "content": "ChimeraX `show` and `hide` control visibility of models or representations without removing the underlying model. Deleting/closing removes data or model objects and is a different operation.",
+    "explanationMarkdown": "Display state is reversible and useful while comparing representations.\n\nFor example, hiding cartoons or atoms changes what is visible but preserves the structure for later commands. This distinction matters in interactive workflows: use display controls when you merely want visual decluttering, and destructive/removal commands only when you truly intend to remove something.",
+    "taxonomy": {
+      "domainId": "structural-biology",
+      "topicId": "chimerax",
+      "subtopicId": "selection-display"
+    },
+    "tags": [
+      "comparison",
+      "misconception"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "What is the conceptual difference between hiding part of a structure in ChimeraX and removing/deleting the structure?",
+      "answerGuidance": "Hiding changes display/visibility while retaining the underlying model/data; deleting or closing removes the model/object itself."
+    }
+  ]
+}

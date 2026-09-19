@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "Generation number relates population increase by powers of two during ideal binary fission",
+    "content": "Under ideal exponential binary fission, after n generations the population is N = N0 × 2^n. This model assumes each cell division doubles the population and does not account for death or heterogeneous growth.",
+    "explanationMarkdown": "If an ideal culture begins with `N0 = 1,000` cells and undergoes 3 generations:\n\n```text\nN = 1000 × 2^3\n  = 8000\n```\n\nReal cultures may deviate because of lag, nutrient limitation, cell death, or unequal division, so the equation is a model for exponential growth rather than a universal description of all culture periods.",
+    "taxonomy": {
+      "domainId": "microbiology",
+      "topicId": "fundamentals",
+      "subtopicId": "growth"
+    },
+    "tags": [
+      "application",
+      "concept"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "An ideal bacterial culture starts with 1,000 cells and completes 3 generations of binary fission. Ignoring death, what population is expected?",
+      "options": [
+        "3,000",
+        "6,000",
+        "8,000",
+        "9,000"
+      ],
+      "correctOptionIndex": 2,
+      "explanation": "N = N0 × 2^n = 1000 × 2^3 = 8000."
+    }
+  ]
+}

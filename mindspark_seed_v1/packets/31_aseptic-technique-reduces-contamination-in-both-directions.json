@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Aseptic technique reduces contamination in both directions",
+    "content": "Aseptic technique aims to prevent unwanted microorganisms from entering cultures, samples, or sterile materials and to reduce escape/spread of cultured organisms into the environment.",
+    "explanationMarkdown": "Good aseptic practice minimizes unnecessary exposure of sterile surfaces and culture vessels, uses sterile tools appropriately, and organizes manipulations so open containers are exposed for as little time as practical.\n\nThe exact technique depends on the organism, biosafety level, equipment, and institutional procedure. Aseptic technique is not a substitute for biosafety controls.",
+    "taxonomy": {
+      "domainId": "microbiology",
+      "topicId": "laboratory-methods",
+      "subtopicId": "aseptic-technique"
+    },
+    "tags": [
+      "workflow",
+      "concept"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "What are the two broad contamination-control goals of aseptic technique?",
+      "answerGuidance": "Prevent unwanted microbes from entering cultures/sterile materials, and reduce cultured organisms contaminating the environment or other samples."
+    }
+  ]
+}

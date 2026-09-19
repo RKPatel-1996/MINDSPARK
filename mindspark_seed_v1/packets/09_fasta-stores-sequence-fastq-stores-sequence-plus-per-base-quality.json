@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "FASTA stores sequence; FASTQ stores sequence plus per-base quality",
+    "content": "FASTA represents sequence records with a `>` definition line followed by sequence. FASTQ records additionally encode per-base quality scores and therefore contain four logical lines per record in the common layout.",
+    "explanationMarkdown": "FASTA is appropriate when sequence itself is the essential information, for example many reference sequences.\n\nA typical FASTA record:\n\n```text\n>seq1 description\nACGTACGT\n```\n\nFASTQ commonly represents sequencing reads together with base-call quality:\n\n```text\n@read1\nACGT\n+\nIIII\n```\n\nThe quality string must correspond position-by-position to the sequence. For raw sequencing reads, loss of quality information can prevent many downstream quality-control decisions.",
+    "taxonomy": {
+      "domainId": "bioinformatics",
+      "topicId": "sequence-analysis",
+      "subtopicId": "sequence-formats"
+    },
+    "tags": [
+      "comparison",
+      "concept"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "What is the key information difference between FASTA and FASTQ, and why does it matter for raw sequencing reads?",
+      "answerGuidance": "FASTA stores sequence records without per-base quality; FASTQ stores sequence plus per-base quality scores. Quality scores are important for assessing base-call reliability and downstream QC of raw reads."
+    }
+  ]
+}

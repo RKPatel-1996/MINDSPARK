@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Cartoon representation emphasizes biopolymer backbone and secondary structure",
+    "content": "The ChimeraX `cartoon` representation displays a simplified backbone representation of biopolymers, useful for viewing overall fold and secondary-structure organization without showing every atom.",
+    "explanationMarkdown": "Cartoons reduce atomic clutter and make helices, strands, and overall chain topology easier to inspect.\n\nThey are therefore useful for questions about domain architecture or fold, while atom/bond styles are more appropriate when detailed side-chain or ligand geometry matters.",
+    "taxonomy": {
+      "domainId": "structural-biology",
+      "topicId": "chimerax",
+      "subtopicId": "visualization"
+    },
+    "tags": [
+      "concept",
+      "comparison"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "When is a cartoon representation in ChimeraX more useful than displaying every atom?",
+      "answerGuidance": "When the goal is to see overall biopolymer fold, backbone path, domains, or secondary-structure organization with less atomic clutter."
+    }
+  ]
+}

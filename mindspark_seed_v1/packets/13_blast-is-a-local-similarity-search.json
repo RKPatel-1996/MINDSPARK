@@ -1,0 +1,24 @@
+{
+  "item": {
+    "title": "BLAST is a local similarity search",
+    "content": "BLAST is designed to find high-scoring local sequence similarities rather than requiring two sequences to align end-to-end.",
+    "explanationMarkdown": "Local alignment is useful when two sequences share only a domain or region of homology.\n\nA strong BLAST hit over one domain does not by itself imply that the full-length sequences have the same architecture or function. Coverage and the location of the aligned region therefore matter during interpretation.",
+    "taxonomy": {
+      "domainId": "bioinformatics",
+      "topicId": "sequence-analysis",
+      "subtopicId": "blast"
+    },
+    "tags": [
+      "concept",
+      "misconception"
+    ]
+  },
+  "cards": [
+    {
+      "type": "true_false",
+      "statement": "A significant BLAST hit means the query and subject must align strongly across their entire lengths.",
+      "isTrue": false,
+      "explanation": "BLAST searches for local similarities. A significant alignment can cover only part of one or both sequences, so coverage and domain context must be inspected."
+    }
+  ]
+}

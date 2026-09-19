@@ -1,0 +1,24 @@
+{
+  "item": {
+    "title": "A visible colony is not guaranteed to originate from exactly one cell",
+    "content": "A colony is more safely interpreted as arising from a colony-forming unit (CFU), which may be one viable cell or a clump/chain of cells that grows into one visible colony.",
+    "explanationMarkdown": "Plate counts are therefore commonly reported as **colony-forming units**, not as an exact count of individual cells.\n\nCell aggregation, chains, incomplete dispersion, and the requirement for viability under the chosen culture conditions all affect the relationship between colony count and actual cell number.",
+    "taxonomy": {
+      "domainId": "microbiology",
+      "topicId": "laboratory-methods",
+      "subtopicId": "media"
+    },
+    "tags": [
+      "misconception",
+      "definition"
+    ]
+  },
+  "cards": [
+    {
+      "type": "true_false",
+      "statement": "Each visible colony on an agar plate proves that exactly one individual microbial cell was present in the inoculum.",
+      "isTrue": false,
+      "explanation": "A colony corresponds to a colony-forming unit, which can be a single cell or a cluster/chain of cells."
+    }
+  ]
+}

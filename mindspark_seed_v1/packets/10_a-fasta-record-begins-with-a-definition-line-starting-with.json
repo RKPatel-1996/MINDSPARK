@@ -1,0 +1,22 @@
+{
+  "item": {
+    "title": "A FASTA record begins with a definition line starting with `>`",
+    "content": "In FASTA, each sequence record starts with a definition/header line whose first character is `>`, followed by an identifier and optional descriptive information, then one or more sequence lines.",
+    "explanationMarkdown": "The leading `>` distinguishes the header from the biological sequence. Multiple FASTA records are represented by repeating this header-plus-sequence structure.",
+    "taxonomy": {
+      "domainId": "bioinformatics",
+      "topicId": "sequence-analysis",
+      "subtopicId": "sequence-formats"
+    },
+    "tags": [
+      "definition"
+    ]
+  },
+  "cards": [
+    {
+      "type": "flashcard",
+      "front": "What character begins a FASTA definition/header line?",
+      "back": "`>` (greater-than sign)."
+    }
+  ]
+}

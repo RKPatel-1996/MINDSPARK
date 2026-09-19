@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "BLAST significance depends on the search space, not only sequence identity",
+    "content": "BLAST significance is influenced by alignment score and search-space size. A match cannot be judged reliably from percent identity alone; alignment length, composition, gaps, score, and E-value provide necessary context.",
+    "explanationMarkdown": "A very short exact or near-exact match may occur frequently by chance, whereas a long high-scoring alignment can be compelling.\n\nThis is why interpreting BLAST solely as “highest percent identity wins” is unsafe. Biological interpretation should also consider coverage, alignment length, E-value, query/database context, and whether the matched region corresponds to the biology of interest.",
+    "taxonomy": {
+      "domainId": "bioinformatics",
+      "topicId": "sequence-analysis",
+      "subtopicId": "blast"
+    },
+    "tags": [
+      "misconception",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "Which is the best reason not to rank BLAST hits using percent identity alone?",
+      "options": [
+        "Percent identity is never reported by BLAST.",
+        "Statistical significance also depends on alignment score, length/search space, and other alignment properties.",
+        "E-values are independent of database size, so identity is redundant.",
+        "Only the alphabetical order of database accessions is statistically meaningful."
+      ],
+      "correctOptionIndex": 1,
+      "explanation": "Percent identity must be interpreted with alignment length/coverage, score, E-value, composition and search context."
+    }
+  ]
+}

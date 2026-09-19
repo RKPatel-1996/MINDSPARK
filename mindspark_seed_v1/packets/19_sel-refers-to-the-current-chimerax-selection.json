@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "`sel` refers to the current ChimeraX selection",
+    "content": "In ChimeraX command syntax, `sel` is a built-in target that refers to the current selection and can be passed to many commands.",
+    "explanationMarkdown": "A selection is useful because it can be created interactively and then reused in commands.\n\nFor example:\n\n```text\nstyle sel stick\n```\n\napplies the requested style to the current selection.\n\nThis separates *how you chose the atoms* from *what operation you want to perform on them*.",
+    "taxonomy": {
+      "domainId": "structural-biology",
+      "topicId": "chimerax",
+      "subtopicId": "selection-display"
+    },
+    "tags": [
+      "command",
+      "workflow"
+    ]
+  },
+  "cards": [
+    {
+      "type": "flashcard",
+      "front": "In ChimeraX commands, what does the target `sel` mean?",
+      "back": "The current selection."
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // SINGLE-OWNER SECURITY MODEL:
+    // MindSpark is a personal single-owner application.
+    // Access is strictly restricted to the designated single application owner.
+    // Non-owner authenticated callers and unauthenticated users are denied.
+    // PRODUCTION DEPLOYMENT BLOCKED until REPLACE_WITH_OWNER_UID is replaced with the real Firebase Auth UID.
+    function isOwnerPath(uid) {
+      return request.auth != null &&
+        request.auth.uid == 'REPLACE_WITH_OWNER_UID' &&
+        uid == 'REPLACE_WITH_OWNER_UID';
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid} {
+      match /knowledgeItems/{itemId} {
+        allow read, create, update: if isOwnerPath(uid);
+        allow delete: if false; // Archive instead of delete
+      }
+
+      match /reviewCards/{cardId} {
+        allow read, create, update: if isOwnerPath(uid);
+        allow delete: if false; // Archive instead of delete
+      }
+
+      match /reviewEvents/{eventId} {
+        allow read: if isOwnerPath(uid);
+        allow create: if isOwnerPath(uid)
+          && request.resource.data.id == eventId // document ID must equal event id
+          && request.resource.data.serverReceivedAt == request.time // enforce serverTimestamp
+          && request.resource.data.keys().hasAll(['id', 'cardId', 'knowledgeItemId', 'reviewTimestamp', 'rating', 'cardType', 'objectiveCorrect', 'guessedOrStruggled', 'deviceId', 'schedulerMetadata', 'schemaVersion', 'serverReceivedAt'])
+          && request.resource.data.keys().hasOnly(['id', 'cardId', 'knowledgeItemId', 'reviewTimestamp', 'rating', 'cardType', 'objectiveCorrect', 'guessedOrStruggled', 'durationMs', 'deviceId', 'schedulerMetadata', 'schemaVersion', 'serverReceivedAt'])
+          && request.resource.data.id is string
+          && request.resource.data.cardId is string
+          && request.resource.data.knowledgeItemId is string
+          && request.resource.data.reviewTimestamp is timestamp
+          && request.resource.data.rating is string
+          && request.resource.data.cardType is string
+          && (!('objectiveCorrect' in request.resource.data) || request.resource.data.objectiveCorrect is bool || request.resource.data.objectiveCorrect == null)
+          && request.resource.data.guessedOrStruggled is bool
+          && request.resource.data.deviceId is string
+          && request.resource.data.schedulerMetadata is map
+          && request.resource.data.schemaVersion is int;
+        allow update, delete: if false; // Append-only
+      }
+
+      match /taxonomy/{docId} {
+        allow read, create, update: if isOwnerPath(uid);
+        allow delete: if false;
+      }
+
+      match /schedulerParameterSets/{setId} {
+        allow read: if isOwnerPath(uid);
+        allow create: if isOwnerPath(uid)
+          && request.resource.data.id == setId;
+        allow update, delete: if false; // Historical parameters are immutable
+      }
+
+      match /settings/main {
+        allow read, create, update: if isOwnerPath(uid);
+        allow delete: if false;
+      }
+
+      match /devices/{deviceId} {
+        allow read, create, update: if isOwnerPath(uid);
+        allow delete: if false;
+      }
+    }
+  }
+}

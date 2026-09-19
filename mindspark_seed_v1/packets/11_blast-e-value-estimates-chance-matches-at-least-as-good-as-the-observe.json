@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "BLAST E-value estimates chance matches at least as good as the observed alignment",
+    "content": "A BLAST E-value is the expected number of alignments with an equivalent or better score that would occur by chance in a database search of the given size. Lower E-values indicate stronger statistical significance.",
+    "explanationMarkdown": "An E-value is not the probability that the biological relationship is true.\n\nFor example, an E-value near `1` means roughly one match with this score or better would be expected by chance under the search conditions. An E-value of `1e-20` indicates that such a match would be extraordinarily unlikely to arise from random background alone.\n\nE-values depend on factors including score and search-space/database size.",
+    "taxonomy": {
+      "domainId": "bioinformatics",
+      "topicId": "sequence-analysis",
+      "subtopicId": "blast"
+    },
+    "tags": [
+      "concept",
+      "definition"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "What does a BLAST E-value mean, and what does a lower E-value imply?",
+      "answerGuidance": "It is the expected number of chance alignments with score at least as good as the observed one for the given search space/database. Lower E-values indicate greater statistical significance."
+    }
+  ]
+}

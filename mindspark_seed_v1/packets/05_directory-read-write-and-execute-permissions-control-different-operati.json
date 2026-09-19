@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Directory read, write, and execute permissions control different operations",
+    "content": "For a directory, read permits listing names, write permits modifying directory entries, and execute permits traversing/searching the directory and accessing entries whose names are known.",
+    "explanationMarkdown": "Directory permissions differ from file permissions:\n\n- **r (read)**: read the directory entries, typically allowing names to be listed.\n- **w (write)**: create, remove, or rename directory entries, normally in combination with execute permission.\n- **x (execute/search)**: traverse the directory and resolve names within it.\n\nFor example, a directory with `r-x` can generally be listed and traversed but not modified. A directory with `-wx` cannot be listed normally, yet known filenames may still be accessed if their own permissions allow it.",
+    "taxonomy": {
+      "domainId": "computing",
+      "topicId": "linux",
+      "subtopicId": "filesystem-permissions"
+    },
+    "tags": [
+      "concept",
+      "comparison"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "For a Linux directory, what do the `r`, `w`, and `x` permission bits each control?",
+      "answerGuidance": "Explain: r lists directory entries/names; w modifies directory entries such as create/remove/rename; x means search/traverse and allows resolving known names. Note that write operations generally also require x."
+    }
+  ]
+}

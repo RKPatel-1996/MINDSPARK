@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Environment inheritance is downward, not upward",
+    "content": "A child process receives a copy of the parent's exported environment at process creation. Changes made by the child do not propagate back into the parent shell.",
+    "explanationMarkdown": "Shell variables become part of the environment inherited by child processes only after they are exported.\n\n```bash\nx=parent\nexport x\nbash -c 'x=child; printf \"%s\\n\" \"$x\"'\nprintf \"%s\\n\" \"$x\"\n```\n\nThe child prints `child`, but the parent still prints `parent`.\n\nThis is a general process rule: environment inheritance flows from parent to child at creation; it is not a shared mutable namespace.",
+    "taxonomy": {
+      "domainId": "computing",
+      "topicId": "linux",
+      "subtopicId": "processes"
+    },
+    "tags": [
+      "concept",
+      "misconception"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "What happens to an exported environment variable when a shell launches a child process, and why can't the child permanently change the parent's value?",
+      "answerGuidance": "Mention that the child inherits a copy of exported environment values at creation; later child changes are local to that child and do not propagate upward to the parent."
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "item": {
+    "title": "Deleting a file is primarily controlled by the parent directory",
+    "content": "Removing a pathname changes the parent directory's entries. Therefore deletion normally depends on write and execute permission on the containing directory, not on write permission to the file itself.",
+    "explanationMarkdown": "A file's own write bit controls modification of its contents, but unlinking a pathname modifies the **directory entry**.\n\nThis means a read-only file can still be deleted by a user who has the required permissions on the containing directory, subject to additional rules such as the sticky bit, ACLs, filesystem policy, or immutable attributes.",
+    "taxonomy": {
+      "domainId": "computing",
+      "topicId": "linux",
+      "subtopicId": "filesystem-permissions"
+    },
+    "tags": [
+      "misconception",
+      "concept"
+    ]
+  },
+  "cards": [
+    {
+      "type": "true_false",
+      "statement": "If a regular file is read-only, a user can never delete it.",
+      "isTrue": false,
+      "explanation": "Deletion usually changes the parent directory, so directory write + execute permissions are the key ordinary permissions. Other controls such as the sticky bit can also matter."
+    }
+  ]
+}

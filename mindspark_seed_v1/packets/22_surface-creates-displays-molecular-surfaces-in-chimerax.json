@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "`surface` creates/displays molecular surfaces in ChimeraX",
+    "content": "The ChimeraX `surface` command can create and display molecular surfaces for specified atoms or models. Surface display is a different representation from cartoons or explicit atom/bond display.",
+    "explanationMarkdown": "A molecular surface is useful for inspecting shape, pockets, solvent-exposed regions, and how ligands or residues relate to an outer molecular envelope.\n\nExample:\n\n```text\nsurface #1\n```\n\ncreates/displays surfaces associated with the specified model according to ChimeraX surface behavior and defaults.",
+    "taxonomy": {
+      "domainId": "structural-biology",
+      "topicId": "chimerax",
+      "subtopicId": "visualization"
+    },
+    "tags": [
+      "command",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "What is the primary purpose of the ChimeraX `surface` command?",
+      "options": [
+        "To create/display molecular surface representations for specified atoms or models.",
+        "To permanently delete solvent molecules from the structure.",
+        "To convert every residue into a sequence alignment.",
+        "To rename all chains in a model."
+      ],
+      "correctOptionIndex": 0,
+      "explanation": "`surface` creates and displays molecular surfaces; it does not delete atoms or create sequence alignments."
+    }
+  ]
+}

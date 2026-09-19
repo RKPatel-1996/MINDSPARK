@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Why `cd` must run inside the current shell",
+    "content": "Changing directory affects a process's own current working directory. Therefore a standalone child process cannot change the parent shell's working directory; `cd` must be implemented by the shell itself.",
+    "explanationMarkdown": "Each process has its own current working directory. If an external program were launched to perform `cd`, that child could change **its own** directory and then exit, while the parent shell would remain where it started.\n\nThat is why shells implement `cd` as a builtin.\n\nA useful demonstration is:\n\n```bash\npwd\nbash -c 'cd /tmp; pwd'\npwd\n```\n\nThe middle command can print `/tmp`, while the final `pwd` in the parent shell still reports the original directory.",
+    "taxonomy": {
+      "domainId": "computing",
+      "topicId": "linux",
+      "subtopicId": "shell"
+    },
+    "tags": [
+      "concept",
+      "command"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "Why does `cd` need to be a shell builtin rather than only an external executable?",
+      "answerGuidance": "State that the current working directory is process-local; an external `cd` would change only the child process, not the parent shell, so the shell itself must perform the directory change."
+    }
+  ]
+}

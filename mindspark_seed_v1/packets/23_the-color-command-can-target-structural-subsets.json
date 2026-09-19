@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "The `color` command can target structural subsets",
+    "content": "ChimeraX `color` applies a color to a specified target; the target can be a model, chain, residue range, selection, or other valid atom specification.",
+    "explanationMarkdown": "Examples:\n\n```text\ncolor /A red\ncolor sel cyan\n```\n\nThe first targets chain A; the second targets the current selection.\n\nColor is a visual annotation. It does not change the biological identity of the selected atoms or residues.",
+    "taxonomy": {
+      "domainId": "structural-biology",
+      "topicId": "chimerax",
+      "subtopicId": "commands"
+    },
+    "tags": [
+      "command",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "What would `color /A red` most directly request in ChimeraX?",
+      "options": [
+        "Color chain A red.",
+        "Rename chain A to red.",
+        "Delete all atoms except chain A.",
+        "Open a structure with accession A."
+      ],
+      "correctOptionIndex": 0,
+      "explanation": "`/A` specifies chain A, and `color ... red` changes its display color."
+    }
+  ]
+}

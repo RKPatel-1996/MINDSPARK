@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Combined atom specifications can target a precise structural region",
+    "content": "A ChimeraX specification such as `#1/A:50-75` combines model, chain, and residue selectors to target residues 50 through 75 in chain A of model 1.",
+    "explanationMarkdown": "Hierarchical specifications can be composed from broad to narrow targets.\n\nFor example:\n\n```text\n#1/A:50-75\n```\n\nmeans:\n\n- model `#1`\n- chain `/A`\n- residues `:50-75`\n\nAdding an atom selector could narrow the target further, such as an atom name within those residues.",
+    "taxonomy": {
+      "domainId": "structural-biology",
+      "topicId": "chimerax",
+      "subtopicId": "selection-display"
+    },
+    "tags": [
+      "command",
+      "application"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "Interpret the ChimeraX atom specification `#1/A:50-75`.",
+      "answerGuidance": "It targets model 1, chain A, residues 50 through 75."
+    }
+  ]
+}

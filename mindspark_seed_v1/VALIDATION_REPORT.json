@@ -1,0 +1,25 @@
+{
+  "packetCount": 32,
+  "domainCounts": {
+    "computing": 8,
+    "bioinformatics": 8,
+    "structural-biology": 8,
+    "microbiology": 8
+  },
+  "cardTypeCounts": {
+    "free_recall": 13,
+    "mcq": 10,
+    "flashcard": 6,
+    "true_false": 3
+  },
+  "allTitlesUnique": true,
+  "schemaMirrorValidation": "PASS",
+  "controlledTaxonomyValidation": "PASS",
+  "controlledTagsValidation": "PASS",
+  "mcqBoundsAndOptionUniquenessValidation": "PASS",
+  "notes": [
+    "Validation mirrors the current TypeScript ImportPayloadDraft structural rules and controlled taxonomy relationships.",
+    "Sources were omitted rather than guessed.",
+    "Combined array file is audit-only; importer contract remains one packet at a time."
+  ]
+}

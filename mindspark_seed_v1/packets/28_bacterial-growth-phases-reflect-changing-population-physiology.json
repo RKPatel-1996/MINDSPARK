@@ -1,0 +1,23 @@
+{
+  "item": {
+    "title": "Bacterial growth phases reflect changing population physiology",
+    "content": "In a closed batch culture, the classical sequence is lag, exponential (log), stationary, and death/decline phases, reflecting adaptation, rapid division, resource limitation, and loss of viable cells.",
+    "explanationMarkdown": "The phases are not simply labels for elapsed time:\n\n- **Lag**: cells adapt; division may be limited even though metabolism is active.\n- **Exponential/log**: population increases at an approximately constant maximal rate under the conditions.\n- **Stationary**: net population growth levels off as nutrients become limiting and wastes accumulate.\n- **Death/decline**: viable cell numbers decrease.\n\nThe exact shape depends on organism and culture conditions.",
+    "taxonomy": {
+      "domainId": "microbiology",
+      "topicId": "fundamentals",
+      "subtopicId": "growth"
+    },
+    "tags": [
+      "concept",
+      "workflow"
+    ]
+  },
+  "cards": [
+    {
+      "type": "free_recall",
+      "prompt": "Name the classical phases of a closed bacterial batch culture and summarize what characterizes each.",
+      "answerGuidance": "Lag: adaptation; exponential/log: rapid approximately constant-rate division; stationary: net growth levels off under limitations; death/decline: viable population decreases."
+    }
+  ]
+}

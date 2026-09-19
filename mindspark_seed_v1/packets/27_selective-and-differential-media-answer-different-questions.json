@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "Selective and differential media answer different questions",
+    "content": "Selective media contain conditions that favor or inhibit particular groups, while differential media reveal visible differences among organisms growing on the medium based on biochemical or physiological traits.",
+    "explanationMarkdown": "A single medium can be both selective and differential.\n\n- **Selective** asks: *who is able or favored to grow under these conditions?*\n- **Differential** asks: *how can organisms that grow be distinguished by a visible reaction?*\n\nThis distinction helps interpret culture results without confusing growth inhibition with diagnostic color or reaction changes.",
+    "taxonomy": {
+      "domainId": "microbiology",
+      "topicId": "laboratory-methods",
+      "subtopicId": "media"
+    },
+    "tags": [
+      "comparison",
+      "concept"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "Which statement correctly distinguishes selective from differential media?",
+      "options": [
+        "Selective media distinguish colony colors only; differential media kill unwanted organisms.",
+        "Selective media favor/inhibit particular groups; differential media reveal visible trait differences among organisms that grow.",
+        "Selective and differential are synonyms for nutrient-rich media.",
+        "Differential media can never also be selective."
+      ],
+      "correctOptionIndex": 1,
+      "explanation": "Selection changes which organisms are favored/inhibited; differentiation reveals distinguishable reactions. A medium can do both."
+    }
+  ]
+}

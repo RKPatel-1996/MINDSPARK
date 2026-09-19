@@ -1,0 +1,30 @@
+{
+  "item": {
+    "title": "Pipelines should fail visibly when an upstream command fails",
+    "content": "In multi-step command-line workflows, a downstream command can succeed even when an upstream step failed, potentially hiding the original error. Workflow code should explicitly propagate or check failures.",
+    "explanationMarkdown": "Consider a pipeline where an upstream program produces no valid data but a downstream formatter still exits successfully. If only the final exit status is checked, the workflow may appear successful.\n\nIn Bash, options such as `set -o pipefail` can make a pipeline's status reflect failures in earlier commands. More generally, robust workflows should validate expected outputs and record failures rather than assuming that the last command tells the whole story.",
+    "taxonomy": {
+      "domainId": "bioinformatics",
+      "topicId": "workflow-fundamentals",
+      "subtopicId": "cli-tools"
+    },
+    "tags": [
+      "workflow",
+      "troubleshooting"
+    ]
+  },
+  "cards": [
+    {
+      "type": "mcq",
+      "question": "Why can checking only the last command's exit status be unsafe in a multi-command bioinformatics pipeline?",
+      "options": [
+        "Every command always returns status 0.",
+        "An upstream command may fail while a later command still succeeds, hiding the earlier failure.",
+        "Exit statuses are only available for graphical programs.",
+        "Bioinformatics tools do not write to standard output."
+      ],
+      "correctOptionIndex": 1,
+      "explanation": "A successful downstream command can mask an upstream failure unless the workflow propagates/checks pipeline failures and validates outputs."
+    }
+  ]
+}

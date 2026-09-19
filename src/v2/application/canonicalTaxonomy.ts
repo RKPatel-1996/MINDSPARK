@@ -1,0 +1,46 @@
+import type { TaxonomyRegistry } from '../domain/taxonomy';
+
+export const CANONICAL_TAXONOMY_REGISTRY: TaxonomyRegistry = {
+  domains: [
+    { id: 'computing', name: 'Computing' },
+    { id: 'bioinformatics', name: 'Bioinformatics' },
+    { id: 'structural-biology', name: 'Structural Biology' },
+    { id: 'microbiology', name: 'Microbiology' },
+  ],
+  topics: [
+    { id: 'linux', domainId: 'computing', name: 'Linux' },
+    { id: 'sequence-analysis', domainId: 'bioinformatics', name: 'Sequence Analysis' },
+    { id: 'workflow-fundamentals', domainId: 'bioinformatics', name: 'Workflow Fundamentals' },
+    { id: 'chimerax', domainId: 'structural-biology', name: 'ChimeraX' },
+    { id: 'fundamentals', domainId: 'microbiology', name: 'Fundamentals' },
+    { id: 'laboratory-methods', domainId: 'microbiology', name: 'Laboratory Methods' },
+  ],
+  subtopics: [
+    { id: 'shell', topicId: 'linux', name: 'Shell' },
+    { id: 'filesystem-permissions', topicId: 'linux', name: 'Filesystem & Permissions' },
+    { id: 'processes', topicId: 'linux', name: 'Processes' },
+    { id: 'sequence-formats', topicId: 'sequence-analysis', name: 'Sequence Formats' },
+    { id: 'blast', topicId: 'sequence-analysis', name: 'BLAST' },
+    { id: 'databases', topicId: 'sequence-analysis', name: 'Databases' },
+    { id: 'cli-tools', topicId: 'workflow-fundamentals', name: 'CLI Tools' },
+    { id: 'reproducibility', topicId: 'workflow-fundamentals', name: 'Reproducibility' },
+    { id: 'visualization', topicId: 'chimerax', name: 'Visualization' },
+    { id: 'selection-display', topicId: 'chimerax', name: 'Selection & Display' },
+    { id: 'commands', topicId: 'chimerax', name: 'Commands' },
+    { id: 'cell-structure', topicId: 'fundamentals', name: 'Cell Structure' },
+    { id: 'growth', topicId: 'fundamentals', name: 'Growth' },
+    { id: 'staining', topicId: 'laboratory-methods', name: 'Staining' },
+    { id: 'media', topicId: 'laboratory-methods', name: 'Media' },
+    { id: 'aseptic-technique', topicId: 'laboratory-methods', name: 'Aseptic Technique' },
+  ],
+  allowedTags: [
+    'concept',
+    'definition',
+    'command',
+    'workflow',
+    'comparison',
+    'troubleshooting',
+    'misconception',
+    'application',
+  ],
+};
