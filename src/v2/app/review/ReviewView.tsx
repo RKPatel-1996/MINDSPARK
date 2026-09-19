@@ -100,7 +100,7 @@ export const ReviewView: React.FC = () => {
     if (
       reviewState === 'question' &&
       activeCard &&
-      (activeCard.type === 'free_recall' || activeCard.type === 'flashcard')
+      (activeCard.type === 'free_recall' || activeCard.type === 'flashcard' || activeCard.type === 'cloze')
     ) {
       setReviewState('answered');
     }
@@ -231,10 +231,10 @@ export const ReviewView: React.FC = () => {
     }
   });
 
-  useShortcut('review.again', () => reviewState === 'answered' && (activeCard?.type === 'free_recall' || activeCard?.type === 'flashcard') && handleRating('again'));
-  useShortcut('review.hard', () => reviewState === 'answered' && (activeCard?.type === 'free_recall' || activeCard?.type === 'flashcard') && handleRating('hard'));
-  useShortcut('review.good', () => reviewState === 'answered' && (activeCard?.type === 'free_recall' || activeCard?.type === 'flashcard') && handleRating('good'));
-  useShortcut('review.easy', () => reviewState === 'answered' && (activeCard?.type === 'free_recall' || activeCard?.type === 'flashcard') && handleRating('easy'));
+  useShortcut('review.again', () => reviewState === 'answered' && (activeCard?.type === 'free_recall' || activeCard?.type === 'flashcard' || activeCard?.type === 'cloze') && handleRating('again'));
+  useShortcut('review.hard', () => reviewState === 'answered' && (activeCard?.type === 'free_recall' || activeCard?.type === 'flashcard' || activeCard?.type === 'cloze') && handleRating('hard'));
+  useShortcut('review.good', () => reviewState === 'answered' && (activeCard?.type === 'free_recall' || activeCard?.type === 'flashcard' || activeCard?.type === 'cloze') && handleRating('good'));
+  useShortcut('review.easy', () => reviewState === 'answered' && (activeCard?.type === 'free_recall' || activeCard?.type === 'flashcard' || activeCard?.type === 'cloze') && handleRating('easy'));
 
   useShortcut('review.option1', () => handleSelectOption(0));
   useShortcut('review.option2', () => handleSelectOption(1));
@@ -458,6 +458,8 @@ export const ReviewView: React.FC = () => {
       ? card.front
       : card.type === 'mcq'
       ? card.question
+      : card.type === 'cloze'
+      ? card.prompt
       : card.statement;
 
   const answerContent =
@@ -465,6 +467,8 @@ export const ReviewView: React.FC = () => {
       ? card.answerGuidance
       : card.type === 'flashcard'
       ? card.back
+      : card.type === 'cloze'
+      ? card.answer
       : null;
 
   const reasonLabels: Record<string, string> = {
@@ -725,7 +729,7 @@ export const ReviewView: React.FC = () => {
             </div>
           )}
 
-          {/* Flashcard / Recall Answer Revealed */}
+          {/* Self-rated Answer Revealed */}
           {reviewState === 'answered' && answerContent && (
             <div className="mt-8 md:mt-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="w-full p-6 bg-[var(--elevated-color)] border border-[var(--border-color)] rounded-xl text-center text-lg font-content paper-shadow">
@@ -833,8 +837,8 @@ export const ReviewView: React.FC = () => {
             </div>
           )}
 
-          {/* Flashcard / Recall Reveal Button */}
-          {reviewState === 'question' && (card.type === 'free_recall' || card.type === 'flashcard') && (
+          {/* Self-rated Reveal Button */}
+          {reviewState === 'question' && (card.type === 'free_recall' || card.type === 'flashcard' || card.type === 'cloze') && (
             <div className="flex justify-center">
               <button
                 onClick={handleReveal}
@@ -846,8 +850,8 @@ export const ReviewView: React.FC = () => {
             </div>
           )}
 
-          {/* Free Recall / Flashcard Rating Buttons */}
-          {reviewState === 'answered' && (card.type === 'free_recall' || card.type === 'flashcard') && (
+          {/* Self-rated Rating Buttons */}
+          {reviewState === 'answered' && (card.type === 'free_recall' || card.type === 'flashcard' || card.type === 'cloze') && (
             <div className="grid grid-cols-4 gap-2 md:gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <button
                 onClick={() => handleRating('again')}

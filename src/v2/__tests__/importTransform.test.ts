@@ -262,4 +262,65 @@ describe('V2 Import DTO Transformation and Controlled Taxonomy Validation', () =
 
     expect(() => transformDraftToDomain(invalidMcqDraft, sampleRegistry)).toThrow();
   });
+
+  it('transforms a normalized Cloze draft into a valid initial ReviewCard and CardState', () => {
+    const now = new Date('2026-09-01T10:00:00.000Z');
+    const result = transformDraftToDomain({
+      item: {
+        title: 'DNA synthesis direction',
+        content: 'DNA polymerase adds nucleotides in one direction.',
+        taxonomy: { domainId: 'biology', topicId: 'genetics' },
+      },
+      cards: [{
+        type: 'cloze',
+        prompt: '  DNA polymerase synthesizes DNA in the ____ direction.  ',
+        answer: '  5′ → 3′  ',
+      }],
+    }, sampleRegistry, { now });
+
+    expect(result.cards).toHaveLength(1);
+    expect(result.cards[0]).toMatchObject({
+      type: 'cloze',
+      prompt: 'DNA polymerase synthesizes DNA in the ____ direction.',
+      answer: '5′ → 3′',
+      schemaVersion: 1,
+      suspended: false,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    });
+    expect(reviewCardSchema.safeParse(result.cards[0]).success).toBe(true);
+    expect(result.initialStates[0]).toMatchObject({
+      cardId: result.cards[0].id,
+      state: 'new',
+      reps: 0,
+      learningSteps: 0,
+    });
+  });
+
+  it('strictly rejects Cloze drafts with unknown fields or empty prompt/answer', () => {
+    const baseDraft = {
+      item: {
+        title: 'DNA synthesis direction',
+        content: 'DNA polymerase adds nucleotides in one direction.',
+        taxonomy: { domainId: 'biology', topicId: 'genetics' },
+      },
+      cards: [{
+        type: 'cloze',
+        prompt: 'DNA polymerase synthesizes DNA in the ____ direction.',
+        answer: '5′ → 3′',
+      }],
+    };
+    expect(() => transformDraftToDomain({
+      ...baseDraft,
+      cards: [{ ...baseDraft.cards[0], hint: 'No hints are supported' }],
+    }, sampleRegistry)).toThrow();
+    expect(() => transformDraftToDomain({
+      ...baseDraft,
+      cards: [{ ...baseDraft.cards[0], prompt: '   ' }],
+    }, sampleRegistry)).toThrow();
+    expect(() => transformDraftToDomain({
+      ...baseDraft,
+      cards: [{ ...baseDraft.cards[0], answer: '   ' }],
+    }, sampleRegistry)).toThrow();
+  });
 });

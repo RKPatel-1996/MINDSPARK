@@ -10,13 +10,14 @@ import { opaqueIdSchema } from './id';
  * - flashcard
  * - mcq
  * - true_false
+ * - cloze
  * 
  * Every ReviewCard references exactly one KnowledgeItem.
  * One KnowledgeItem may have multiple cards, but one high-quality card
  * is the normal/default case.
  */
 
-export const cardTypeSchema = z.enum(['free_recall', 'flashcard', 'mcq', 'true_false']);
+export const cardTypeSchema = z.enum(['free_recall', 'flashcard', 'mcq', 'true_false', 'cloze']);
 export type CardType = z.infer<typeof cardTypeSchema>;
 
 export const suspendedReasonSchema = z.enum([
@@ -99,11 +100,21 @@ export const trueFalseCardSchema = validateSuspensionInvariant(
 );
 export type TrueFalseCard = z.infer<typeof trueFalseCardSchema>;
 
+export const clozeCardSchema = validateSuspensionInvariant(
+  baseCardObject.extend({
+    type: z.literal('cloze'),
+    prompt: z.string().min(1),
+    answer: z.string().min(1),
+  })
+);
+export type ClozeCard = z.infer<typeof clozeCardSchema>;
+
 export const reviewCardSchema = z.discriminatedUnion('type', [
   freeRecallCardSchema,
   flashcardCardSchema,
   mcqCardSchema,
   trueFalseCardSchema,
+  clozeCardSchema,
 ]);
 
 export type ReviewCard = z.infer<typeof reviewCardSchema>;

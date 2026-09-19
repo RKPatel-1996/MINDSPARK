@@ -52,7 +52,7 @@ describe('V2 Domain Schemas and ID Invariants', () => {
     expect(() => knowledgeItemSchema.parse(invalidItem)).toThrow();
   });
 
-  it('validates all 4 permitted ReviewCard types', () => {
+  it('validates all 5 permitted ReviewCard types', () => {
     const kid = generateId();
     const now = new Date().toISOString();
 
@@ -106,10 +106,23 @@ describe('V2 Domain Schemas and ID Invariants', () => {
       isTrue: true,
     };
 
+    const cloze: ReviewCard = {
+      id: generateId(),
+      knowledgeItemId: kid,
+      schemaVersion: 1,
+      suspended: false,
+      createdAt: now,
+      updatedAt: now,
+      type: 'cloze',
+      prompt: 'DNA polymerase synthesizes DNA in the ____ direction.',
+      answer: '5′ → 3′',
+    };
+
     expect(reviewCardSchema.parse(freeRecall).type).toBe('free_recall');
     expect(reviewCardSchema.parse(flashcard).type).toBe('flashcard');
     expect(reviewCardSchema.parse(mcq).type).toBe('mcq');
     expect(reviewCardSchema.parse(trueFalse).type).toBe('true_false');
+    expect(reviewCardSchema.parse(cloze).type).toBe('cloze');
   });
 
   it('enforces card suspension invariants: suspended=true requires reason, suspended=false forbids reason', () => {
@@ -124,9 +137,9 @@ describe('V2 Domain Schemas and ID Invariants', () => {
       suspended: false,
       createdAt: now,
       updatedAt: now,
-      type: 'flashcard',
-      front: 'Q',
-      back: 'A',
+      type: 'cloze',
+      prompt: 'Q',
+      answer: 'A',
     };
     expect(reviewCardSchema.parse(validActive).suspended).toBe(false);
 
@@ -139,9 +152,9 @@ describe('V2 Domain Schemas and ID Invariants', () => {
       suspendedReason: 'flagged_by_user',
       createdAt: now,
       updatedAt: now,
-      type: 'flashcard',
-      front: 'Q',
-      back: 'A',
+      type: 'cloze',
+      prompt: 'Q',
+      answer: 'A',
     };
     expect(reviewCardSchema.parse(validSuspended).suspended).toBe(true);
 
@@ -153,9 +166,9 @@ describe('V2 Domain Schemas and ID Invariants', () => {
       suspended: true,
       createdAt: now,
       updatedAt: now,
-      type: 'flashcard',
-      front: 'Q',
-      back: 'A',
+      type: 'cloze',
+      prompt: 'Q',
+      answer: 'A',
     };
     expect(() => reviewCardSchema.parse(invalidSuspendedNoReason)).toThrow();
 
@@ -168,15 +181,15 @@ describe('V2 Domain Schemas and ID Invariants', () => {
       suspendedReason: 'requires_clarification',
       createdAt: now,
       updatedAt: now,
-      type: 'flashcard',
-      front: 'Q',
-      back: 'A',
+      type: 'cloze',
+      prompt: 'Q',
+      answer: 'A',
     };
     expect(() => reviewCardSchema.parse(invalidActiveWithReason)).toThrow();
   });
 
-  it('rejects forbidden card types like cloze or matching', () => {
-    const invalidCard = {
+  it('rejects invalid Cloze cards and unsupported card types', () => {
+    const baseCloze = {
       id: generateId(),
       knowledgeItemId: generateId(),
       schemaVersion: 1,
@@ -184,7 +197,22 @@ describe('V2 Domain Schemas and ID Invariants', () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       type: 'cloze',
-      text: 'The capital of France is {{Paris}}.',
+      prompt: 'The capital of France is ____.',
+      answer: 'Paris',
+    };
+    expect(() => reviewCardSchema.parse({ ...baseCloze, prompt: '' })).toThrow();
+    expect(() => reviewCardSchema.parse({ ...baseCloze, answer: '' })).toThrow();
+
+    const invalidCard = {
+      id: generateId(),
+      knowledgeItemId: generateId(),
+      schemaVersion: 1,
+      suspended: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      type: 'matching',
+      prompt: 'Match capitals to countries.',
+      answer: 'Paris',
     };
 
     expect(() => reviewCardSchema.parse(invalidCard)).toThrow();
@@ -318,6 +346,13 @@ describe('V2 Domain Schemas and ID Invariants', () => {
       objectiveCorrect: null,
     }).objectiveCorrect).toBeNull();
 
+    // Cloze with null objectiveCorrect: valid
+    expect(reviewEventSchema.parse({
+      ...baseEvent,
+      cardType: 'cloze',
+      objectiveCorrect: null,
+    }).objectiveCorrect).toBeNull();
+
     // Free recall with boolean objectiveCorrect: invalid (must be null)
     expect(() => reviewEventSchema.parse({
       ...baseEvent,
@@ -330,6 +365,13 @@ describe('V2 Domain Schemas and ID Invariants', () => {
       ...baseEvent,
       cardType: 'flashcard',
       objectiveCorrect: false,
+    })).toThrow();
+
+    // Cloze with boolean objectiveCorrect: invalid (must be null)
+    expect(() => reviewEventSchema.parse({
+      ...baseEvent,
+      cardType: 'cloze',
+      objectiveCorrect: true,
     })).toThrow();
 
     // Missing deviceId: invalid (no silent default)

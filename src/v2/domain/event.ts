@@ -43,7 +43,7 @@ export type SchedulerMetadata = z.infer<typeof schedulerMetadataSchema>;
  * Invariants:
  * - deviceId must be explicitly supplied (no silent defaults)
  * - MCQ and true_false require an objective boolean correctness
- * - free_recall and flashcard must have objectiveCorrect: null (subjective self-evaluation)
+ * - free_recall, flashcard, and cloze must have objectiveCorrect: null (subjective self-evaluation)
  */
 export const reviewEventSchema = z.object({
   id: opaqueIdSchema,
@@ -62,12 +62,12 @@ export const reviewEventSchema = z.object({
   if (data.cardType === 'mcq' || data.cardType === 'true_false') {
     return typeof data.objectiveCorrect === 'boolean';
   }
-  if (data.cardType === 'free_recall' || data.cardType === 'flashcard') {
+  if (data.cardType === 'free_recall' || data.cardType === 'flashcard' || data.cardType === 'cloze') {
     return data.objectiveCorrect === null;
   }
   return false;
 }, {
-  message: 'objectiveCorrect must be boolean for mcq and true_false, and null for free_recall and flashcard',
+  message: 'objectiveCorrect must be boolean for mcq and true_false, and null for free_recall, flashcard, and cloze',
   path: ['objectiveCorrect'],
 });
 

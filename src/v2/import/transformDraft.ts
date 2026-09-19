@@ -140,6 +140,20 @@ export function transformDraftToDomain(
           explanation: cardDraft.explanation,
         };
         break;
+
+      case 'cloze':
+        candidateCard = {
+          id: cardId,
+          knowledgeItemId,
+          schemaVersion: 1,
+          suspended: false,
+          createdAt: timestampIso,
+          updatedAt: timestampIso,
+          type: 'cloze',
+          prompt: cardDraft.prompt,
+          answer: cardDraft.answer,
+        };
+        break;
     }
 
     const domainCard: ReviewCard = reviewCardSchema.parse(candidateCard);

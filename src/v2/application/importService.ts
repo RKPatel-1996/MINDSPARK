@@ -77,6 +77,7 @@ export interface ImportDraftPreview {
     flashcard: number;
     mcq: number;
     true_false: number;
+    cloze: number;
   };
   sourceCount: number;
 }
@@ -141,6 +142,7 @@ export async function inspectImportDraft(
     flashcard: 0,
     mcq: 0,
     true_false: 0,
+    cloze: 0,
   };
 
   for (const card of normalizedDraft.cards) {

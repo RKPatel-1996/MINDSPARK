@@ -68,11 +68,20 @@ export const trueFalseDraftSchema = z.object({
 
 export type TrueFalseDraft = z.infer<typeof trueFalseDraftSchema>;
 
+export const clozeDraftSchema = z.object({
+  type: z.literal('cloze'),
+  prompt: z.string().trim().min(1, 'Cloze prompt is required'),
+  answer: z.string().trim().min(1, 'Cloze answer is required'),
+}).strict();
+
+export type ClozeDraft = z.infer<typeof clozeDraftSchema>;
+
 export const reviewCardDraftSchema = z.discriminatedUnion('type', [
   freeRecallDraftSchema,
   flashcardDraftSchema,
   mcqDraftSchema,
   trueFalseDraftSchema,
+  clozeDraftSchema,
 ]);
 
 export type ReviewCardDraft = z.infer<typeof reviewCardDraftSchema>;

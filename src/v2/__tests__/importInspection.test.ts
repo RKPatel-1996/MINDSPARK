@@ -45,6 +45,7 @@ describe('Import Draft Inspection', () => {
         flashcard: packet.cards.filter((c) => c.type === 'flashcard').length,
         mcq: packet.cards.filter((c) => c.type === 'mcq').length,
         true_false: packet.cards.filter((c) => c.type === 'true_false').length,
+        cloze: 0,
       });
       expect(inspection.preview.tags).toEqual(packet.item.tags ?? []);
       expect(inspection.preview.sourceCount).toBe(packet.item.sources?.length ?? 0);
@@ -62,6 +63,26 @@ describe('Import Draft Inspection', () => {
     if (inspection.ok) {
       expect(inspection.preview.tags).toEqual([]);
       expect(inspection.preview.sourceCount).toBe(0);
+    }
+  });
+
+  it('counts Cloze cards while preserving total-card semantics', async () => {
+    const packet = JSON.parse(JSON.stringify(SEED_PACKETS[0]));
+    packet.cards.push({
+      type: 'cloze',
+      prompt: 'DNA polymerase synthesizes DNA in the ____ direction.',
+      answer: '5′ → 3′',
+    });
+
+    const inspection = await inspectImportDraft(packet, repos, CANONICAL_TAXONOMY_REGISTRY);
+
+    expect(inspection.ok).toBe(true);
+    if (inspection.ok) {
+      expect(inspection.preview.cardCount).toBe(packet.cards.length);
+      expect(inspection.preview.cardTypeCounts.cloze).toBe(1);
+      expect(
+        Object.values(inspection.preview.cardTypeCounts).reduce((total, count) => total + count, 0),
+      ).toBe(packet.cards.length);
     }
   });
 
