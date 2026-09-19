@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // SINGLE-OWNER SECURITY MODEL:
+    // MindSpark is a personal single-owner application.
+    // PRODUCTION DEPLOYMENT BLOCKED until REPLACE_WITH_OWNER_UID is replaced.
+    function isOwnerPath(uid) {
+      return request.auth != null &&
+        request.auth.uid == 'REPLACE_WITH_OWNER_UID' &&
+        uid == 'REPLACE_WITH_OWNER_UID';
+    }
+
+    // Default deny.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/knowledgeImages/{knowledgeItemId}/{imageId} {
+      allow read: if isOwnerPath(uid);
+
+      allow create: if isOwnerPath(uid)
+        && resource == null
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+
+      // Stored image objects are immutable. Replacement creates a new imageId.
+      allow update: if false;
+
+      allow delete: if isOwnerPath(uid);
+    }
+  }
+}

@@ -32,6 +32,8 @@ if (!UID_VAR || UID_VAR.trim() === '') {
 
 const generatedRulesPath = path.join(rootDir, '.generated', 'firestore.rules');
 const templateRulesPath = path.join(rootDir, 'firestore.rules.template');
+const generatedStorageRulesPath = path.join(rootDir, '.generated', 'storage.rules');
+const templateStorageRulesPath = path.join(rootDir, 'storage.rules.template');
 const firebaseJsonPath = path.join(rootDir, 'firebase.json');
 const gitignorePath = path.join(rootDir, '.gitignore');
 const packageJsonPath = path.join(rootDir, 'package.json');
@@ -69,6 +71,12 @@ if (fs.existsSync(firebaseJsonPath)) {
     } else {
       reportFail('firebase.json does not point to .generated/firestore.rules.');
     }
+
+    if (firebaseJson.storage && firebaseJson.storage.rules === '.generated/storage.rules') {
+      reportPass('firebase.json points to .generated/storage.rules.');
+    } else {
+      reportFail('firebase.json does not point to .generated/storage.rules.');
+    }
   } catch (e) {
     reportFail('firebase.json is malformed or unreadable.');
   }
@@ -92,6 +100,48 @@ if (fs.existsSync(templateRulesPath)) {
   }
 } else {
   reportFail('Canonical firestore.rules.template is missing.');
+}
+
+// Storage rules production deployment checks
+let generatedStorageContent = '';
+
+if (!fs.existsSync(generatedStorageRulesPath)) {
+  reportFail('.generated/storage.rules does not exist. Run prepare:storage-rules first.');
+} else {
+  reportPass('.generated/storage.rules exists.');
+  generatedStorageContent = fs.readFileSync(generatedStorageRulesPath, 'utf8');
+}
+
+if (generatedStorageContent) {
+  if (generatedStorageContent.includes(PLACEHOLDER)) {
+    reportFail('Generated Storage rules still contain the REPLACE_WITH_OWNER_UID placeholder.');
+  } else {
+    reportPass('Generated Storage rules do not contain the placeholder.');
+  }
+
+  if (trimmedUid && generatedStorageContent.includes(trimmedUid)) {
+    reportPass('Generated Storage rules contain the expected owner UID.');
+  } else if (trimmedUid) {
+    reportFail('Generated Storage rules do NOT contain the expected owner UID.');
+  }
+}
+
+if (fs.existsSync(templateStorageRulesPath)) {
+  const storageTemplateContent = fs.readFileSync(templateStorageRulesPath, 'utf8');
+
+  if (!storageTemplateContent.includes(PLACEHOLDER)) {
+    reportFail('Canonical storage.rules.template is missing the placeholder.');
+  } else {
+    reportPass('Canonical storage.rules.template contains the placeholder.');
+  }
+
+  if (trimmedUid && storageTemplateContent.includes(trimmedUid)) {
+    reportFail('Canonical storage.rules.template contains the REAL owner UID!');
+  } else {
+    reportPass('Canonical storage.rules.template does not contain the real owner UID.');
+  }
+} else {
+  reportFail('Canonical storage.rules.template is missing.');
 }
 
 // Check 7: generated directory in .gitignore
