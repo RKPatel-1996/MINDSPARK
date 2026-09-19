@@ -48,7 +48,7 @@ export function normalizeSearchText(text: string): string {
 /**
  * Extracts aggregate searchable content from a KnowledgeItemWithCards bundle,
  * including KnowledgeItem content, tags, taxonomy IDs & resolved names,
- * all ReviewCard contents (across all 4 card types), and source references.
+ * all ReviewCard contents (across all 5 card types), and source references.
  * 
  * Persistent IDs (item.id, card.id) are explicitly excluded.
  */
