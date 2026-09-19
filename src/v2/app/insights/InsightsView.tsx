@@ -9,12 +9,17 @@ export const InsightsView: React.FC = () => {
   const { insightsService, refreshCount, isSignedOut } = useApplication();
   const [insights, setInsights] = useState<InsightsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadInsights = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    setInsights(null);
     try {
-      setLoading(true);
       const data = await insightsService.getInsights();
       setInsights(data);
+    } catch {
+      setLoadError('Insights could not be loaded');
     } finally {
       setLoading(false);
     }
@@ -37,12 +42,31 @@ export const InsightsView: React.FC = () => {
     );
   }
 
-  if (loading || !insights) {
+  if (loading) {
     return (
       <div className="flex h-full items-center justify-center p-6">
         <div className="flex items-center gap-3 text-[var(--muted-color)]">
           <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)]" />
           <span className="text-sm font-ui">Computing memory metrics...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !insights) {
+    return (
+      <div className="flex h-full items-center justify-center p-6">
+        <div role="alert" className="max-w-md p-8 bg-[var(--surface-color)] border border-[var(--color-error)] rounded-2xl paper-shadow">
+          <h2 className="text-xl font-semibold mb-2 font-ui">Insights could not be loaded</h2>
+          <p className="text-sm text-[var(--muted-color)] font-content mb-6">
+            Your learning data was not changed. Try loading Insights again.
+          </p>
+          <button
+            onClick={loadInsights}
+            className="py-2 px-4 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-lg font-medium hover:bg-[var(--bg-color)] hover:border-[var(--color-primary)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] font-ui text-sm"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -123,6 +147,39 @@ export const InsightsView: React.FC = () => {
               Review flagged items in Library
             </button>
           </div>
+        </div>
+
+        <div className="mb-8 p-6 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl paper-shadow">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--muted-color)] font-ui">
+            Weak Areas
+          </h2>
+          <p className="mt-2 text-sm text-[var(--muted-color)] font-content">
+            Topics with the lowest current estimated retrievability.
+          </p>
+
+          {insights.weakAreas.length === 0 ? (
+            <p className="mt-4 text-sm text-[var(--muted-color)] font-content">
+              Not enough review history to identify weak areas yet.
+            </p>
+          ) : (
+            <div className="mt-4 divide-y divide-[var(--border-color)] border-y border-[var(--border-color)]">
+              {insights.weakAreas.map((area) => (
+                <div key={`${area.domainId}-${area.topicId}`} className="flex items-center justify-between gap-4 py-3">
+                  <span className="min-w-0 text-sm text-[var(--text-color)] font-content">
+                    {area.domainName} › {area.topicName}
+                  </span>
+                  <div className="flex shrink-0 items-baseline gap-3 text-right font-ui">
+                    <span className="text-sm font-semibold text-[var(--text-color)]">
+                      {area.averageRetrievability}%
+                    </span>
+                    <span className="text-xs text-[var(--muted-color)]">
+                      {area.reviewedCardCount} reviewed {area.reviewedCardCount === 1 ? 'card' : 'cards'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Memory Distribution Breakdown */}
