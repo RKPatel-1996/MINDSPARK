@@ -10,6 +10,7 @@ import { Flag, Info, CheckCircle2, RotateCcw, Sparkles, BookOpen, Loader2, Alert
 import type { ReviewQueueState, ReviewSubmissionInput } from '../../application/types';
 import type { ReviewRating } from '../../domain/event';
 import type { SourceReference } from '../../domain/knowledge';
+import { ReviewImages } from './ReviewImages';
 
 type ReviewState = 'question' | 'answered';
 
@@ -55,7 +56,7 @@ const SourcesSection: React.FC<{ sources: SourceReference[] | undefined }> = ({ 
 };
 
 export const ReviewView: React.FC = () => {
-  const { reviewService, seedLibrary, refreshCount, isSignedOut, isUnconfigured, isEphemeralDev, isDev, syncState, pendingWritesCount, syncError } = useApplication();
+  const { reviewService, imageAttachmentService, seedLibrary, refreshCount, isSignedOut, isUnconfigured, isEphemeralDev, isDev, syncState, pendingWritesCount, syncError } = useApplication();
 
   const inRouter = useInRouterContext();
   const navigate = inRouter ? useNavigate() : null;
@@ -641,6 +642,15 @@ export const ReviewView: React.FC = () => {
             </ReactMarkdown>
           </div>
 
+          {reviewState === 'question' && (
+            <ReviewImages
+              images={knowledgeItem.images}
+              placement="review_prompt"
+              cardId={card.id}
+              service={imageAttachmentService}
+            />
+          )}
+
           {/* MCQ Options */}
           {card.type === 'mcq' && card.options && (
             <div className="mt-8 md:mt-12 space-y-3">
@@ -738,6 +748,15 @@ export const ReviewView: React.FC = () => {
                 </ReactMarkdown>
               </div>
             </div>
+          )}
+
+          {reviewState === 'answered' && (
+            <ReviewImages
+              images={knowledgeItem.images}
+              placement="review_answer"
+              cardId={card.id}
+              service={imageAttachmentService}
+            />
           )}
 
           {/* Feedback & Explanations */}
