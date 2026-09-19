@@ -62,10 +62,14 @@ function makeHarness(item: KnowledgeItem = BASE_ITEM) {
       `users/owner/knowledgeImages/${knowledgeItemId}/${imageId}`,
   );
 
+  const resolveDownloadUrl = vi.fn().mockResolvedValue(
+    'https://example.invalid/transient-image-url',
+  );
   const deleteImage = vi.fn().mockResolvedValue(undefined);
 
   const storage: ImageStorageGateway = {
     uploadImage,
+    resolveDownloadUrl,
     deleteImage,
   };
 
@@ -81,6 +85,7 @@ function makeHarness(item: KnowledgeItem = BASE_ITEM) {
     knowledgeUpdate,
     cardGet,
     uploadImage,
+    resolveDownloadUrl,
     deleteImage,
   };
 }
@@ -88,6 +93,20 @@ function makeHarness(item: KnowledgeItem = BASE_ITEM) {
 describe('ImageAttachmentService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('resolves transient image URLs through the Storage gateway', async () => {
+    const h = makeHarness();
+    const storagePath =
+      `users/owner/knowledgeImages/${ITEM_ID}/${IMAGE_ID}`;
+
+    await expect(
+      h.service.resolveImageUrl(storagePath),
+    ).resolves.toBe(
+      'https://example.invalid/transient-image-url',
+    );
+
+    expect(h.resolveDownloadUrl).toHaveBeenCalledWith(storagePath);
   });
 
   it('uploads then persists a content ImageReference', async () => {

@@ -16,6 +16,7 @@ export interface ImageUploadRequest {
 
 export interface ImageStorageGateway {
   uploadImage(input: ImageUploadRequest): Promise<string>;
+  resolveDownloadUrl(storagePath: string): Promise<string>;
   deleteImage(storagePath: string): Promise<void>;
 }
 
@@ -117,6 +118,10 @@ export class ImageAttachmentService {
     }
 
     return parsed.data;
+  }
+
+  async resolveImageUrl(storagePath: string): Promise<string> {
+    return this.storage.resolveDownloadUrl(storagePath);
   }
 
   async attachImage(

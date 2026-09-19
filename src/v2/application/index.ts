@@ -4,6 +4,7 @@ export * from './bootstrapService';
 export * from './importService';
 export * from './reviewService';
 export * from './libraryService';
+export * from './imageAttachmentService';
 export * from './insightsService';
 export * from './settingsService';
 export * from './taxonomyService';
