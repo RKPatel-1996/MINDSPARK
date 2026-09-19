@@ -37,6 +37,97 @@ describe('V2 Domain Schemas and ID Invariants', () => {
     expect(parsed.status).toBe('active');
   });
 
+  it('accepts KnowledgeItem image references with concept-level and card-targeted review placement', () => {
+    const targetedCardId = generateId();
+
+    const item = {
+      id: generateId(),
+      schemaVersion: 1,
+      title: 'Image contract test',
+      content: 'Knowledge with supporting images.',
+      taxonomy: { domainId: 'biology', topicId: 'cell-biology' },
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      images: [
+        {
+          id: generateId(),
+          storagePath: 'users/test/images/cell-diagram.png',
+          alt: 'Diagram of a eukaryotic cell',
+          caption: 'General reference diagram',
+          placement: 'content',
+        },
+        {
+          id: generateId(),
+          storagePath: 'users/test/images/mitochondrion.png',
+          alt: 'Mitochondrion highlighted in a cell',
+          placement: 'review_prompt',
+          cardId: targetedCardId,
+        },
+        {
+          id: generateId(),
+          storagePath: 'users/test/images/answer-overlay.png',
+          alt: 'Labeled answer diagram',
+          placement: 'review_answer',
+        },
+      ],
+    };
+
+    const parsed = knowledgeItemSchema.parse(item);
+
+    expect(parsed.images).toHaveLength(3);
+    expect(parsed.images?.[1].cardId).toBe(targetedCardId);
+  });
+
+  it('rejects card targeting on content images', () => {
+    const item = {
+      id: generateId(),
+      schemaVersion: 1,
+      title: 'Invalid content image targeting',
+      content: 'Concept-level content image.',
+      taxonomy: { domainId: 'biology', topicId: 'cell-biology' },
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      images: [
+        {
+          id: generateId(),
+          storagePath: 'users/test/images/content.png',
+          alt: 'Concept image',
+          placement: 'content',
+          cardId: generateId(),
+        },
+      ],
+    };
+
+    expect(() => knowledgeItemSchema.parse(item)).toThrow(
+      'Content images cannot target a specific ReviewCard'
+    );
+  });
+
+  it('rejects unsupported image placements', () => {
+    const item = {
+      id: generateId(),
+      schemaVersion: 1,
+      title: 'Invalid image placement',
+      content: 'Image placement validation.',
+      taxonomy: { domainId: 'biology', topicId: 'cell-biology' },
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      images: [
+        {
+          id: generateId(),
+          storagePath: 'users/test/images/example.png',
+          alt: 'Example image',
+          placement: 'sidebar',
+        },
+      ],
+    };
+
+    expect(() => knowledgeItemSchema.parse(item)).toThrow();
+  });
+
   it('rejects invalid knowledge status values', () => {
     const invalidItem = {
       id: generateId(),

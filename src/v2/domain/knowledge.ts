@@ -19,6 +19,29 @@ export const sourceReferenceSchema = z.object({
 });
 export type SourceReference = z.infer<typeof sourceReferenceSchema>;
 
+export const imagePlacementSchema = z.enum([
+  'content',
+  'review_prompt',
+  'review_answer',
+]);
+export type ImagePlacement = z.infer<typeof imagePlacementSchema>;
+
+export const imageReferenceSchema = z.object({
+  id: opaqueIdSchema,
+  storagePath: z.string().min(1),
+  alt: z.string().min(1),
+  caption: z.string().min(1).optional(),
+  placement: imagePlacementSchema,
+  cardId: opaqueIdSchema.optional(),
+}).refine(
+  (image) => image.placement !== 'content' || image.cardId === undefined,
+  {
+    message: 'Content images cannot target a specific ReviewCard',
+    path: ['cardId'],
+  }
+);
+export type ImageReference = z.infer<typeof imageReferenceSchema>;
+
 export const knowledgeItemSchema = z.object({
   id: opaqueIdSchema,
   schemaVersion: z.literal(1),
@@ -31,6 +54,7 @@ export const knowledgeItemSchema = z.object({
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   sources: z.array(sourceReferenceSchema).optional(),
+  images: z.array(imageReferenceSchema).optional(),
 });
 
 export type KnowledgeItem = z.infer<typeof knowledgeItemSchema>;
