@@ -200,6 +200,10 @@ export const ReviewView: React.FC = () => {
   useShortcut('review.option4', () => handleSelectOption(3));
 
   useShortcut('review.why', () => setShowWhy((prev) => !prev));
+  useShortcut('overlay.close', () => {
+    setShowWhy(false);
+    setShowFullExplanation(false);
+  }, showWhy || showFullExplanation);
   useShortcut('review.flag', handleFlagAttention);
 
   // Signed out state
@@ -498,6 +502,9 @@ export const ReviewView: React.FC = () => {
 
           <button
             onClick={() => setShowWhy(!showWhy)}
+            aria-label="Why am I seeing this?"
+            aria-expanded={showWhy}
+            aria-controls="review-scheduling-context"
             className={`p-2 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${
               showWhy
                 ? 'text-[var(--color-primary)] bg-[var(--color-soft-primary)]'
@@ -527,7 +534,7 @@ export const ReviewView: React.FC = () => {
 
       {/* Why This Panel (Real Scheduling Context from Router) */}
       {showWhy && (
-        <div className="mx-4 md:mx-6 p-4 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl text-sm animate-in fade-in slide-in-from-top-2 paper-shadow">
+        <div id="review-scheduling-context" className="mx-4 md:mx-6 p-4 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl text-sm animate-in fade-in slide-in-from-top-2 paper-shadow">
           <div className="flex justify-between items-start mb-3 border-b border-[var(--border-color)] pb-2">
             <div>
               <h3 className="font-semibold font-ui">Scheduling Context & Decision Reason</h3>
@@ -537,6 +544,7 @@ export const ReviewView: React.FC = () => {
             </div>
             <button
               onClick={() => setShowWhy(false)}
+              aria-label="Close scheduling context"
               className="text-[var(--muted-color)] hover:text-[var(--text-color)] text-xs uppercase tracking-wider font-semibold font-ui"
             >
               Close
@@ -565,8 +573,8 @@ export const ReviewView: React.FC = () => {
 
             <div className="text-[var(--muted-color)]">Taxonomy Hierarchy</div>
             <div className="font-medium truncate">
-              {knowledgeItem.taxonomy.domainId} › {knowledgeItem.taxonomy.topicId} ›{' '}
-              {knowledgeItem.taxonomy.subtopicId}
+              {knowledgeItem.taxonomy.domainId} › {knowledgeItem.taxonomy.topicId}
+              {knowledgeItem.taxonomy.subtopicId ? ` › ${knowledgeItem.taxonomy.subtopicId}` : ''}
             </div>
 
             <div className="text-[var(--muted-color)]">Active Buried Items</div>
@@ -734,7 +742,7 @@ export const ReviewView: React.FC = () => {
 
                   {knowledgeItem.explanationMarkdown && (
                     <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-                      <div className={`relative ${!showFullExplanation ? 'max-h-24 overflow-hidden' : ''}`}>
+                      <div id="review-full-explanation" className={`relative ${!showFullExplanation ? 'max-h-24 overflow-hidden' : ''}`}>
                         <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                           {knowledgeItem.explanationMarkdown}
                         </ReactMarkdown>
@@ -742,14 +750,14 @@ export const ReviewView: React.FC = () => {
                           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[var(--elevated-color)] to-transparent pointer-events-none" />
                         )}
                       </div>
-                      {!showFullExplanation && (
-                        <button
-                          onClick={() => setShowFullExplanation(true)}
-                          className="text-[var(--color-primary)] text-sm font-medium mt-2 hover:underline font-ui"
-                        >
-                          Read full details
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setShowFullExplanation((prev) => !prev)}
+                        aria-expanded={showFullExplanation}
+                        aria-controls="review-full-explanation"
+                        className="text-[var(--color-primary)] text-sm font-medium mt-2 hover:underline font-ui"
+                      >
+                        {showFullExplanation ? 'Show less' : 'Read full details'}
+                      </button>
                     </div>
                   )}
                 </div>
