@@ -1,10 +1,14 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, act, renderHook, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { ApplicationProvider, useApplication } from '../application/ApplicationContext';
 import { ShellLayout } from '../app/layout/ShellLayout';
 import { SettingsView } from '../app/settings/SettingsView';
+
+vi.mock('../app/pwa/PwaUpdatePrompt', () => ({
+  PwaUpdatePrompt: () => null,
+}));
 
 describe('Ephemeral Developer Mode Lifecycle Hardening', () => {
   beforeEach(() => {
