@@ -42,12 +42,17 @@ npm run verify:web-release
 ```
 
 ### Firebase & Security Rules
-MindSpark uses a strict single-owner security model.
+MindSpark uses a strict single-owner security model for both Firestore and Firebase Storage.
 To test rules against the local emulator (requires Java):
 ```bash
 npm run test:rules
 ```
-*Note: Production Firestore rule deployment requires setting the `MINDSPARK_OWNER_UID` environment variable.*
+*Note: Production Firestore and Storage rule deployment requires setting the `MINDSPARK_OWNER_UID` environment variable.*
+
+### Image Storage & Offline Behavior
+Knowledge-item image metadata is stored with the normal application data, while image bytes are stored separately in Firebase Storage.
+
+In v1, the PWA shell and review data remain usable offline, but Firebase Storage image bytes are **not guaranteed to be available offline** unless the browser already has them cached. If an image URL cannot be resolved, Library and Review degrade to the stored alt text rather than blocking the workflow.
 
 ### Important Notes
 - `dist/` and `.generated/` are generated artifact directories and **must not be committed** to version control.
