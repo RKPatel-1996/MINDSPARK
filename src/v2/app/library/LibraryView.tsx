@@ -34,6 +34,7 @@ const CARD_TYPE_OPTIONS: Array<{ type: CardType; label: string }> = [
   { type: 'flashcard', label: 'Flashcard' },
   { type: 'mcq', label: 'MCQ' },
   { type: 'true_false', label: 'True / False' },
+  { type: 'cloze', label: 'Cloze' },
 ];
 
 const BULK_LIFECYCLE_ERROR_MESSAGES: Record<BulkLifecycleErrorCode, string> = {
@@ -1242,6 +1243,7 @@ export const LibraryView: React.FC = () => {
                             {card.type === 'flashcard' && `Front: ${card.front}`}
                             {card.type === 'mcq' && card.question}
                             {card.type === 'true_false' && card.statement}
+                            {card.type === 'cloze' && card.prompt}
                           </div>
                         </div>
                       ))}

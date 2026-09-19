@@ -313,4 +313,30 @@ describe('Import Preview UI & Automatic Inspection Interaction', () => {
     const existingItems = await customRepos.knowledge.list();
     expect(screen.queryByText(existingItems[0].id)).toBeNull();
   });
+
+  it('renders Cloze count, prompt, and answer in the normalized preview', async () => {
+    render(
+      <ApplicationProvider isDev={true} customRepos={customRepos}>
+        <ImportKnowledgeSection debounceMs={30} />
+      </ApplicationProvider>
+    );
+
+    const packet = JSON.parse(JSON.stringify(SEED_PACKETS[0])) as any;
+    packet.cards.push({
+      type: 'cloze',
+      prompt: 'CLOZE_PREVIEW_PROMPT ____.',
+      answer: 'CLOZE_PREVIEW_ANSWER',
+    });
+
+    const textarea = screen.getByLabelText(/MindSpark JSON packet/i);
+    fireEvent.change(textarea, { target: { value: JSON.stringify(packet) } });
+
+    await waitFor(() => {
+      expect(screen.getByText(packet.item.title)).toBeDefined();
+    });
+
+    expect(screen.getByText('Cloze: 1')).toBeDefined();
+    expect(screen.getByText('CLOZE_PREVIEW_PROMPT ____.')).toBeDefined();
+    expect(screen.getByText('CLOZE_PREVIEW_ANSWER')).toBeDefined();
+  });
 });

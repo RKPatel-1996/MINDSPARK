@@ -85,7 +85,7 @@ export function extractSearchableText(
     }
   }
 
-  // 3. ReviewCards content for all four card types
+  // 3. ReviewCards content for all five card types
   if (bundle.cards && bundle.cards.length > 0) {
     for (const card of bundle.cards) {
       switch (card.type) {
@@ -105,6 +105,10 @@ export function extractSearchableText(
         case 'true_false':
           if (card.statement) parts.push(card.statement);
           if (card.explanation) parts.push(card.explanation);
+          break;
+        case 'cloze':
+          if (card.prompt) parts.push(card.prompt);
+          if (card.answer) parts.push(card.answer);
           break;
       }
     }

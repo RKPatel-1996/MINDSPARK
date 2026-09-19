@@ -209,7 +209,7 @@ describe('Library Query Engine (Pure, Deterministic)', () => {
       expect(queryLibraryItems([bundle], testRegistry, { searchText: 'permissions' })).toHaveLength(1);
     });
 
-    it('searches all four card-type contents', () => {
+    it('searches all five card-type contents', () => {
       // 1. free_recall (prompt, answerGuidance)
       const freeRecallCard: ReviewCard = {
         id: 'c-fr-1',
@@ -269,7 +269,21 @@ describe('Library Query Engine (Pure, Deterministic)', () => {
       };
       const bTf = createMockBundle({ id: 'item-tf', cards: [tfCard] });
 
-      const allCardBundles = [bFr, bFc, bMcq, bTf];
+      // 5. cloze (prompt, answer)
+      const clozeCard: ReviewCard = {
+        id: 'c-cloze-1',
+        knowledgeItemId: 'item-cloze',
+        schemaVersion: 1,
+        type: 'cloze',
+        prompt: 'The fictional codename is ____.',
+        answer: 'NebulaClozeToken',
+        suspended: false,
+        createdAt: '2026-09-01T10:00:00.000Z',
+        updatedAt: '2026-09-01T10:00:00.000Z',
+      };
+      const bCloze = createMockBundle({ id: 'item-cloze', cards: [clozeCard] });
+
+      const allCardBundles = [bFr, bFc, bMcq, bTf, bCloze];
 
       // free_recall search
       expect(queryLibraryItems(allCardBundles, testRegistry, { searchText: 'preemption' }).map((i) => i.item.id)).toEqual(['item-fr']);
@@ -287,6 +301,10 @@ describe('Library Query Engine (Pure, Deterministic)', () => {
       // true_false search
       expect(queryLibraryItems(allCardBundles, testRegistry, { searchText: 'fragmentation' }).map((i) => i.item.id)).toEqual(['item-tf']);
       expect(queryLibraryItems(allCardBundles, testRegistry, { searchText: 'internal fragmentation' }).map((i) => i.item.id)).toEqual(['item-tf']);
+
+      // cloze search
+      expect(queryLibraryItems(allCardBundles, testRegistry, { searchText: 'fictional codename' }).map((i) => i.item.id)).toEqual(['item-cloze']);
+      expect(queryLibraryItems(allCardBundles, testRegistry, { searchText: 'NebulaClozeToken' }).map((i) => i.item.id)).toEqual(['item-cloze']);
     });
 
     it('searches source title, citation, and URL', () => {
@@ -466,6 +484,29 @@ describe('Library Query Engine (Pure, Deterministic)', () => {
       expect(queryLibraryItems(cardItems, testRegistry, { cardTypes: ['true_false'] })).toHaveLength(0);
     });
 
+    it('card-type filtering supports Cloze cards', () => {
+      const clozeBundle = createMockBundle({
+        id: 'filter-cloze',
+        cards: [
+          {
+            id: 'filter-cloze-card',
+            knowledgeItemId: 'filter-cloze',
+            schemaVersion: 1,
+            type: 'cloze',
+            prompt: 'A process command interpreter is a ____.',
+            answer: 'shell',
+            suspended: false,
+            createdAt: '2026-09-01T10:00:00.000Z',
+            updatedAt: '2026-09-01T10:00:00.000Z',
+          },
+        ],
+      });
+
+      expect(
+        queryLibraryItems([clozeBundle], testRegistry, { cardTypes: ['cloze'] })
+          .map((item) => item.item.id)
+      ).toEqual(['filter-cloze']);
+    });
     it('multiple selected card types use logical OR within that filter', () => {
       const bFlashcard = createMockBundle({
         id: 'or-fc',

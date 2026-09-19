@@ -302,6 +302,9 @@ export const ImportKnowledgeSection: React.FC<ImportKnowledgeSectionProps> = ({
               {inspection.preview.cardTypeCounts.true_false > 0 && (
                 <span>True/False: {inspection.preview.cardTypeCounts.true_false}</span>
               )}
+              {inspection.preview.cardTypeCounts.cloze > 0 && (
+                <span>Cloze: {inspection.preview.cardTypeCounts.cloze}</span>
+              )}
             </div>
           </div>
 
@@ -396,6 +399,23 @@ export const ImportKnowledgeSection: React.FC<ImportKnowledgeSectionProps> = ({
                           Guidance:{' '}
                         </span>
                         {card.answerGuidance}
+                      </div>
+                    </div>
+                  )}
+
+                  {card.type === 'cloze' && (
+                    <div className="space-y-1">
+                      <div>
+                        <span className="font-semibold font-ui text-[var(--muted-color)]">
+                          Prompt:{' '}
+                        </span>
+                        {card.prompt}
+                      </div>
+                      <div>
+                        <span className="font-semibold font-ui text-[var(--muted-color)]">
+                          Answer:{' '}
+                        </span>
+                        {card.answer}
                       </div>
                     </div>
                   )}
