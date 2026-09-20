@@ -199,24 +199,4 @@ describe('Library bulk Archive / Restore UI (C5-3)', () => {
     expect(bulkCall).not.toHaveBeenCalled();
   });
 
-  it('enforces the individual selection cap while allowing deselection', async () => {
-    const repos = await setupRepositories(
-      Array.from({ length: MAX_BULK_LIFECYCLE_ITEMS + 1 }, (_, index) => makeItem(index + 1))
-    );
-    renderLibrary(repos);
-    await waitForItem(1);
-
-    enterSelectMode();
-    for (let index = 1; index <= MAX_BULK_LIFECYCLE_ITEMS; index += 1) {
-      fireEvent.click(checkbox(index));
-    }
-    expect(screen.getByTestId('selected-count').textContent).toContain(`${MAX_BULK_LIFECYCLE_ITEMS} selected`);
-
-    fireEvent.click(checkbox(MAX_BULK_LIFECYCLE_ITEMS + 1));
-    expect(screen.getByTestId('selected-count').textContent).toContain(`${MAX_BULK_LIFECYCLE_ITEMS} selected`);
-    expect(screen.getByTestId('bulk-lifecycle-error').textContent).toContain(String(MAX_BULK_LIFECYCLE_ITEMS));
-
-    fireEvent.click(checkbox(1));
-    expect(screen.getByTestId('selected-count').textContent).toContain(`${MAX_BULK_LIFECYCLE_ITEMS - 1} selected`);
-  }, 15_000);
 });

@@ -21,7 +21,11 @@ import {
 import { TaxonomyBrowser } from './TaxonomyBrowser';
 import { LibraryImagesSection } from './LibraryImagesSection';
 import { ImportKnowledgeSection } from '../settings/ImportKnowledgeSection';
-import { MAX_BULK_LIFECYCLE_ITEMS, type BulkLifecycleErrorCode } from '../../domain/lifecycle';
+import {
+  MAX_BULK_LIFECYCLE_ITEMS,
+  toggleBulkSelection,
+  type BulkLifecycleErrorCode,
+} from '../../domain/lifecycle';
 
 type StatusTab = 'current' | 'needs_review' | 'archived';
 
@@ -301,17 +305,12 @@ export const LibraryView: React.FC = () => {
   const toggleItemSelection = useCallback((itemId: string) => {
     if (isBulkLifecyclePending) return;
     setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(itemId)) {
-        next.delete(itemId);
-      } else {
-        if (next.size >= MAX_BULK_LIFECYCLE_ITEMS) {
-          setBulkLifecycleError(`Select no more than ${MAX_BULK_LIFECYCLE_ITEMS} items at once.`);
-          return prev;
-        }
-        next.add(itemId);
+      const transition = toggleBulkSelection(prev, itemId);
+      if (!transition.accepted) {
+        setBulkLifecycleError(`Select no more than ${MAX_BULK_LIFECYCLE_ITEMS} items at once.`);
+        return prev;
       }
-      return next;
+      return transition.selection;
     });
   }, [isBulkLifecyclePending]);
 

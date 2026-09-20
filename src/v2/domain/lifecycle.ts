@@ -3,6 +3,41 @@ import { isValidId } from './id';
 
 export const MAX_BULK_LIFECYCLE_ITEMS = 100;
 
+/**
+ * Result of a single Library selection toggle. This is intentionally separate
+ * from persistence validation: the Library already supplies IDs from its
+ * rendered result set, and this helper owns only the capped selection state.
+ */
+export type BulkSelectionToggleResult =
+  | { accepted: true; selection: Set<string> }
+  | { accepted: false; selection: ReadonlySet<string> };
+
+/**
+ * Pure capped selection transition used by the Library select-mode UI.
+ *
+ * A selected item is always removable, including when the cap has been
+ * reached. An unselected item is accepted only while the selection remains at
+ * or below MAX_BULK_LIFECYCLE_ITEMS.
+ */
+export function toggleBulkSelection(
+  currentSelection: ReadonlySet<string>,
+  itemId: string,
+): BulkSelectionToggleResult {
+  if (currentSelection.has(itemId)) {
+    const selection = new Set(currentSelection);
+    selection.delete(itemId);
+    return { accepted: true, selection };
+  }
+
+  if (currentSelection.size >= MAX_BULK_LIFECYCLE_ITEMS) {
+    return { accepted: false, selection: currentSelection };
+  }
+
+  const selection = new Set(currentSelection);
+  selection.add(itemId);
+  return { accepted: true, selection };
+}
+
 export type BulkLifecycleErrorCode =
   | 'empty_selection'
   | 'invalid_item_id'

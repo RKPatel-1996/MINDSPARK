@@ -10,6 +10,7 @@ import {
   ALLOWED_LIFECYCLE_TRANSITIONS,
   MAX_BULK_LIFECYCLE_ITEMS,
   normalizeBulkLifecycleItemIds,
+  toggleBulkSelection,
 } from '../domain/lifecycle';
 import { createInMemoryRepositories } from '../persistence/memory/inMemoryRepositories';
 import { createSignedOutRepositories } from '../persistence/signedOut/signedOutRepositories';
@@ -50,6 +51,49 @@ describe('C5-2 atomic bulk KnowledgeItem lifecycle', () => {
   beforeEach(() => {
     repos = createInMemoryRepositories();
     service = new LibraryService(repos);
+  });
+
+  describe('capped Library selection transition', () => {
+    const selectedIds = (count: number) => new Set(
+      Array.from({ length: count }, (_, index) => `item-${index + 1}`),
+    );
+
+    it('accepts the 100th selected item after 99 items', () => {
+      const transition = toggleBulkSelection(selectedIds(99), 'item-100');
+
+      expect(transition.accepted).toBe(true);
+      if (transition.accepted) {
+        expect(transition.selection.size).toBe(MAX_BULK_LIFECYCLE_ITEMS);
+        expect(transition.selection.has('item-100')).toBe(true);
+      }
+    });
+
+    it('rejects an unselected 101st item without changing a full selection', () => {
+      const current = selectedIds(MAX_BULK_LIFECYCLE_ITEMS);
+      const transition = toggleBulkSelection(current, 'item-101');
+
+      expect(transition.accepted).toBe(false);
+      expect(transition.selection).toBe(current);
+      expect(transition.selection.size).toBe(MAX_BULK_LIFECYCLE_ITEMS);
+      expect(transition.selection.has('item-101')).toBe(false);
+    });
+
+    it('allows deselection at the cap, then admits another item back to the cap', () => {
+      const fullSelection = selectedIds(MAX_BULK_LIFECYCLE_ITEMS);
+      const deselected = toggleBulkSelection(fullSelection, 'item-1');
+
+      expect(deselected.accepted).toBe(true);
+      if (!deselected.accepted) return;
+      expect(deselected.selection.size).toBe(MAX_BULK_LIFECYCLE_ITEMS - 1);
+      expect(deselected.selection.has('item-1')).toBe(false);
+
+      const reselected = toggleBulkSelection(deselected.selection, 'item-101');
+      expect(reselected.accepted).toBe(true);
+      if (reselected.accepted) {
+        expect(reselected.selection.size).toBe(MAX_BULK_LIFECYCLE_ITEMS);
+        expect(reselected.selection.has('item-101')).toBe(true);
+      }
+    });
   });
 
   it('sets the governed maximum bulk size to 100', () => {
