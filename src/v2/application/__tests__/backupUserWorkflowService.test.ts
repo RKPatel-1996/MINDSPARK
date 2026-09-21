@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { zipSync, strToU8 } from 'fflate';
-import { ZipBackupArchiveReader } from '../../backup/archive';
+import { ZipBackupArchiveReader, ZipBackupArchiveSerializer } from '../../backup/archive';
 import type { BackupEnvelopeV1 } from '../../backup/contract';
-import { ZipBackupArchiveSerializer } from '../../backup/archive';
 import { DEFAULT_PARAMETER_SET } from '../../domain/schedulerParameterSet';
 import { createInMemoryRepositories } from '../../persistence/memory/inMemoryRepositories';
 import {
@@ -71,6 +70,39 @@ async function archive(backup: BackupEnvelopeV1, bytes = MEDIA) {
   );
 }
 
+function toFflateBytes(source: Uint8Array): Uint8Array {
+  const FflateUint8Array = strToU8('', true).constructor as Uint8ArrayConstructor;
+  return new FflateUint8Array(source);
+}
+
+function renameZipMember(bytes: Uint8Array, from: string, to: string): Uint8Array {
+  const source = Array.from(from, (character) => character.charCodeAt(0));
+  const target = Uint8Array.from(to, (character) => character.charCodeAt(0));
+  if (source.length !== target.length) throw new Error('ZIP member replacements must have equal length');
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let replacements = 0;
+  for (let offset = 0; offset <= bytes.length - 4; offset += 1) {
+    const signature = view.getUint32(offset, true);
+    const fileNameLengthOffset = signature === 0x04034b50
+      ? offset + 26
+      : signature === 0x02014b50
+        ? offset + 28
+        : -1;
+    if (fileNameLengthOffset < 0 || fileNameLengthOffset + 2 > bytes.length) continue;
+
+    const fileNameLength = view.getUint16(fileNameLengthOffset, true);
+    const fileNameOffset = signature === 0x04034b50 ? offset + 30 : offset + 46;
+    if (fileNameLength !== source.length || fileNameOffset + fileNameLength > bytes.length) continue;
+    if (!source.every((value, index) => bytes[fileNameOffset + index] === value)) continue;
+
+    bytes.set(target, fileNameOffset);
+    replacements += 1;
+  }
+  if (replacements !== 2) throw new Error(`ZIP member name not found in both headers: ${from}`);
+  return bytes;
+}
+
 function harness(backup: BackupEnvelopeV1) {
   const repos = createInMemoryRepositories();
   const exporter: BackupExporter = {
@@ -110,6 +142,42 @@ describe('B7 backup archive reader and workflow', () => {
     });
     expect(() => new ZipBackupArchiveReader().parse(unsafe))
       .toThrowError(/Invalid archive member/);
+  });
+
+  it('rejects duplicate manifest and media members before overwrite', async () => {
+    const backup = await envelope(true);
+    const manifest = toFflateBytes(strToU8(JSON.stringify(backup)));
+    const mediaBytes = toFflateBytes(MEDIA);
+
+    const duplicateManifest = renameZipMember(zipSync({
+      'backup.json': manifest,
+      'backxx.json': manifest,
+      [`media/${IMAGE}`]: mediaBytes,
+    }), 'backxx.json', 'backup.json');
+    expect(() => new ZipBackupArchiveReader().parse(duplicateManifest))
+      .toThrowError(/Invalid archive member: backup\.json/);
+
+    const mediaPath = `media/${IMAGE}`;
+    const aliasPath = `${mediaPath.slice(0, -1)}3`;
+    const duplicateMedia = renameZipMember(zipSync({
+      'backup.json': manifest,
+      [mediaPath]: mediaBytes,
+      [aliasPath]: mediaBytes,
+    }), aliasPath, mediaPath);
+    expect(() => new ZipBackupArchiveReader().parse(duplicateMedia))
+      .toThrowError(new RegExp(`Invalid archive member: ${mediaPath}`));
+  });
+
+  it('rejects duplicate normalized member identities', async () => {
+    const backup = await envelope(false);
+    const mediaBytes = toFflateBytes(MEDIA);
+    const duplicateNormalized = zipSync({
+      'backup.json': toFflateBytes(strToU8(JSON.stringify(backup))),
+      'media/caf\u00e9': mediaBytes,
+      'media/cafe\u0301': mediaBytes,
+    });
+    expect(() => new ZipBackupArchiveReader().parse(duplicateNormalized))
+      .toThrowError(/Invalid archive member: media\/cafe\u0301/);
   });
 
   it('validates media integrity before building a non-destructive preview', async () => {

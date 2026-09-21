@@ -1,6 +1,6 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApplicationProvider } from '../../../application/ApplicationContext';
 import { createInMemoryRepositories } from '../../../persistence/memory/inMemoryRepositories';
 import type {
@@ -9,15 +9,28 @@ import type {
 } from '../../../application/backupUserWorkflowService';
 import { BackupRestoreSection } from '../BackupRestoreSection';
 
-function renderSection(workflow: Pick<
+type BackupWorkflow = Pick<
   BackupUserWorkflowService,
   'exportBackup' | 'inspectBackup' | 'executeRestore'
->) {
-  return render(
-    <ApplicationProvider customRepos={createInMemoryRepositories()} isDev={true}>
+>;
+
+function renderSection(workflow: BackupWorkflow) {
+  const repos = createInMemoryRepositories();
+  const view = render(
+    <ApplicationProvider customRepos={repos} isDev={true}>
       <BackupRestoreSection workflow={workflow} />
     </ApplicationProvider>,
   );
+  return {
+    ...view,
+    rerenderWorkflow(nextWorkflow: BackupWorkflow) {
+      view.rerender(
+        <ApplicationProvider customRepos={repos} isDev={true}>
+          <BackupRestoreSection workflow={nextWorkflow} />
+        </ApplicationProvider>,
+      );
+    },
+  };
 }
 
 const inspection = {
@@ -62,6 +75,37 @@ const inspection = {
   },
 } as unknown as BackupRestoreInspection;
 
+function makeWorkflow(overrides: Partial<BackupWorkflow> = {}): BackupWorkflow {
+  return {
+    exportBackup: vi.fn(async () => ({
+      fileName: 'mindspark-v1.mindspark-backup' as const,
+      mimeType: 'application/zip' as const,
+      bytes: new Uint8Array([1, 2, 3]),
+      backup: inspection.plan.backup,
+    })),
+    inspectBackup: vi.fn(async () => inspection),
+    executeRestore: vi.fn(async () => ({
+      status: 'complete' as const,
+      completedOperationIds: ['one'],
+      noOpOperationIds: ['two'],
+    })),
+    ...overrides,
+  };
+}
+
+function chooseBackup(name = 'library.mindspark-backup') {
+  fireEvent.change(screen.getByLabelText('Choose backup file'), {
+    target: {
+      files: [new File([new Uint8Array([4, 5])], name)],
+    },
+  });
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
 describe('B7 Settings backup and restore workflow', () => {
   it('downloads a generated archive and restores only after a successful preview', async () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
@@ -69,32 +113,14 @@ describe('B7 Settings backup and restore workflow', () => {
       createObjectURL: vi.fn(() => 'blob:backup'),
       revokeObjectURL: vi.fn(),
     });
-    const workflow = {
-      exportBackup: vi.fn(async () => ({
-        fileName: 'mindspark-v1.mindspark-backup' as const,
-        mimeType: 'application/zip' as const,
-        bytes: new Uint8Array([1, 2, 3]),
-        backup: inspection.plan.backup,
-      })),
-      inspectBackup: vi.fn(async () => inspection),
-      executeRestore: vi.fn(async () => ({
-        status: 'complete' as const,
-        completedOperationIds: ['one'],
-        noOpOperationIds: ['two'],
-      })),
-    };
+    const workflow = makeWorkflow();
     renderSection(workflow);
 
     fireEvent.click(screen.getByRole('button', { name: 'Download backup' }));
     await waitFor(() => expect(workflow.exportBackup).toHaveBeenCalledOnce());
     expect(click).toHaveBeenCalledOnce();
 
-    const input = screen.getByLabelText('Choose backup file');
-    fireEvent.change(input, {
-      target: {
-        files: [new File([new Uint8Array([4, 5])], 'library.mindspark-backup')],
-      },
-    });
+    chooseBackup();
     await screen.findByText('Knowledge items');
     expect(screen.getByText('5')).toBeDefined();
     expect(workflow.executeRestore).not.toHaveBeenCalled();
@@ -102,5 +128,76 @@ describe('B7 Settings backup and restore workflow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Restore missing data' }));
     await screen.findByText(/Restore complete: 1 inserted, 1 already matched/);
     expect(workflow.executeRestore).toHaveBeenCalledWith(inspection);
+  });
+
+  it('invalidates a completed preview when workflow authority changes', async () => {
+    const ownerA = makeWorkflow();
+    const ownerB = makeWorkflow();
+    const view = renderSection(ownerA);
+
+    chooseBackup('owner-a.mindspark-backup');
+    await screen.findByText('Knowledge items');
+    expect(screen.getByRole('button', { name: 'Restore missing data' })).toBeDefined();
+
+    view.rerenderWorkflow(ownerB);
+    expect(screen.queryByRole('button', { name: 'Restore missing data' })).toBeNull();
+    await waitFor(() => expect(screen.queryByText('owner-a.mindspark-backup')).toBeNull());
+
+    chooseBackup('owner-b.mindspark-backup');
+    await screen.findByText('Knowledge items');
+    expect(ownerB.inspectBackup).toHaveBeenCalledOnce();
+    expect(screen.getByRole('button', { name: 'Restore missing data' })).toBeDefined();
+  });
+
+  it('ignores a stale pending inspection after workflow authority changes', async () => {
+    let resolveOwnerA!: (value: BackupRestoreInspection) => void;
+    const pendingOwnerA = new Promise<BackupRestoreInspection>((resolve) => {
+      resolveOwnerA = resolve;
+    });
+    const ownerA = makeWorkflow({
+      inspectBackup: vi.fn(async () => pendingOwnerA),
+    });
+    const ownerB = makeWorkflow();
+    const view = renderSection(ownerA);
+
+    chooseBackup('owner-a.mindspark-backup');
+    await screen.findByText('Inspecting backup...');
+    view.rerenderWorkflow(ownerB);
+
+    await act(async () => {
+      resolveOwnerA(inspection);
+      await pendingOwnerA;
+    });
+    expect(screen.queryByText('Knowledge items')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Restore missing data' })).toBeNull();
+
+    chooseBackup('owner-b.mindspark-backup');
+    await screen.findByText('Knowledge items');
+    expect(ownerB.inspectBackup).toHaveBeenCalledOnce();
+    expect(screen.getByRole('button', { name: 'Restore missing data' })).toBeDefined();
+  });
+
+  it('consumes a rejected plan and requires a fresh inspection before retry', async () => {
+    const workflow = makeWorkflow({
+      executeRestore: vi.fn(async () => {
+        throw new Error('Firestore unavailable.');
+      }),
+    });
+    renderSection(workflow);
+
+    chooseBackup();
+    await screen.findByText('Knowledge items');
+    const restoreButton = screen.getByRole('button', { name: 'Restore missing data' });
+    fireEvent.click(restoreButton);
+    fireEvent.click(restoreButton);
+
+    await screen.findByText(/Firestore unavailable.*fresh preflight/i);
+    expect(workflow.executeRestore).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('button', { name: 'Restore missing data' })).toBeNull();
+
+    chooseBackup('retry.mindspark-backup');
+    await screen.findByText('Knowledge items');
+    expect(workflow.inspectBackup).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('button', { name: 'Restore missing data' })).toBeDefined();
   });
 });

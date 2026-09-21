@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Check, Download, FileArchive, Loader2, Upload } from 'lucide-react';
 import { useApplication } from '../../application';
 import type {
@@ -14,6 +14,16 @@ type BackupWorkflow = Pick<
   BackupUserWorkflowService,
   'exportBackup' | 'inspectBackup' | 'executeRestore'
 >;
+
+interface PreparedRestore {
+  workflow: BackupWorkflow;
+  inspection: BackupRestoreInspection;
+}
+
+interface ActiveAction {
+  token: symbol;
+  generation: number;
+}
 
 export interface BackupRestoreSectionProps {
   workflow?: BackupWorkflow;
@@ -47,9 +57,45 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
   const [inspecting, setInspecting] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
-  const [inspection, setInspection] = useState<BackupRestoreInspection | null>(null);
+  const [preparedRestore, setPreparedRestore] = useState<PreparedRestore | null>(null);
   const [result, setResult] = useState<FirebaseRestoreResult | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const authorityRef = useRef<BackupWorkflow | null>(liveWorkflow);
+  const generationRef = useRef(0);
+  const actionRef = useRef<ActiveAction | null>(null);
+  authorityRef.current = liveWorkflow;
+
+  const inspection = preparedRestore?.workflow === liveWorkflow
+    ? preparedRestore.inspection
+    : null;
+
+  useEffect(() => {
+    generationRef.current += 1;
+    actionRef.current = null;
+    setPreparedRestore(null);
+    setSelectedFileName(null);
+    setResult(null);
+    setMessage(null);
+    setExporting(false);
+    setInspecting(false);
+    setRestoring(false);
+  }, [liveWorkflow]);
+
+  const beginAction = (): ActiveAction | null => {
+    if (actionRef.current) return null;
+    const action = { token: Symbol(), generation: generationRef.current };
+    actionRef.current = action;
+    return action;
+  };
+
+  const isCurrentAction = (action: ActiveAction, workflow: BackupWorkflow): boolean =>
+    actionRef.current?.token === action.token &&
+    generationRef.current === action.generation &&
+    authorityRef.current === workflow;
+
+  const finishAction = (action: ActiveAction): void => {
+    if (actionRef.current?.token === action.token) actionRef.current = null;
+  };
 
   const unavailableMessage = isSignedOut
     ? 'Sign in to export or restore your cloud library.'
@@ -60,60 +106,100 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
         : 'Backup and restore are unavailable until Firebase is ready.';
 
   const handleExport = async () => {
-    if (!liveWorkflow) return;
+    const workflow = liveWorkflow;
+    if (!workflow) return;
+    const action = beginAction();
+    if (!action) return;
     setExporting(true);
     setMessage(null);
     try {
-      const exported = await liveWorkflow.exportBackup();
+      const exported = await workflow.exportBackup();
+      if (!isCurrentAction(action, workflow)) return;
       const blob = new Blob([exported.bytes as BlobPart], { type: exported.mimeType });
       const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = exported.fileName;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      try {
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = exported.fileName;
+        anchor.click();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+      if (!isCurrentAction(action, workflow)) return;
       setMessage(
         `Backup downloaded: ${exported.backup.data.knowledgeItems.length} items, ` +
         `${exported.backup.data.reviewEvents.length} review events, ${exported.backup.media.length} media files.`,
       );
     } catch (error) {
-      setMessage(errorMessage(error));
+      if (isCurrentAction(action, workflow)) setMessage(errorMessage(error));
     } finally {
-      setExporting(false);
+      if (isCurrentAction(action, workflow)) setExporting(false);
+      finishAction(action);
     }
   };
 
   const handleFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = '';
-    setInspection(null);
+
+    // Every selection invalidates the prior file/plan/payload generation.
+    const generation = generationRef.current + 1;
+    generationRef.current = generation;
+    actionRef.current = null;
+    setPreparedRestore(null);
+    setSelectedFileName(file?.name ?? null);
     setResult(null);
     setMessage(null);
-    if (!file || !liveWorkflow) return;
-    setSelectedFileName(file.name);
+    setInspecting(false);
+
+    const workflow = liveWorkflow;
+    if (!file || !workflow) return;
     if (!file.name.toLowerCase().endsWith('.mindspark-backup')) {
       setMessage('Choose a .mindspark-backup file created by MindSpark.');
       return;
     }
+
+    const action = { token: Symbol(), generation };
+    actionRef.current = action;
     setInspecting(true);
     try {
-      const inspected = await liveWorkflow.inspectBackup(
-        new Uint8Array(await file.arrayBuffer()),
-      );
-      setInspection(inspected);
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (!isCurrentAction(action, workflow)) return;
+      const inspected = await workflow.inspectBackup(bytes);
+      if (!isCurrentAction(action, workflow)) return;
+      setPreparedRestore({ workflow, inspection: inspected });
     } catch (error) {
-      setMessage(errorMessage(error));
+      if (isCurrentAction(action, workflow)) setMessage(errorMessage(error));
     } finally {
-      setInspecting(false);
+      if (isCurrentAction(action, workflow)) setInspecting(false);
+      finishAction(action);
     }
   };
 
   const handleRestore = async () => {
-    if (!liveWorkflow || !inspection || inspection.summary.conflicts > 0) return;
+    const workflow = liveWorkflow;
+    const prepared = preparedRestore;
+    if (
+      !workflow ||
+      !prepared ||
+      prepared.workflow !== workflow ||
+      prepared.inspection.summary.conflicts > 0
+    ) return;
+    if (actionRef.current) return;
+
+    const generation = generationRef.current + 1;
+    generationRef.current = generation;
+    const action = { token: Symbol(), generation };
+    actionRef.current = action;
+
+    // Execution consumes the preview. Every outcome requires a fresh preflight.
+    setPreparedRestore(null);
+    setResult(null);
     setRestoring(true);
     setMessage(null);
     try {
-      const restoreResult = await liveWorkflow.executeRestore(inspection);
+      const restoreResult = await workflow.executeRestore(prepared.inspection);
+      if (!isCurrentAction(action, workflow)) return;
       setResult(restoreResult);
       if (restoreResult.status === 'complete') {
         setMessage(
@@ -122,16 +208,21 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
         );
         triggerRefresh();
       } else {
-        setInspection(null);
         setMessage(
           `Restore stopped at ${restoreResult.failedOperationId ?? 'post-restore verification'} ` +
           `(${restoreResult.category ?? 'unknown error'}). Select the file again for a fresh preflight before retrying.`,
         );
       }
     } catch (error) {
-      setMessage(errorMessage(error));
+      if (isCurrentAction(action, workflow)) {
+        setResult(null);
+        setMessage(
+          `${errorMessage(error)} Select the file again for a fresh preflight before retrying.`,
+        );
+      }
     } finally {
-      setRestoring(false);
+      if (isCurrentAction(action, workflow)) setRestoring(false);
+      finishAction(action);
     }
   };
 

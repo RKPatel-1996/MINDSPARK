@@ -80,6 +80,7 @@ export class ZipBackupArchiveReader implements BackupArchiveReader {
 
     let memberCount = 0;
     let expandedBytes = 0;
+    const seenMemberIdentities = new Set<string>();
     let files: Record<string, Uint8Array>;
     try {
       files = unzipSync(source, {
@@ -88,7 +89,9 @@ export class ZipBackupArchiveReader implements BackupArchiveReader {
           expandedBytes += member.originalSize;
           const isManifest = member.name === BACKUP_MANIFEST_ARCHIVE_PATH;
           const isMedia = member.name.startsWith('media/');
+          const memberIdentity = member.name.normalize('NFC');
           if (
+            seenMemberIdentities.has(memberIdentity) ||
             memberCount > MAX_ARCHIVE_MEMBERS ||
             expandedBytes > MAX_ARCHIVE_BYTES ||
             !isSafeArchivePath(member.name) ||
@@ -98,6 +101,7 @@ export class ZipBackupArchiveReader implements BackupArchiveReader {
           ) {
             throw new BackupArchiveReadError('invalid_member', `Invalid archive member: ${member.name}`);
           }
+          seenMemberIdentities.add(memberIdentity);
           return true;
         },
       });
