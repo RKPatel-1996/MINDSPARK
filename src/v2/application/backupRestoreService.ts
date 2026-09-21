@@ -49,7 +49,7 @@ export type RestoreExecutionResult =
       reconciliation: readonly RestoreReconciliationResult[];
     };
 
-function toPortableTargetKnowledgeItem(item: KnowledgeItem): PortableKnowledgeItemV1 {
+export function toPortableTargetKnowledgeItem(item: KnowledgeItem): PortableKnowledgeItemV1 {
   const { images, ...withoutImages } = item;
   return {
     ...withoutImages,
@@ -106,7 +106,7 @@ async function writeInsert(repos: Repositories, operation: RestoreOperation): Pr
   }
 }
 
-async function reconcileRestoredState(repos: Repositories): Promise<RestoreReconciliationResult[]> {
+export async function reconcileRestoredState(repos: Repositories): Promise<RestoreReconciliationResult[]> {
   const [cards, events, parameterSets] = await Promise.all([
     repos.reviewCards.list(),
     repos.reviewEvents.list(),

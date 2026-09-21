@@ -262,6 +262,17 @@ describe('Firebase image Storage runtime boundary', () => {
     );
   });
 
+  it('distinguishes an absent canonical image from an unreadable one', async () => {
+    const service = new FirebaseImageStorageService({} as any, OWNER_UID);
+    vi.mocked(getMetadata).mockRejectedValueOnce({ code: 'storage/object-not-found' });
+    await expect(service.readImageIfExists(PATH)).resolves.toBeNull();
+    vi.mocked(getMetadata).mockRejectedValueOnce(new Error('network failure'));
+    await expect(service.readImageIfExists(PATH)).rejects.toMatchObject({ code: 'read_failed' });
+    await expect(service.readImageIfExists(PATH)).resolves.toEqual({
+      bytes: new Uint8Array([1, 2, 3]), mimeType: 'image/png',
+    });
+  });
+
   it('rejects non-owned reads and wraps Storage read failures', async () => {
     const service = new FirebaseImageStorageService(
       {} as any,

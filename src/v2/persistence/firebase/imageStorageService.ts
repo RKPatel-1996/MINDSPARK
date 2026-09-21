@@ -254,6 +254,21 @@ export class FirebaseImageStorageService {
     return { bytes, mimeType: metadata.contentType };
   }
 
+  /** A missing canonical object is distinct from an unreadable one during restore. */
+  async readImageIfExists(
+    storagePath: string,
+  ): Promise<{ bytes: Uint8Array; mimeType: string } | null> {
+    this.requireOwnedPath(storagePath);
+    try {
+      await getMetadata(ref(this.storage, storagePath));
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'code' in error &&
+        error.code === 'storage/object-not-found') return null;
+      throw new ImageStorageError('read_failed', 'Unable to inspect image object', error);
+    }
+    return this.readImage(storagePath);
+  }
+
   async deleteImage(storagePath: string): Promise<void> {
     this.requireOwnedPath(storagePath);
 

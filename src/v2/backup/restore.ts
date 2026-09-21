@@ -116,7 +116,7 @@ function stableValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-function semanticallyEqual(left: unknown, right: unknown): boolean {
+export function semanticallyEqual(left: unknown, right: unknown): boolean {
   return stableValue(left) === stableValue(right);
 }
 
