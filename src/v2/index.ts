@@ -6,3 +6,4 @@ export * from './application/backupSnapshotService';
 export * from './application/backupExportService';
 export * from './application/backupRestoreService';
 export * from './application/backupFirebaseRestoreService';
+export * from './application/backupUserWorkflowService';

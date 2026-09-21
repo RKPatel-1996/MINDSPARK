@@ -8,9 +8,10 @@ import type { Settings } from '../../persistence/repository/interfaces';
 import { PwaInstallControl } from '../pwa/PwaInstallControl';
 import { ImportKnowledgeSection } from './ImportKnowledgeSection';
 import { TaxonomyManagementSection } from './TaxonomyManagementSection';
+import { BackupRestoreSection } from './BackupRestoreSection';
 
 export interface SettingsViewProps {
-  initialTab?: 'app' | 'appearance' | 'shortcuts' | 'scheduler' | 'sync' | 'library';
+  initialTab?: 'app' | 'appearance' | 'shortcuts' | 'scheduler' | 'sync' | 'backup' | 'library';
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }) => {
@@ -33,7 +34,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
     user,
   } = useApplication();
 
-  const [activeTab, setActiveTab] = useState<'app' | 'appearance' | 'shortcuts' | 'scheduler' | 'sync' | 'library'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'app' | 'appearance' | 'shortcuts' | 'scheduler' | 'sync' | 'backup' | 'library'>(initialTab);
   const [editingAction, setEditingAction] = useState<ShortcutAction | null>(null);
   const [recordingBuffer, setRecordingBuffer] = useState<string>('');
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
@@ -136,7 +137,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
       </div>
 
       <div className="flex border-b border-[var(--border-color)] overflow-x-auto">
-        {(['app', 'appearance', 'shortcuts', 'scheduler', 'sync', 'library'] as const).map((tab) => (
+        {(['app', 'appearance', 'shortcuts', 'scheduler', 'sync', 'backup', 'library'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -577,6 +578,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
               </div>
             </div>
           )}
+
+          {/* Backup & Restore Tab */}
+          {activeTab === 'backup' && <BackupRestoreSection />}
 
           {/* Library & Import Tab */}
           {activeTab === 'library' && (

@@ -11,3 +11,4 @@ export * from './taxonomyService';
 export * from './libraryQuery';
 export * from './repositoryFactory';
 export * from './ApplicationContext';
+export * from './backupUserWorkflowService';
