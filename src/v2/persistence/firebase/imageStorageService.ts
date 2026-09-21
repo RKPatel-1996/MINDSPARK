@@ -1,22 +1,23 @@
 import {
   deleteObject,
+  getBytes,
   getDownloadURL,
+  getMetadata,
   ref,
   uploadBytes,
   type FirebaseStorage,
 } from 'firebase/storage';
 import { opaqueIdSchema } from '../../domain/id';
+import {
+  MAX_IMAGE_BYTES,
+  isAllowedImageMimeType,
+} from '../../domain/imageMedia';
 
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-
-export const ALLOWED_IMAGE_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-] as const;
-
-export type AllowedImageMimeType =
-  (typeof ALLOWED_IMAGE_MIME_TYPES)[number];
+export {
+  ALLOWED_IMAGE_MIME_TYPES,
+  MAX_IMAGE_BYTES,
+} from '../../domain/imageMedia';
+export type { AllowedImageMimeType } from '../../domain/imageMedia';
 
 export type ImageStorageErrorCode =
   | 'invalid_storage_path'
@@ -24,6 +25,7 @@ export type ImageStorageErrorCode =
   | 'unsupported_file_type'
   | 'file_too_large'
   | 'upload_failed'
+  | 'read_failed'
   | 'download_url_failed'
   | 'delete_failed';
 
@@ -112,11 +114,7 @@ export function validateImageBlob(blob: Blob): void {
     );
   }
 
-  if (
-    !ALLOWED_IMAGE_MIME_TYPES.includes(
-      blob.type as AllowedImageMimeType,
-    )
-  ) {
+  if (!isAllowedImageMimeType(blob.type)) {
     throw new ImageStorageError(
       'unsupported_file_type',
       'Only JPEG, PNG, and WebP images are supported',
@@ -196,6 +194,64 @@ export class FirebaseImageStorageService {
         err,
       );
     }
+  }
+
+  async readImage(
+    storagePath: string,
+  ): Promise<{ bytes: Uint8Array; mimeType: string }> {
+    this.requireOwnedPath(storagePath);
+    const objectRef = ref(this.storage, storagePath);
+
+    let metadata;
+    try {
+      metadata = await getMetadata(objectRef);
+    } catch (err) {
+      throw new ImageStorageError(
+        'read_failed',
+        'Unable to read image bytes',
+        err,
+      );
+    }
+
+    if (metadata.size > MAX_IMAGE_BYTES) {
+      throw new ImageStorageError(
+        'file_too_large',
+        'Image file must not exceed 5 MiB',
+      );
+    }
+    if (!metadata.contentType || !isAllowedImageMimeType(metadata.contentType)) {
+      throw new ImageStorageError(
+        'unsupported_file_type',
+        'Only JPEG, PNG, and WebP images are supported',
+      );
+    }
+
+    let buffer: ArrayBuffer;
+    try {
+      buffer = await getBytes(
+        objectRef,
+        MAX_IMAGE_BYTES + 1,
+      );
+    } catch (err) {
+      throw new ImageStorageError(
+        'read_failed',
+        'Unable to read image bytes',
+        err,
+      );
+    }
+
+    const bytes = new Uint8Array(buffer);
+    if (bytes.byteLength <= 0) {
+      throw new ImageStorageError('empty_file', 'Image file must not be empty');
+    }
+    if (bytes.byteLength > MAX_IMAGE_BYTES) {
+      throw new ImageStorageError(
+        'file_too_large',
+        'Image file must not exceed 5 MiB',
+      );
+    }
+
+    return { bytes, mimeType: metadata.contentType };
   }
 
   async deleteImage(storagePath: string): Promise<void> {

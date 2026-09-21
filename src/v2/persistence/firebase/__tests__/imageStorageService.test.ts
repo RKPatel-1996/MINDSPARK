@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   deleteObject,
+  getBytes,
   getDownloadURL,
+  getMetadata,
   ref,
   uploadBytes,
 } from 'firebase/storage';
@@ -17,7 +19,9 @@ import {
 vi.mock('firebase/storage', () => ({
   ref: vi.fn((_storage: unknown, path: string) => ({ fullPath: path })),
   uploadBytes: vi.fn(),
+  getBytes: vi.fn(),
   getDownloadURL: vi.fn(),
+  getMetadata: vi.fn(),
   deleteObject: vi.fn(),
 }));
 
@@ -40,6 +44,13 @@ describe('Firebase image Storage runtime boundary', () => {
     vi.mocked(uploadBytes).mockResolvedValue({} as any);
     vi.mocked(getDownloadURL).mockResolvedValue(
       'https://example.invalid/transient-image-url',
+    );
+    vi.mocked(getMetadata).mockResolvedValue({
+      contentType: 'image/png',
+      size: 3,
+    } as any);
+    vi.mocked(getBytes).mockResolvedValue(
+      new Uint8Array([1, 2, 3]).buffer,
     );
     vi.mocked(deleteObject).mockResolvedValue(undefined);
   });
@@ -231,6 +242,62 @@ describe('Firebase image Storage runtime boundary', () => {
       service.resolveDownloadUrl(PATH),
     ).rejects.toMatchObject({
       code: 'download_url_failed',
+    });
+  });
+
+  it('reads owned image bytes with authoritative Storage metadata', async () => {
+    const service = new FirebaseImageStorageService(
+      {} as any,
+      OWNER_UID,
+    );
+
+    await expect(service.readImage(PATH)).resolves.toEqual({
+      bytes: new Uint8Array([1, 2, 3]),
+      mimeType: 'image/png',
+    });
+    expect(getMetadata).toHaveBeenCalledOnce();
+    expect(getBytes).toHaveBeenCalledWith(
+      expect.anything(),
+      MAX_IMAGE_BYTES + 1,
+    );
+  });
+
+  it('rejects non-owned reads and wraps Storage read failures', async () => {
+    const service = new FirebaseImageStorageService(
+      {} as any,
+      OWNER_UID,
+    );
+
+    await expect(service.readImage(
+      `users/other-user/knowledgeImages/${KNOWLEDGE_ID}/${IMAGE_ID}`,
+    )).rejects.toMatchObject({ code: 'invalid_storage_path' });
+
+    vi.mocked(getMetadata).mockRejectedValueOnce(new Error('missing object'));
+    await expect(service.readImage(PATH)).rejects.toMatchObject({
+      code: 'read_failed',
+    });
+  });
+
+  it('rejects unsupported or oversized stored image metadata', async () => {
+    const service = new FirebaseImageStorageService(
+      {} as any,
+      OWNER_UID,
+    );
+
+    vi.mocked(getMetadata).mockResolvedValueOnce({
+      contentType: 'image/gif',
+      size: 3,
+    } as any);
+    await expect(service.readImage(PATH)).rejects.toMatchObject({
+      code: 'unsupported_file_type',
+    });
+
+    vi.mocked(getMetadata).mockResolvedValueOnce({
+      contentType: 'image/png',
+      size: MAX_IMAGE_BYTES + 1,
+    } as any);
+    await expect(service.readImage(PATH)).rejects.toMatchObject({
+      code: 'file_too_large',
     });
   });
 
