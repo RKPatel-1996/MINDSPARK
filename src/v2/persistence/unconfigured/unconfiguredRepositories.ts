@@ -62,6 +62,7 @@ export function createUnconfiguredRepositories(): Repositories {
       throw new Error(CONFIG_REQUIRED_MSG);
     },
     get: async () => null,
+    list: async () => [],
     listForCard: async () => [],
     observeForCard: () => () => {},
     observeSyncState: (callback) => {

@@ -2,3 +2,4 @@ export * from './domain';
 export * from './engine';
 export * from './import';
 export * from './backup';
+export * from './application/backupSnapshotService';

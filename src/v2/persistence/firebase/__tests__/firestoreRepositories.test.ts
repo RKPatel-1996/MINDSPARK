@@ -155,6 +155,17 @@ describe('FirestoreReviewEventRepository (Emulator)', () => {
     expect(memoryLog[0].id).toBe(firstId);
     expect(memoryLog[1].id).toBe(secondId);
   });
+
+  it('lists every event in review chronology for complete backup snapshots', async () => {
+    const later = createTestEvent({ reviewTimestamp: '2024-01-03T10:00:00.000Z' });
+    const earlier = createTestEvent({ reviewTimestamp: '2024-01-02T10:00:00.000Z' });
+    await repo.append(later);
+    await repo.append(earlier);
+
+    const events = await repo.list();
+
+    expect(events.map((event) => event.id)).toEqual([earlier.id, later.id]);
+  });
   
   it('F: pending events with unresolved server timestamps do not advance durable watermark', async () => {
     // In emulator, we can't easily pause server resolution, but we can verify our repository logic.

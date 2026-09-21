@@ -234,6 +234,16 @@ export class FirestoreReviewEventRepository implements ReviewEventRepository {
     return d.exists() ? mapDTOToReviewEvent(d.data()) : null;
   }
 
+  async list(): Promise<ReviewEvent[]> {
+    const q = query(
+      this.getCollection(),
+      orderBy('reviewTimestamp', 'asc'),
+      orderBy('id', 'asc'),
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => mapDTOToReviewEvent(d.data()));
+  }
+
   async listForCard(cardId: string): Promise<ReviewEvent[]> {
     const q = query(
       this.getCollection(),

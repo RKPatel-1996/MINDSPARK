@@ -67,6 +67,7 @@ export interface ReceivedEventPage {
 export interface ReviewEventRepository {
   append(event: ReviewEvent): Promise<void>;
   get(id: string): Promise<ReviewEvent | null>;
+  list(): Promise<ReviewEvent[]>;
   listForCard(cardId: string): Promise<ReviewEvent[]>;
   observeForCard(cardId: string, callback: (events: ReviewEvent[], metadata: SyncMetadata) => void): () => void;
   observeSyncState?(callback: (metadata: SyncMetadata) => void): () => void;

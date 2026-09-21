@@ -241,6 +241,17 @@ export class InMemoryReviewEventRepository implements ReviewEventRepository {
     return found ? JSON.parse(JSON.stringify(found.event)) : null;
   }
 
+  async list(): Promise<ReviewEvent[]> {
+    return this.events
+      .slice()
+      .sort((a, b) => {
+        const difference = new Date(a.event.reviewTimestamp).getTime()
+          - new Date(b.event.reviewTimestamp).getTime();
+        return difference || a.event.id.localeCompare(b.event.id);
+      })
+      .map((entry) => JSON.parse(JSON.stringify(entry.event)));
+  }
+
   async listForCard(cardId: string): Promise<ReviewEvent[]> {
     return this.events
       .filter((e) => e.event.cardId === cardId)

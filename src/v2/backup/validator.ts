@@ -3,6 +3,7 @@ import type { ReviewEvent } from '../domain/event';
 import type { SchedulerParameterSet } from '../domain/schedulerParameterSet';
 import { validateTaxonomy } from '../domain/taxonomy';
 import { reconcileCardHistory } from '../reconciliation';
+import { normalizeBackupDataCollections } from './normalization';
 import {
   BACKUP_FORMAT,
   CURRENT_BACKUP_VERSION,
@@ -38,10 +39,6 @@ const identitySchema = z.object({
   backupVersion: z.unknown(),
 }).passthrough();
 
-function compareStrings(a: string, b: string): number {
-  return a < b ? -1 : a > b ? 1 : 0;
-}
-
 function issue(
   issues: BackupValidationIssue[],
   code: BackupValidationIssueCode,
@@ -72,26 +69,8 @@ function addDuplicateIssues<T>(
 function normalizeBackup(backup: BackupEnvelopeV1): BackupEnvelopeV1 {
   return {
     ...backup,
-    data: {
-      taxonomy: {
-        domains: [...backup.data.taxonomy.domains].sort((a, b) => compareStrings(a.id, b.id)),
-        topics: [...backup.data.taxonomy.topics].sort((a, b) => compareStrings(a.id, b.id)),
-        subtopics: [...backup.data.taxonomy.subtopics].sort((a, b) => compareStrings(a.id, b.id)),
-        allowedTags: [...backup.data.taxonomy.allowedTags].sort(compareStrings),
-      },
-      settings: { ...backup.data.settings },
-      schedulerParameterSets: [...backup.data.schedulerParameterSets].sort((a, b) =>
-        compareStrings(a.id, b.id),
-      ),
-      knowledgeItems: [...backup.data.knowledgeItems].sort((a, b) => compareStrings(a.id, b.id)),
-      reviewCards: [...backup.data.reviewCards].sort((a, b) => compareStrings(a.id, b.id)),
-      reviewEvents: [...backup.data.reviewEvents].sort((a, b) => {
-        const timestampDifference =
-          new Date(a.reviewTimestamp).getTime() - new Date(b.reviewTimestamp).getTime();
-        return timestampDifference || compareStrings(a.id, b.id);
-      }),
-    },
-    media: [...backup.media].sort((a, b) => compareStrings(a.assetId, b.assetId)),
+    data: normalizeBackupDataCollections(backup.data),
+    media: [...backup.media].sort((a, b) => a.assetId.localeCompare(b.assetId)),
   };
 }
 

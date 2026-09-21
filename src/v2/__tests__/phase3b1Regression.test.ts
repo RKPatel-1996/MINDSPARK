@@ -276,6 +276,17 @@ describe('MindSpark V2 Phase 3B1 Acceptance Gates Regression Test Suite', () => 
           return e ? JSON.parse(JSON.stringify(e)) : null;
         }
 
+        async list(): Promise<ReviewEvent[]> {
+          return this.localCache
+            .slice()
+            .sort((a, b) => {
+              const difference = new Date(a.reviewTimestamp).getTime()
+                - new Date(b.reviewTimestamp).getTime();
+              return difference || a.id.localeCompare(b.id);
+            })
+            .map((event) => JSON.parse(JSON.stringify(event)));
+        }
+
         async listForCard(cardId: string): Promise<ReviewEvent[]> {
           return this.localCache
             .filter((e) => e.cardId === cardId)

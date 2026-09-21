@@ -61,6 +61,7 @@ export function createSignedOutRepositories(): Repositories {
       throw new Error(AUTH_REQUIRED_MSG);
     },
     get: async () => null,
+    list: async () => [],
     listForCard: async () => [],
     observeForCard: () => () => {},
     listReceivedAfter: async () => ({ events: [], nextWatermark: null }),
