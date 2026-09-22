@@ -6,7 +6,7 @@ import {
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import { doc, setDoc } from 'firebase/firestore';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { BackupEnvelopeV1 } from '../../../backup/contract';
 import { BackupExportService, type BackupExportResult } from '../../../application/backupExportService';
 import { BackupFirebaseRestoreService } from '../../../application/backupFirebaseRestoreService';
@@ -209,6 +209,17 @@ describe('B8 Stage 1 representative backup and restore', () => {
     await environment.clearStorage();
   });
 
+  afterEach(async () => {
+    const objectRef = environment.authenticatedContext(OWNER).storage().ref(IMAGE_PATH);
+    try {
+      await objectRef.delete();
+    } catch (error) {
+      if (!(typeof error === 'object' && error !== null && 'code' in error &&
+        error.code === 'storage/object-not-found')) throw error;
+    }
+    await environment.clearStorage();
+  });
+
   afterAll(async () => {
     await environment.cleanup();
   });
@@ -224,22 +235,36 @@ describe('B8 Stage 1 representative backup and restore', () => {
       parameterSets: new FirestoreSchedulerParameterSetRepository(db, OWNER),
       settings: new FirestoreSettingsRepository(db, OWNER),
     };
-    const mediaObjects = new Map<string, { bytes: Uint8Array; mimeType: string }>();
+    const storage = context.storage();
     const media = {
       canonicalPath: (knowledgeItemId: string, imageId: string) =>
         buildKnowledgeImageStoragePath(OWNER, knowledgeItemId, imageId),
-      readImageIfExists: async (storagePath: string) => mediaObjects.get(storagePath) ?? null,
+      readImageIfExists: async (storagePath: string) => {
+        const objectRef = storage.ref(storagePath);
+        try {
+          const metadata = await objectRef.getMetadata();
+          const response = await fetch(await objectRef.getDownloadURL());
+          if (!response.ok) throw new Error(`Storage download failed: ${response.status}`);
+          return {
+            bytes: new Uint8Array(await response.arrayBuffer()),
+            mimeType: metadata.contentType ?? '',
+          };
+        } catch (error) {
+          if (typeof error === 'object' && error !== null && 'code' in error &&
+            error.code === 'storage/object-not-found') return null;
+          throw error;
+        }
+      },
       uploadImage: async ({ knowledgeItemId, imageId, blob }: {
         knowledgeItemId: string;
         imageId: string;
         blob: Blob;
       }) => {
         const storagePath = buildKnowledgeImageStoragePath(OWNER, knowledgeItemId, imageId);
-        if (mediaObjects.has(storagePath)) throw new Error('Synthetic Storage create conflict');
-        mediaObjects.set(storagePath, {
-          bytes: new Uint8Array(await blob.arrayBuffer()),
-          mimeType: blob.type,
-        });
+        await Promise.resolve(storage.ref(storagePath).put(
+          new Uint8Array(await blob.arrayBuffer()),
+          { contentType: blob.type },
+        ));
         return storagePath;
       },
     };
