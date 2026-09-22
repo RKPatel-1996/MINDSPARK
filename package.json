@@ -25,7 +25,10 @@
     "verify:web-release": "npm run typecheck && npm test && npm run test:pwa-build",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "validate:workflow": "node workflow/scripts/validate.mjs"
+    "validate:workflow": "node workflow/scripts/validate.mjs",
+    "workflow:merge": "node workflow/scripts/merge-verified.mjs",
+    "test:workflow-merge": "node --test workflow/tests/verified-merge.test.mjs",
+    "verify:workflow": "npm run validate:workflow && npm run test:workflow-merge"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",

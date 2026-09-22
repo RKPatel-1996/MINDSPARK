@@ -173,6 +173,6 @@ areas:
       - No product/runtime behavior is hidden in a documentation or test-only diff.
       - Tests continue to represent production contracts rather than weakening evidence.
     focused_suites:
-      - Run directly affected tests or npm run validate:workflow for workflow infrastructure.
+      - Run directly affected tests or npm run verify:workflow for workflow infrastructure.
     broad_gates:
       - git diff --check

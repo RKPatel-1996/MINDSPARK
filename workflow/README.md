@@ -39,3 +39,20 @@ node workflow/scripts/validate.mjs map workflow/verify-map.yml
 - Type C — architectural discovery: freeze the branch, do not fix forward, and re-plan, usually from clean `main`.
 
 Never commit red. After two rejected verification cycles for the same slice, stop and re-plan. If green cannot be reached without widening scope, classify the outcome as Type C.
+## Verified merge automation
+
+Prerequisites: use a dedicated clean worktree with local `main`, `origin/main`, and the accepted feature branch available. The verifier-result packet must validate, say `ACCEPT`, and exactly match the supplied contract hash, base SHA, and feature SHA. High effective risk also requires `--human-approval-reference`.
+
+Dry-run fetches and validates evidence/refs without switching branches, merging, running gates, or pushing:
+
+```bash
+npm run workflow:merge -- --dry-run --feature-branch task/example --feature-head <sha> --expected-base <main-sha> --contract-hash <sha256> --verifier-result <result.yml> --gate verify:web-release
+```
+
+Actual integration requires the explicit `--execute` mode:
+
+```bash
+npm run workflow:merge -- --execute --feature-branch task/example --feature-head <sha> --expected-base <main-sha> --contract-hash <sha256> --verifier-result <result.yml> --gate verify:web-release
+```
+
+The tool accepts package-script gate names only. It updates and merges with `--ff-only`, pushes only `main:main`, and never uses force. Any ambiguity stops. A failed pre-push gate restores local `main` to the fetched `origin/main` and leaves the feature branch intact. A post-push problem never rewrites history; correct it from a new hotfix branch.
