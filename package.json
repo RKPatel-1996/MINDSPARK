@@ -13,7 +13,7 @@
     "prepare:test-firestore-rules": "node scripts/prepare-test-firestore-rules.mjs",
     "prepare:test-storage-rules": "node scripts/prepare-test-storage-rules.mjs",
     "test:storage-rules": "npm run prepare:test-storage-rules && firebase --config firebase-test.json emulators:exec --only storage \"vitest run src/v2/persistence/firebase/__tests__/storage.rules.test.ts\"",
-    "test:rules": "npm run prepare:test-firestore-rules && npm run prepare:test-storage-rules && firebase --config firebase-test.json emulators:exec --only firestore,storage \"vitest run src/v2/persistence/firebase/__tests__\"",
+    "test:rules": "npm run prepare:test-firestore-rules && npm run prepare:test-storage-rules && firebase --config firebase-test.json emulators:exec --only firestore,storage \"vitest run --no-file-parallelism --maxWorkers=1 src/v2/persistence/firebase/__tests__\"",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run verify:web-release",

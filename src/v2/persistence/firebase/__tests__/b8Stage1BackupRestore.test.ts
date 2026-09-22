@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
@@ -197,9 +197,23 @@ describe('B8 Stage 1 representative backup and restore', () => {
 
   beforeAll(async () => {
     environment = await initializeTestEnvironment({
-      projectId: 'demo-no-project',
-      firestore: { host: '127.0.0.1', port: 8080 },
-      storage: { host: '127.0.0.1', port: 9199 },
+      projectId: 'mindspark-b8-stage1-test',
+      firestore: {
+        host: '127.0.0.1',
+        port: 8080,
+        rules: readFileSync(
+          resolve(__dirname, '../../../../../.generated/firestore.test.rules'),
+          'utf8',
+        ),
+      },
+      storage: {
+        host: '127.0.0.1',
+        port: 9199,
+        rules: readFileSync(
+          resolve(__dirname, '../../../../../.generated/storage.test.rules'),
+          'utf8',
+        ),
+      },
     });
     snapshot = representativeSnapshot();
   });
