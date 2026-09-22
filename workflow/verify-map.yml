@@ -1,0 +1,178 @@
+schema_version: 1
+policy:
+  minimum_evidence_only: true
+  path_rules_are_floor_only: true
+  semantic_review_may_escalate: true
+  verifier_may_escalate_risk: true
+  loc_file_count_thresholds_are_governance_rules: false
+  verifier_may_expand_product_acceptance: false
+  verifier_may_expand_allowed_paths: false
+  verifier_may_expand_product_scope: false
+governance:
+  max_rejected_cycles_per_slice: 2
+  never_commit_red: true
+  scope_widening_to_green_is_type_c: true
+  high_risk_requires_human_approval: true
+areas:
+  domain_schema:
+    path_globs:
+      - src/v2/domain/**
+      - src/v2/schema/**
+    risk_floor: normal
+    compatibility_checks:
+      - Existing persisted records remain valid or migrate explicitly.
+      - Import, backup, and Firestore DTO boundaries are reviewed.
+    focused_suites:
+      - npx vitest run src/v2/__tests__/schema.test.ts src/v2/__tests__/firestoreDtoSafety.test.ts
+    broad_gates:
+      - npm run typecheck
+      - npm test
+  import:
+    path_globs:
+      - src/v2/import/**
+      - docs/MINDSPARK_IMPORT_FORMAT.md
+    risk_floor: normal
+    compatibility_checks:
+      - Existing supported import documents retain their meaning.
+      - Duplicate detection and signed-out gating remain unchanged unless contracted.
+    focused_suites:
+      - npx vitest run src/v2/__tests__/importInspection.test.ts src/v2/__tests__/importTransform.test.ts src/v2/__tests__/importDuplicateDetection.test.ts
+      - npx vitest run src/v2/__tests__/importApplicationBoundary.test.tsx src/v2/__tests__/importPreviewUI.test.tsx src/v2/__tests__/importSignedOutGating.test.tsx
+    broad_gates:
+      - npm run typecheck
+      - npm test
+  library:
+    path_globs:
+      - src/v2/app/library/**
+      - src/v2/application/library*
+    risk_floor: normal
+    compatibility_checks:
+      - Old items and lifecycle actions remain usable.
+      - Query, taxonomy, import, source, and accessibility behavior are reviewed when affected.
+    focused_suites:
+      - npx vitest run src/v2/app/library/__tests__
+      - npx vitest run src/v2/__tests__/libraryQueryEngine.test.ts src/v2/application/__tests__/libraryLifecycle.test.ts
+    broad_gates:
+      - npm run typecheck
+      - npm test
+  review_fsrs:
+    path_globs:
+      - src/v2/app/review/**
+      - src/v2/application/review*
+      - src/v2/domain/review*
+      - src/v2/scheduling/**
+    risk_floor: normal
+    compatibility_checks:
+      - Reveal, grading, review-event persistence, and card state remain semantically unchanged unless contracted.
+      - Any FSRS or scheduling mutation escalates effective risk to high.
+    focused_suites:
+      - npx vitest run src/v2/__tests__/fsrsAdapter.test.ts src/v2/__tests__/reviewApplication.test.ts src/v2/__tests__/reviewRouter.test.ts
+      - npx vitest run src/v2/app/review/__tests__
+    broad_gates:
+      - npm run typecheck
+      - npm test
+  backup_restore:
+    path_globs:
+      - src/v2/backup/**
+      - src/v2/application/backup*
+      - src/v2/app/settings/BackupRestoreSection*
+      - src/v2/persistence/firebase/backup*
+    risk_floor: high
+    compatibility_checks:
+      - V1 archive parsing and round-trip behavior remain compatible.
+      - Restore remains fail-safe, deterministic, and non-partial on prerequisite failure.
+    focused_suites:
+      - npx vitest run src/v2/backup/__tests__/backupContract.test.ts src/v2/application/__tests__/backupSnapshotService.test.ts src/v2/application/__tests__/backupExportService.test.ts src/v2/application/__tests__/backupRestoreService.test.ts src/v2/application/__tests__/backupFirebaseRestoreService.test.ts src/v2/application/__tests__/backupUserWorkflowService.test.ts src/v2/app/settings/__tests__/BackupRestoreSection.test.tsx
+      - npx vitest run src/v2/persistence/firebase/__tests__/backupRestoreGateway.test.ts src/v2/persistence/firebase/__tests__/b8Stage1BackupRestore.test.ts
+    broad_gates:
+      - npm run typecheck
+      - npm test
+  firebase_persistence:
+    path_globs:
+      - src/v2/persistence/firebase/**
+      - docs/MINDSPARK_V2_PERSISTENCE.md
+    risk_floor: high
+    compatibility_checks:
+      - DTO safety, repository behavior, reconciliation, and offline boundaries are reviewed.
+      - Relevant emulator-backed evidence is required for changed Firebase behavior.
+    focused_suites:
+      - npx vitest run src/v2/persistence/firebase/__tests__/firestoreRepositories.test.ts src/v2/__tests__/firestoreDtoSafety.test.ts src/v2/__tests__/reconciliation.test.ts
+    broad_gates:
+      - npm run test:rules
+      - npm run verify:web-release
+  auth:
+    path_globs:
+      - src/v2/auth/**
+      - src/v2/app/auth/**
+    risk_floor: high
+    compatibility_checks:
+      - Signed-in and signed-out gates remain fail-closed.
+      - Repository ownership and user-bound service composition are reviewed.
+    focused_suites:
+      - npx vitest run src/v2/__tests__/importSignedOutGating.test.tsx src/v2/__tests__/ephemeralGating.test.tsx src/v2/__tests__/applicationServices.test.ts
+    broad_gates:
+      - npm run typecheck
+      - npm test
+  firestore_rules:
+    path_globs:
+      - firestore.rules.template
+      - scripts/*firestore-rules*.mjs
+      - src/v2/persistence/firebase/__tests__/firestore.rules.test.ts
+    risk_floor: high
+    compatibility_checks:
+      - Owner isolation, validation, and required legacy access remain protected.
+      - Generated rules are derived from the tracked template.
+    focused_suites:
+      - npm run verify:firestore-rules
+      - npm run test:rules
+    broad_gates:
+      - npm run verify:web-release
+  storage_legacy_media:
+    path_globs:
+      - storage.rules.template
+      - scripts/*storage-rules*.mjs
+      - src/v2/persistence/firebase/imageStorageService.ts
+      - src/v2/persistence/firebase/storageConfig.ts
+      - src/v2/persistence/firebase/__tests__/storage.rules.test.ts
+    risk_floor: high
+    compatibility_checks:
+      - Normal text-only use remains independent of Firebase Storage.
+      - Legacy media export and restore fail explicitly without silently dropping media.
+    focused_suites:
+      - npx vitest run src/v2/persistence/firebase/__tests__/imageStorageService.test.ts src/v2/persistence/firebase/__tests__/backupRestoreGateway.test.ts
+      - npm run test:storage-rules
+    broad_gates:
+      - npm run test:rules
+      - npm run verify:web-release
+  pwa_release:
+    path_globs:
+      - public/**
+      - vite.config.ts
+      - scripts/preflight-production.mjs
+      - scripts/test-pwa-build.mjs
+      - .github/workflows/web-release-verification.yml
+      - DEPLOYMENT.md
+    risk_floor: high
+    compatibility_checks:
+      - Installability, update behavior, generated artifacts, and deployment preflight remain valid.
+      - Release changes do not bypass the repository web-release gate.
+    focused_suites:
+      - npx vitest run src/v2/__tests__/pwaManifest.test.ts src/v2/__tests__/deploymentContract.test.ts src/v2/__tests__/ciContract.test.ts src/v2/app/pwa/__tests__
+      - npm run test:pwa-build
+    broad_gates:
+      - npm run verify:web-release
+  documentation_tests_only:
+    path_globs:
+      - docs/**
+      - workflow/**
+      - '**/__tests__/**'
+      - '**/*.test.ts'
+      - '**/*.test.tsx'
+    risk_floor: low
+    compatibility_checks:
+      - No product/runtime behavior is hidden in a documentation or test-only diff.
+      - Tests continue to represent production contracts rather than weakening evidence.
+    focused_suites:
+      - Run directly affected tests or npm run validate:workflow for workflow infrastructure.
+    broad_gates:
+      - git diff --check

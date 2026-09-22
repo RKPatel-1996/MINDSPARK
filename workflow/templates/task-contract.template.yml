@@ -1,0 +1,22 @@
+schema_version: 1
+task_id: <task-id>
+risk: normal
+base:
+  branch: main
+  commit: <40-character-commit>
+feature_branch: task/<task-slug>
+objective: <one bounded outcome>
+allowed_paths:
+  - <path-or-glob>
+forbidden_paths:
+  - <path-or-glob>
+acceptance_criteria:
+  - <observable criterion>
+stop_conditions:
+  - <condition requiring stop and orchestration>
+compatibility_triggers:
+  - <semantic area requiring compatibility evidence>
+focused_tests:
+  - <exact command>
+broad_gates:
+  - <exact command>

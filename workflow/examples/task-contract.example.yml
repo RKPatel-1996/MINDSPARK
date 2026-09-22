@@ -1,0 +1,32 @@
+schema_version: 1
+task_id: workflow-infra-v1
+risk: low
+base:
+  branch: main
+  commit: 2a08c221e60649974e831d1db9ba361ca1160dca
+feature_branch: task/agent-workflow-infra-v1
+objective: Add machine-readable agent workflow contracts and minimum verification policy without changing product code.
+allowed_paths:
+  - workflow/**
+  - package.json
+  - package-lock.json
+forbidden_paths:
+  - src/**
+  - public/**
+  - android/**
+  - firestore.rules.template
+  - storage.rules.template
+acceptance_criteria:
+  - Task contract and verifier result examples validate against closed schemas.
+  - The verification map covers every required MindSpark semantic area as minimum evidence.
+  - Reject protocol and authority ownership are documented compactly.
+stop_conditions:
+  - Validation is red.
+  - Product or runtime code would need to change.
+  - Reaching green would require widening allowed paths or product scope.
+compatibility_triggers:
+  - Package metadata changes must remain development-only.
+focused_tests:
+  - npm run validate:workflow
+broad_gates:
+  - git diff --check

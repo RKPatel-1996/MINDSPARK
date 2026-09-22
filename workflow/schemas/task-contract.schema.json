@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindspark.local/workflow/task-contract.schema.json",
+  "title": "MindSpark task contract",
+  "description": "Closed task packet whose semantics are owned by the orchestrator and repository workflow policy.",
+  "$comment": "A coding agent may implement this packet but may not redefine schema or field semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "risk",
+    "base",
+    "feature_branch",
+    "objective",
+    "allowed_paths",
+    "forbidden_paths",
+    "acceptance_criteria",
+    "stop_conditions",
+    "compatibility_triggers",
+    "focused_tests",
+    "broad_gates"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[a-z0-9-]*[a-z0-9])?$"
+    },
+    "risk": { "enum": ["low", "normal", "high"] },
+    "base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "commit"],
+      "properties": {
+        "branch": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$" },
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      }
+    },
+    "feature_branch": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$" },
+    "objective": { "type": "string", "minLength": 1 },
+    "allowed_paths": { "$ref": "#/$defs/non_empty_strings" },
+    "forbidden_paths": { "$ref": "#/$defs/non_empty_strings" },
+    "acceptance_criteria": { "$ref": "#/$defs/non_empty_strings" },
+    "stop_conditions": { "$ref": "#/$defs/non_empty_strings" },
+    "compatibility_triggers": { "$ref": "#/$defs/strings" },
+    "focused_tests": { "$ref": "#/$defs/non_empty_strings" },
+    "broad_gates": { "$ref": "#/$defs/non_empty_strings" }
+  },
+  "$defs": {
+    "strings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "non_empty_strings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

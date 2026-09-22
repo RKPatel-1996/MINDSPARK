@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindspark.local/workflow/verify-map.schema.json",
+  "title": "MindSpark minimum verification map",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy", "governance", "areas"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_evidence_only",
+        "path_rules_are_floor_only",
+        "semantic_review_may_escalate",
+        "verifier_may_escalate_risk",
+        "loc_file_count_thresholds_are_governance_rules",
+        "verifier_may_expand_product_acceptance",
+        "verifier_may_expand_allowed_paths",
+        "verifier_may_expand_product_scope"
+      ],
+      "properties": {
+        "minimum_evidence_only": { "const": true },
+        "path_rules_are_floor_only": { "const": true },
+        "semantic_review_may_escalate": { "const": true },
+        "verifier_may_escalate_risk": { "const": true },
+        "loc_file_count_thresholds_are_governance_rules": { "const": false },
+        "verifier_may_expand_product_acceptance": { "const": false },
+        "verifier_may_expand_allowed_paths": { "const": false },
+        "verifier_may_expand_product_scope": { "const": false }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_rejected_cycles_per_slice",
+        "never_commit_red",
+        "scope_widening_to_green_is_type_c",
+        "high_risk_requires_human_approval"
+      ],
+      "properties": {
+        "max_rejected_cycles_per_slice": { "const": 2 },
+        "never_commit_red": { "const": true },
+        "scope_widening_to_green_is_type_c": { "const": true },
+        "high_risk_requires_human_approval": { "const": true }
+      }
+    },
+    "areas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain_schema",
+        "import",
+        "library",
+        "review_fsrs",
+        "backup_restore",
+        "firebase_persistence",
+        "auth",
+        "firestore_rules",
+        "storage_legacy_media",
+        "pwa_release",
+        "documentation_tests_only"
+      ],
+      "properties": {
+        "domain_schema": { "$ref": "#/$defs/area" },
+        "import": { "$ref": "#/$defs/area" },
+        "library": { "$ref": "#/$defs/area" },
+        "review_fsrs": { "$ref": "#/$defs/area" },
+        "backup_restore": { "$ref": "#/$defs/area" },
+        "firebase_persistence": { "$ref": "#/$defs/area" },
+        "auth": { "$ref": "#/$defs/area" },
+        "firestore_rules": { "$ref": "#/$defs/area" },
+        "storage_legacy_media": { "$ref": "#/$defs/area" },
+        "pwa_release": { "$ref": "#/$defs/area" },
+        "documentation_tests_only": { "$ref": "#/$defs/area" }
+      }
+    }
+  },
+  "$defs": {
+    "area": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path_globs", "risk_floor", "compatibility_checks", "focused_suites", "broad_gates"],
+      "properties": {
+        "path_globs": { "$ref": "#/$defs/non_empty_strings" },
+        "risk_floor": { "enum": ["low", "normal", "high"] },
+        "compatibility_checks": { "$ref": "#/$defs/non_empty_strings" },
+        "focused_suites": { "$ref": "#/$defs/non_empty_strings" },
+        "broad_gates": { "$ref": "#/$defs/non_empty_strings" }
+      }
+    },
+    "non_empty_strings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

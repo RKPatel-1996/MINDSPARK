@@ -1,0 +1,25 @@
+schema_version: 1
+task_id: workflow-infra-v1
+contract_hash: 385e2752b2cef138404b69d55cada64fc9ef24f392826a58b03ddd23ee81d52e
+base:
+  branch: main
+  commit: 2a08c221e60649974e831d1db9ba361ca1160dca
+feature_head: 2a08c221e60649974e831d1db9ba361ca1160dca
+decision: ACCEPT
+reject_class: null
+effective_risk: low
+contract_violations: []
+diff_issues: []
+compatibility_findings:
+  - area: workflow_infrastructure
+    status: PASS
+    evidence:
+      - Product and runtime paths are unchanged.
+tests_run:
+  - command: npm run validate:workflow
+    result: PASS
+  - command: git diff --check
+    result: PASS
+missing_evidence: []
+remaining_risks:
+  - Automated merge execution is outside Slice A.
