@@ -49,6 +49,10 @@ npm run test:rules
 ```
 *Note: Production Firestore and Storage rule deployment requires setting the `MINDSPARK_OWNER_UID` environment variable.*
 
+### Backup and Recovery
+
+See [MindSpark V1 Backup and Recovery](docs/MINDSPARK_BACKUP_RECOVERY.md) for the archive format, non-destructive restore workflow, conflict behavior, security model, and recovery limitations.
+
 ### Image Storage & Offline Behavior
 Knowledge-item image metadata is stored with the normal application data, while image bytes are stored separately in Firebase Storage.
 
