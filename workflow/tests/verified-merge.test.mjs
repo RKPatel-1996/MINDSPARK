@@ -193,6 +193,63 @@ test('verifier decision other than ACCEPT is rejected without Git commands', asy
   assert.equal(fake.calls.length, 0);
 });
 
+test('failed verifier test evidence is rejected before Git commands', async () => {
+  const fake = new FakeRunner();
+  const evidence = acceptedEvidence({
+    tests_run: [{ command: 'npm run gate:one', result: 'FAIL' }],
+  });
+
+  await assert.rejects(run(fake, { evidence }), (error) => {
+    assert.equal(error.stage, 'evidence');
+    assert.match(error.message, /non-passing test/);
+    return true;
+  });
+  assert.equal(fake.calls.length, 0);
+});
+
+test('failed or missing compatibility evidence is rejected before Git commands', async () => {
+  for (const status of ['FAIL', 'MISSING']) {
+    const fake = new FakeRunner();
+    const evidence = acceptedEvidence({
+      compatibility_findings: [{ area: 'domain_schema', status, evidence: ['finding'] }],
+    });
+
+    await assert.rejects(run(fake, { evidence }), (error) => {
+      assert.equal(error.stage, 'evidence');
+      assert.match(error.message, /failed or missing compatibility finding/);
+      return true;
+    });
+    assert.equal(fake.calls.length, 0);
+  }
+});
+
+test('missing verifier evidence is rejected before Git commands', async () => {
+  const fake = new FakeRunner();
+  const evidence = acceptedEvidence({ missing_evidence: ['required gate output'] });
+
+  await assert.rejects(run(fake, { evidence }), (error) => {
+    assert.equal(error.stage, 'evidence');
+    assert.match(error.message, /cannot contain missing evidence/);
+    return true;
+  });
+  assert.equal(fake.calls.length, 0);
+});
+
+test('malformed legacy ACCEPT evidence is rejected before Git commands', async () => {
+  for (const evidence of [
+    acceptedEvidence({ tests_run: undefined }),
+    acceptedEvidence({ compatibility_findings: undefined }),
+    acceptedEvidence({ missing_evidence: undefined }),
+  ]) {
+    const fake = new FakeRunner();
+    await assert.rejects(run(fake, { evidence }), (error) => {
+      assert.equal(error.stage, 'evidence');
+      return true;
+    });
+    assert.equal(fake.calls.length, 0);
+  }
+});
+
 test('non-fast-forward ancestry mismatch is rejected', async () => {
   const fake = new FakeRunner({ nonFastForward: true });
 

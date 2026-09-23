@@ -103,6 +103,34 @@ async function selfTest() {
   malformedDecision.decision = 'APPROVE';
   requireInvalid('malformed verifier decision', validators.result, malformedDecision);
 
+  const acceptWithFailedTest = structuredClone(verifierResult);
+  acceptWithFailedTest.tests_run[0].result = 'FAIL';
+  requireInvalid('ACCEPT with failed test', validators.result, acceptWithFailedTest);
+
+  const acceptWithFailedCompatibility = structuredClone(verifierResult);
+  acceptWithFailedCompatibility.compatibility_findings = [
+    { area: 'domain_schema', status: 'FAIL', evidence: ['regression found'] },
+  ];
+  requireInvalid(
+    'ACCEPT with failed compatibility finding',
+    validators.result,
+    acceptWithFailedCompatibility,
+  );
+
+  const acceptWithMissingEvidence = structuredClone(verifierResult);
+  acceptWithMissingEvidence.missing_evidence = ['required gate output'];
+  requireInvalid('ACCEPT with missing evidence', validators.result, acceptWithMissingEvidence);
+
+  const rejectWithFailedEvidence = structuredClone(verifierResult);
+  rejectWithFailedEvidence.decision = 'REJECT';
+  rejectWithFailedEvidence.reject_class = 'A';
+  rejectWithFailedEvidence.tests_run[0].result = 'FAIL';
+  rejectWithFailedEvidence.compatibility_findings = [
+    { area: 'domain_schema', status: 'FAIL', evidence: ['regression found'] },
+  ];
+  rejectWithFailedEvidence.missing_evidence = ['required gate output'];
+  requireValid('REJECT with failed evidence', validators.result, rejectWithFailedEvidence);
+
   const verifyMap = await loadPacket(paths.verifyMap);
   requireValid('verify map', validators.map, verifyMap);
   const actualAreas = Object.keys(verifyMap.areas).sort();
@@ -117,6 +145,10 @@ async function selfTest() {
     'missing required field fails',
     'example verifier result validates and matches contract hash',
     'malformed verifier decision fails',
+    'ACCEPT with failed test fails',
+    'ACCEPT with failed compatibility finding fails',
+    'ACCEPT with missing evidence fails',
+    'REJECT can record failed evidence',
     'verify-map.yml validates',
     'verify-map.yml contains every required semantic area',
   ];

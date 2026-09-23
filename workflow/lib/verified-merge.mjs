@@ -68,6 +68,25 @@ function validateInputs(options, result) {
   if (evidence.decision !== 'ACCEPT') {
     stop(result, 'evidence', 'verifier decision must be ACCEPT');
   }
+  if (!Array.isArray(evidence.tests_run) || evidence.tests_run.length === 0) {
+    stop(result, 'evidence', 'accepted verifier evidence must record at least one test');
+  }
+  if (evidence.tests_run.some((test) => test?.result !== 'PASS')) {
+    stop(result, 'evidence', 'accepted verifier evidence cannot contain a non-passing test');
+  }
+  if (!Array.isArray(evidence.compatibility_findings)) {
+    stop(result, 'evidence', 'accepted verifier evidence must record compatibility findings');
+  }
+  if (
+    evidence.compatibility_findings.some(
+      (finding) => finding?.status !== 'PASS' && finding?.status !== 'NOT_APPLICABLE',
+    )
+  ) {
+    stop(result, 'evidence', 'accepted verifier evidence cannot contain a failed or missing compatibility finding');
+  }
+  if (!Array.isArray(evidence.missing_evidence) || evidence.missing_evidence.length > 0) {
+    stop(result, 'evidence', 'accepted verifier evidence cannot contain missing evidence');
+  }
   if (evidence.contract_hash !== options.contractHash) {
     stop(result, 'evidence', 'contract hash does not match the verifier result');
   }

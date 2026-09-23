@@ -81,6 +81,24 @@
           "reject_class": { "type": "null" },
           "contract_violations": { "type": "array", "maxItems": 0 },
           "diff_issues": { "type": "array", "maxItems": 0 },
+          "compatibility_findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "status": { "enum": ["PASS", "NOT_APPLICABLE"] }
+              }
+            }
+          },
+          "tests_run": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "result": { "const": "PASS" }
+              }
+            }
+          },
           "missing_evidence": { "type": "array", "maxItems": 0 }
         }
       }
