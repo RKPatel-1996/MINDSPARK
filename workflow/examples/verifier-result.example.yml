@@ -1,10 +1,10 @@
 schema_version: 1
 task_id: workflow-infra-v1
-contract_hash: 385e2752b2cef138404b69d55cada64fc9ef24f392826a58b03ddd23ee81d52e
+contract_hash: 26d27f405e2e2d80659d5dc71ea209b0de5eb98eacd069a986456325af28c677
 base:
   branch: main
-  commit: 2a08c221e60649974e831d1db9ba361ca1160dca
-feature_head: 2a08c221e60649974e831d1db9ba361ca1160dca
+  commit: bc9fe9c11dae0ff91ef5cf5f21ca948d0ab07d2d
+feature_head: bc9fe9c11dae0ff91ef5cf5f21ca948d0ab07d2d
 decision: ACCEPT
 reject_class: null
 effective_risk: low

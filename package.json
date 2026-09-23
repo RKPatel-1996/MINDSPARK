@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit",
     "validate:workflow": "node workflow/scripts/validate.mjs",
     "workflow:merge": "node workflow/scripts/merge-verified.mjs",
-    "test:workflow-merge": "node --test workflow/tests/verified-merge.test.mjs",
+    "test:workflow-merge": "node --test workflow/tests/verified-merge.node-test.mjs",
     "verify:workflow": "npm run validate:workflow && npm run test:workflow-merge"
   },
   "dependencies": {

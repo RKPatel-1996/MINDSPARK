@@ -3,7 +3,7 @@ task_id: workflow-infra-v1
 risk: low
 base:
   branch: main
-  commit: 2a08c221e60649974e831d1db9ba361ca1160dca
+  commit: bc9fe9c11dae0ff91ef5cf5f21ca948d0ab07d2d
 feature_branch: task/agent-workflow-infra-v1
 objective: Add machine-readable agent workflow contracts and minimum verification policy without changing product code.
 allowed_paths:
