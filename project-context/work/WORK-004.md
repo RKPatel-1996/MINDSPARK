@@ -1,38 +1,28 @@
 # WORK-004 - Review Unmerged Workflow Infrastructure Branch
 
-Status: VERIFIED / READY FOR PROMOTION
-Verified: 2026-09-25
+Status: COMPLETE
+Completed: 2026-09-25
 
 ## Aim
 
-Review and reconcile the previously unmerged workflow-infrastructure branch against current canonical main.
+Review, reconcile, verify, and safely promote the previously unmerged workflow infrastructure.
 
 ## Original branch
 
-- branch: `task/agent-workflow-infra-v1`
+- `task/agent-workflow-infra-v1`
 - original HEAD: `caa7266cd196399d14b35c2358e5587f5634e80e`
-- original branch-only commits: 4
+- four original branch-only commits
 
 ## Reconciliation
 
 - reconciliation branch: `task/agent-workflow-infra-reconcile-v1`
-- reconciliation HEAD: `ed73f5fd42e789964114867c62b721a7cdc0ff2e`
-- base: canonical `main` at `d432809...`
-- cherry-pick conflicts: none
-
-## Scope
-
-- adds machine-readable task and verifier schemas
-- adds minimum-evidence verification map
-- adds workflow validation tooling
-- adds fail-closed verified fast-forward merge automation
-- adds workflow-specific tests
-- adds AJV and YAML tooling dependencies
-- does not modify MindSpark product runtime source under `src/v2`
+- reconciled workflow HEAD before governance record: `ed73f5fd42e789964114867c62b721a7cdc0ff2e`
+- verification/governance record: `6a4187d`
+- conflicts: none
 
 ## Verification
 
-- workflow schema/contract validation: PASS, 11 checks
+- workflow contract validation: PASS, 11 checks
 - verified-merge automation tests: PASS, 16/16
 - TypeScript: PASS
 - ordinary web suite: PASS, 431/431
@@ -40,10 +30,14 @@ Review and reconcile the previously unmerged workflow-infrastructure branch agai
 - PWA artifact suite: PASS, 7/7
 - diff integrity: PASS
 
-## Result
+## Promotion
 
-The workflow infrastructure remains applicable on current canonical main and is fully verified.
-
-Promotion to canonical main is ready but has not yet occurred.
+The verified workflow infrastructure was fast-forwarded into canonical `main` and pushed to `origin/main`.
 
 No deployment or Firebase/cloud state mutation occurred.
+
+## Result
+
+WORK-004: COMPLETE
+Workflow infrastructure: CANONICAL
+Former unmerged-workflow discovery: RESOLVED
