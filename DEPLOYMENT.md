@@ -17,26 +17,24 @@ Firebase deployment remains a completely separate process (detailed below) requi
 
 Do not commit `dist/` or `.generated/` to version control.
 
-## Firebase Firestore & Storage Deployment
-MindSpark uses a strictly single-owner security model. Deployment is blocked until a valid owner UID is provided.
+## Firebase Core Deployment — Spark Compatible
+MindSpark uses a strictly single-owner Firestore security model. Core deployment uses Authentication + Firestore and does not require Firebase Storage.
 
 Deployment sequence:
 1. Set `MINDSPARK_OWNER_UID` to your real Firebase Auth UID.
    ```bash
    export MINDSPARK_OWNER_UID=your-real-uid-here
    ```
-2. Generate and verify both production rule sets:
+2. Generate and verify the core Firestore rules:
    ```bash
    npm run prepare:firestore-rules
-   npm run prepare:storage-rules
    npm run verify:firestore-rules
-   npm run verify:storage-rules
-   npm run preflight:production
-   npm run test:rules
+   npm run preflight:firebase-core
+   npm run test:firestore-rules
    ```
-3. Deploy Firestore and Storage together:
+3. Deploy Firestore only:
    ```bash
-   firebase deploy --only firestore,storage
+   firebase deploy --only firestore --project mindspark-b8-test
    ```
 
 Do not commit generated files under `.generated/` or your real UID.
@@ -45,3 +43,7 @@ Do not commit generated files under `.generated/` or your real UID.
 Knowledge-item image metadata is stored in Firestore, while image bytes are stored in Firebase Storage under the owner-scoped `knowledgeImages` path.
 
 The current v1 PWA does not guarantee offline availability of Firebase Storage image bytes. Review and Library remain functional when an image cannot be resolved and fall back to the image alt text.
+
+## Optional Legacy Media
+
+Firebase Storage is optional and only required for legacy media-bearing workflows. The existing preflight:production and 	est:rules commands remain the stricter Firestore + Storage verification path.

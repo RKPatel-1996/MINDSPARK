@@ -1,20 +1,11 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: WORK-005
 
-WORK-001: COMPLETE
-WORK-002: COMPLETE
-WORK-003: COMPLETE
-WORK-004: COMPLETE
+Title: B8 Stage 2 Core Cloud Readiness
 
-Canonical `main` now contains:
+Status: ACTIVE
 
-- governed project-context infrastructure
-- verified text/code/math content support
-- verified workflow/agent infrastructure
+Target Firebase project: `mindspark-b8-test`
 
-No bounded product-development WORK item is currently active.
-
-## Next action
-
-Create the next WORK item from a verified audit of remaining incomplete MindSpark product features.
+Current phase: establish and verify the Spark-compatible Auth + Firestore deployment path before any cloud mutation.

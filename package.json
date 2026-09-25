@@ -28,7 +28,9 @@
     "validate:workflow": "node workflow/scripts/validate.mjs",
     "workflow:merge": "node workflow/scripts/merge-verified.mjs",
     "test:workflow-merge": "node --test workflow/tests/verified-merge.node-test.mjs",
-    "verify:workflow": "npm run validate:workflow && npm run test:workflow-merge"
+    "verify:workflow": "npm run validate:workflow && npm run test:workflow-merge",
+    "preflight:firebase-core": "node scripts/preflight-firebase-core.mjs",
+    "test:firestore-rules": "npm run prepare:test-firestore-rules && firebase --config firebase-test.json emulators:exec --only firestore \"vitest run src/v2/persistence/firebase/__tests__/firestore.rules.test.ts\""
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",

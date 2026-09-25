@@ -11,7 +11,7 @@ MindSpark is a **PWA-first** application.
 
 ## Prerequisites
 - **Node.js**: 22 LTS, minimum 22.12.0 for the currently locked toolchain
-- **Java**: Required for running the Firebase Local Emulator Suite (for `npm run test:rules`).
+- **Java**: Required for running the Firebase Local Emulator Suite (for `npm run test:firestore-rules`).
 
 ## Local Development
 
@@ -42,7 +42,7 @@ npm run verify:web-release
 ```
 
 ### Firebase & Security Rules
-MindSpark uses a strict single-owner security model for both Firestore and Firebase Storage.
+MindSpark uses a strict single-owner Firestore security model. Firebase Storage is optional for legacy media workflows.
 To test rules against the local emulator (requires Java):
 ```bash
 npm run test:rules
