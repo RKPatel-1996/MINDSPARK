@@ -1,52 +1,126 @@
 # MindSpark — Current State
 
-> Status of this file at bootstrap: **LAST_KNOWN / REQUIRES LIVE RECONCILIATION**.
-> Do not treat commit hashes or branch state below as current until WORK-001 verifies the local repository.
+Status: VERIFIED
+Verified: 2026-09-25
+Verification authority: live local Git repository and repository-native documentation
 
 ## Project identity
 
 - Project: MindSpark V2
-- Canonical repository path: `D:\Home\rohit\Documents\WebProjects\MINDSPARK_RECOVERED`
-- Intended canonical branch: `main`
-- Product: offline-first personal knowledge catalog + spaced-repetition PWA
+- Canonical repository: `D:\Home\rohit\Documents\WebProjects\mindspark\MINDSPARK_RECOVERED`
+- Canonical branch: `main`
+- Product: offline-first personal knowledge catalog and spaced-repetition PWA
+- Modern application source: `src/v2`
 
-## Last-known canonical baseline
+## Canonical Git baseline
 
-- Last-known repaired canonical baseline: `main == origin/main == bc9fe9c11dae0ff91ef5cf5f21ca948d0ab07d2d`
-- Last-known baseline working tree: clean
-- Last-known baseline verification: `verify:web-release` passed before push
+- `main`: `bc9fe9c11dae0ff91ef5cf5f21ca948d0ab07d2d`
+- `origin/main`: `bc9fe9c11dae0ff91ef5cf5f21ca948d0ab07d2d`
+- Relation: synchronized
+- Canonical commit: `fix(build): restore Windows esbuild dependency metadata`
+- No later canonical commit was found during WORK-001.
 
-These values are orientation only until reverified live.
+The primary MindSpark worktree is intentionally preserving unfinished work on `task/text-code-math-content-v1`.
 
-## Major completed work known before bootstrap
+## Governance state
 
-- Backup/restore B2–B7 implementation sequence completed and merged.
-- B8 Stage 1 controlled local/emulator testing completed and accepted.
-- Baseline dependency/esbuild repair completed after B8 Stage 1.
-- PWA/release verification uses the repository's `verify:web-release` gate.
-- Existing repository-native `AGENTS.md` / governed review workflow exists and must be preserved.
+- branch: `chore/project-governance-v1`
+- governance foundation commit: `da76dc9a58aed1abc1029bf226212a6a475801bf`
+- relation to canonical baseline: governance-only changes ahead of `main`
+- product behavior changed: no
 
-## Known pending/reconciliation items
+Existing `AGENTS.md` authority was preserved. Live Git, source, tests, and authoritative subsystem documentation outrank project-context summaries.
 
-1. Verify current `main`, `origin/main`, working-tree cleanliness, remotes, and recent history.
-2. Reconcile the workflow-infrastructure branch whose last-known rebased HEAD was `caa7266cd196399d14b35c2358e5587f5634e80e`; determine whether it was later merged/superseded.
-3. Reconcile `task/text-code-math-content-v1`; it was last known as a dirty/pending branch based on an older B8 baseline and must not be assumed current.
-4. Confirm whether any later commits after the repaired baseline changed canonical state.
-5. Update this file only after live verification.
+## Technology stack
 
-## Cloud/Firebase boundary
+- TypeScript
+- React 19
+- Vite
+- Firebase
+- Capacitor Android
+- Tailwind CSS 4
+- Zustand
+- Zod
+- `ts-fsrs` 5.4.2
+- React Router
+- React Markdown / GFM / KaTeX
 
-- Disposable cloud test project: `mindspark-b8-test`.
-- B8 Stage 2 cloud/state-shaping testing was not authorized at the last checkpoint.
-- Billing/backend synchronization and explicit cloud authorization were still gating conditions.
-- A cleared billing warning alone does not authorize deployment or state-shaping tests.
+## Authoritative repository documentation
 
-Treat this boundary as active until live project records establish a newer authorized state.
+- `AGENTS.md` — repository operating authority
+- `README.md` — general project workflow
+- `docs/MINDSPARK_V2_ARCHITECTURE.md` — architecture/domain/application/UI authority
+- `docs/MINDSPARK_V2_PERSISTENCE.md` — persistence/Firebase/reconciliation authority
+- `docs/MINDSPARK_IMPORT_FORMAT.md` — import authority
+- `docs/MINDSPARK_BACKUP_RECOVERY.md` — backup/recovery documentation
+- `docs/MINDSPARK_B8_STAGE1_EVIDENCE.md` — B8 Stage 1 evidence
+- `DEPLOYMENT.md` — deployment authority
+- `.github/workflows/web-release-verification.yml` — CI web-release gate
 
-## Uploaded snapshot note
+## Verification commands
 
-The ChatGPT Project currently contains an uploaded `remix_-remix_-mindspark(1).zip`. It is an AI Studio-style source snapshot and must not be promoted to canonical authority merely because it is attached here. The local canonical Git repository remains the authority.
+- `npm run typecheck`
+- `npm test`
+- `npm run test:rules`
+- `npm run test:storage-rules`
+- `npm run test:pwa-build`
+- `npm run verify:web-release`
+- `npm run preflight:production`
 
-## Active work
+`npm run verify:web-release` is the normal final web integration gate.
 
-See `work/ACTIVE.md`.
+## Backup / B8 state
+
+B8 Stage 1 is COMPLETE and evidenced.
+
+B8 Stage 2 is NOT COMPLETE.
+
+Still pending:
+
+- cloud browser Backup smoke;
+- real configured Firebase Storage round-trip;
+- cloud cross-owner confirmation;
+- installed-PWA cloud workflow;
+- final cloud release-readiness decision.
+
+Stage 2 remains behind the existing cloud-unblock checklist and explicit authorization boundary.
+
+## Unfinished branch state
+
+### `task/agent-workflow-infra-v1`
+
+- HEAD: `caa7266...`
+- merge-base with `main`: `bc9fe9c...`
+- relation: 4 commits ahead of `main`
+- contained in `main`: no
+- status: UNMERGED / REQUIRES SEPARATE REVIEW
+
+### `task/text-code-math-content-v1`
+
+- branch ref: `2a08c221e60649974e831d1db9ba361ca1160dca`
+- main is 1 commit ahead; branch has 0 committed commits beyond its base
+- primary worktree contains substantial staged, unstaged, deleted, and untracked work
+- status: UNFINISHED / UNCOMMITTED WORK PRESERVED
+
+The dirty working tree must not be cleaned, reset, switched, or overwritten until deliberately reconciled.
+
+## Remotes
+
+- `origin` → `RKPatel-1996/MINDSPARK.git`
+- `aistudio` → `RKPatel-1996/mindspark_ai_studio.git`
+
+Local Git remains authoritative. AI Studio state and ZIP snapshots are not canonical.
+
+## Current management status
+
+- Management foundation: READY
+- Repository baseline: VERIFIED
+- WORK-001: COMPLETE_PENDING_COMMIT
+- Product repairs started by WORK-001: NO
+- Cloud/Firebase changes: NONE
+
+## Next proposed bounded work
+
+`WORK-002 — Promote Governance Foundation to Canonical Main`
+
+Purpose: integrate the governance-only work into canonical `main` without touching unfinished product work.

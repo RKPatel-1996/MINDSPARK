@@ -1,9 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: `WORK-001`
+ACTIVE_WORK: `WORK-002`
 
-Title: Repository-state reconciliation and governance onboarding
+Title: Promote Governance Foundation to Canonical Main
 
-Status: READY
+Status: PROPOSED / NOT STARTED
 
-Do not begin feature development, repair work, branch merging, deployment, or cloud/Firebase state changes until WORK-001 closes.
+WORK-001 is complete.
+
+WORK-002 may integrate only governance work into canonical `main`.
+
+It must not touch:
+
+- the dirty `task/text-code-math-content-v1` primary worktree;
+- `task/agent-workflow-infra-v1`;
+- application behavior;
+- Firebase/cloud state;
+- deployment.
