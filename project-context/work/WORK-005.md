@@ -80,8 +80,6 @@ WORK-005 is not complete yet.
 Still requiring explicit validation:
 
 - real cross-owner Firestore rejection
-- browser persistence / offline / reconnect behavior
-- installed-PWA Firestore workflow
 - text-only/current backup and restore against the controlled cloud environment
 
 Any additional cloud mutation, second-user creation, restore execution, or deployment remains subject to explicit authorization.
@@ -95,3 +93,29 @@ Any additional cloud mutation, second-user creation, restore execution, or deplo
 - Browser offline read persistence: PASS.
 - Offline-to-online reconnect behavior: PASS.
 - Repeated Firebase/service-worker network-failure console messages remain a non-blocking observability/polish issue.
+
+## Verified installed-PWA Firestore workflow
+
+- Production build was served from the local preview origin and installed as a PWA.
+- The existing authenticated owner session worked in the installed application.
+- The existing Cloud Firestore test item and review question were visible.
+- Installed PWA online state: Synced.
+- Installed PWA offline state: Offline Cache.
+- Offline reload retained the existing review question from local persistence.
+- Reconnecting without reinstalling restored the state to Synced.
+- No review submission or other cloud write was performed during this validation.
+- Installed-PWA Firestore workflow: PASS.
+
+A stale reconnect-status defect was discovered during production-preview validation:
+
+- the active-card `observeForCard()` listener did not request Firestore metadata-only updates;
+- cached `fromCache` state could therefore remain visible after backend connectivity recovered;
+- the listener now uses `includeMetadataChanges: true`;
+- emulator cache-to-server regression: PASS;
+- ReviewService regression: PASS;
+- full `verify:web-release`: 58 files / 433 tests PASS;
+- PWA artifact verification: 7 / 7 PASS.
+
+Repair checkpoint:
+
+`3db21ed` - `fix(sync): recover active-card status after reconnect`
