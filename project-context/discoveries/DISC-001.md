@@ -18,3 +18,8 @@ Date: 2026-09-25
 The workflow infrastructure remains non-canonical until separately reviewed and deliberately integrated.
 
 No merge or repair was performed during WORK-001.
+
+
+## Resolution
+
+The workflow infrastructure was reconciled onto current main as `ed73f5f` and fully verified. Promotion is ready.

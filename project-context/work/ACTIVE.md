@@ -1,19 +1,15 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: `WORK-004`
 
-WORK-001: COMPLETE
-WORK-002: COMPLETE
-WORK-003: COMPLETE
+Title: Review Unmerged Workflow Infrastructure Branch
 
-Canonical `main` contains the verified text/code/math implementation.
+Status: VERIFIED / READY FOR PROMOTION
 
-No product-development WORK item is currently active.
+Reconciled candidate:
 
-## Next proposed work
+- `ed73f5fd42e789964114867c62b721a7cdc0ff2e`
 
-`WORK-004 - Review Unmerged Workflow Infrastructure Branch`
+All required workflow and repository verification gates passed.
 
-Purpose: determine whether `task/agent-workflow-infra-v1` should be promoted, revised, or retired based on current canonical main.
-
-Do not begin WORK-004 until separately authorized.
+Next action: promote the reconciled workflow infrastructure to canonical `main`.

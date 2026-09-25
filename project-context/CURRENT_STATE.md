@@ -127,3 +127,13 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 `WORK-004 - Review Unmerged Workflow Infrastructure Branch`
 
 Purpose: review `task/agent-workflow-infra-v1` against current canonical `main` and determine whether it should be promoted, revised, or retired.
+## WORK-004 verified candidate
+
+- original workflow HEAD: caa7266
+- reconciled candidate: d73f5f
+- workflow validation: PASS, 11 checks
+- merge automation tests: PASS, 16/16
+- ordinary suite: PASS, 431/431
+- PWA artifact suite: PASS, 7/7
+- production build: PASS
+- promotion: PENDING
