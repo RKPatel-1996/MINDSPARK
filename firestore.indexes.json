@@ -16,6 +16,14 @@
         { "fieldPath": "reviewTimestamp", "order": "ASCENDING" },
         { "fieldPath": "id", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "reviewEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "reviewTimestamp", "order": "ASCENDING" },
+        { "fieldPath": "id", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
