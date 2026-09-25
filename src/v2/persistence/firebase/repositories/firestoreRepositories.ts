@@ -262,7 +262,10 @@ export class FirestoreReviewEventRepository implements ReviewEventRepository {
       orderBy('reviewTimestamp', 'asc'),
       orderBy('id', 'asc')
     );
-    return onSnapshot(q, (snapshot) => {
+    return onSnapshot(
+      q,
+      { includeMetadataChanges: true },
+      (snapshot) => {
       const events = snapshot.docs.map((d) => mapDTOToReviewEvent(d.data()));
       const syncMeta: SyncMetadata = {
         hasPendingWrites: snapshot.metadata.hasPendingWrites,

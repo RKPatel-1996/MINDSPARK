@@ -223,4 +223,47 @@ describe('FirestoreReviewEventRepository (Emulator)', () => {
     unsub();
     await enableNetwork(db as any);
   });
+  it('observeForCard reports cache-to-server metadata transition after reconnect', async () => {
+    const db = testEnv.authenticatedContext(TEST_OWNER_UID).firestore();
+    const observedRepo = new FirestoreReviewEventRepository(db as any, TEST_OWNER_UID);
+    const cardId = generateId();
+
+    await observedRepo.append(createTestEvent({ cardId }));
+
+    // Warm this exact query so its data is available from the local cache.
+    await observedRepo.listForCard(cardId);
+    await disableNetwork(db as any);
+
+    const observations: SyncMetadata[] = [];
+    const waitUntil = async (predicate: () => boolean, message: string) => {
+      const deadline = Date.now() + 5000;
+      while (!predicate()) {
+        if (Date.now() >= deadline) throw new Error(message);
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+    };
+
+    const unsub = observedRepo.observeForCard(cardId, (_events, meta) => {
+      observations.push(meta);
+    });
+
+    try {
+      await waitUntil(
+        () => observations.some((meta) => meta.fromCache),
+        'observeForCard never reported cached/offline metadata'
+      );
+
+      await enableNetwork(db as any);
+
+      await waitUntil(
+        () => observations.some((meta) => meta.fromCache === false),
+        'observeForCard never reported server metadata after reconnect'
+      );
+
+      expect(observations.at(-1)?.fromCache).toBe(false);
+    } finally {
+      unsub();
+      await enableNetwork(db as any);
+    }
+  });
 });
