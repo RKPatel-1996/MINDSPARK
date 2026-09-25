@@ -61,6 +61,12 @@ export function extractSearchableText(
   // 1. KnowledgeItem fields
   if (bundle.item.title) parts.push(bundle.item.title);
   if (bundle.item.content) parts.push(bundle.item.content);
+  if (bundle.item.blocks) {
+    for (const block of bundle.item.blocks) {
+      parts.push(block.content);
+      if (block.type === 'code' && block.language) parts.push(block.language);
+    }
+  }
   if (bundle.item.explanationMarkdown) parts.push(bundle.item.explanationMarkdown);
   if (bundle.item.tags && bundle.item.tags.length > 0) {
     parts.push(...bundle.item.tags);

@@ -2,13 +2,13 @@ import {
   getStorage,
   type FirebaseStorage,
 } from 'firebase/storage';
-import { app, isFirebaseConfigured } from '../../auth/firebaseAuth';
+import { app, isFirebaseConfigured, isFirebaseStorageConfigured } from '../../auth/firebaseAuth';
 
 let storageInstance: FirebaseStorage | null = null;
 let storageInitializationError: Error | null = null;
 
 export function getFirebaseStorage(): FirebaseStorage | null {
-  if (!isFirebaseConfigured || !app) {
+  if (!isFirebaseConfigured || !isFirebaseStorageConfigured || !app) {
     return null;
   }
 

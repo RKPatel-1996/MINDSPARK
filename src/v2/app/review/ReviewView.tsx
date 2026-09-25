@@ -2,15 +2,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useInRouterContext } from 'react-router-dom';
 import { useApplication } from '../../application';
 import { useShortcut } from '../shortcuts/useShortcut';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+import { ContentBlocks, MarkdownContent } from '../content/ContentRenderer';
 import { Flag, Info, CheckCircle2, RotateCcw, Sparkles, BookOpen, Loader2, AlertTriangle } from 'lucide-react';
 import type { ReviewQueueState, ReviewSubmissionInput } from '../../application/types';
 import type { ReviewRating } from '../../domain/event';
 import type { SourceReference } from '../../domain/knowledge';
-import { ReviewImages } from './ReviewImages';
 
 type ReviewState = 'question' | 'answered';
 
@@ -56,7 +52,7 @@ const SourcesSection: React.FC<{ sources: SourceReference[] | undefined }> = ({ 
 };
 
 export const ReviewView: React.FC = () => {
-  const { reviewService, imageAttachmentService, seedLibrary, refreshCount, isSignedOut, isUnconfigured, isEphemeralDev, isDev, syncState, pendingWritesCount, syncError } = useApplication();
+  const { reviewService, seedLibrary, refreshCount, isSignedOut, isUnconfigured, isEphemeralDev, isDev, syncState, pendingWritesCount, syncError } = useApplication();
 
   const inRouter = useInRouterContext();
   const navigate = inRouter ? useNavigate() : null;
@@ -637,19 +633,8 @@ export const ReviewView: React.FC = () => {
         <div className="w-full max-w-2xl">
           {/* Card Question / Prompt */}
           <div className="text-xl md:text-2xl font-medium text-center leading-relaxed font-content text-[var(--text-strong)]">
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-              {questionPrompt}
-            </ReactMarkdown>
+            <MarkdownContent source={questionPrompt} />
           </div>
-
-          {reviewState === 'question' && (
-            <ReviewImages
-              images={knowledgeItem.images}
-              placement="review_prompt"
-              cardId={card.id}
-              service={imageAttachmentService}
-            />
-          )}
 
           {/* MCQ Options */}
           {card.type === 'mcq' && card.options && (
@@ -688,7 +673,7 @@ export const ReviewView: React.FC = () => {
                       {idx + 1}
                     </span>
                     <span className="flex-1 leading-relaxed">
-                      <ReactMarkdown>{opt}</ReactMarkdown>
+                      <MarkdownContent source={opt} />
                     </span>
                   </button>
                 );
@@ -743,20 +728,17 @@ export const ReviewView: React.FC = () => {
           {reviewState === 'answered' && answerContent && (
             <div className="mt-8 md:mt-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="w-full p-6 bg-[var(--elevated-color)] border border-[var(--border-color)] rounded-xl text-center text-lg font-content paper-shadow">
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                  {answerContent}
-                </ReactMarkdown>
+                <MarkdownContent source={answerContent} />
               </div>
             </div>
           )}
-
-          {reviewState === 'answered' && (
-            <ReviewImages
-              images={knowledgeItem.images}
-              placement="review_answer"
-              cardId={card.id}
-              service={imageAttachmentService}
-            />
+          {reviewState === 'answered' && knowledgeItem.blocks && (
+            <div className="mt-8 p-5 rounded-xl border border-[var(--border-color)] bg-[var(--surface-color)] paper-shadow">
+              <div className="font-semibold text-xs text-[var(--muted-color)] mb-3 uppercase tracking-wider font-ui">
+                Knowledge content
+              </div>
+              <ContentBlocks blocks={knowledgeItem.blocks} className="space-y-4" />
+            </div>
           )}
 
           {/* Feedback & Explanations */}
@@ -800,17 +782,13 @@ export const ReviewView: React.FC = () => {
                     Explanation
                   </div>
                   <div className="text-sm md:text-base font-content">
-                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                      {((card.type === 'mcq' || card.type === 'true_false') && card.explanation) || knowledgeItem.content}
-                    </ReactMarkdown>
+                    <MarkdownContent source={((card.type === 'mcq' || card.type === 'true_false') && card.explanation) || knowledgeItem.content} />
                   </div>
 
                   {knowledgeItem.explanationMarkdown && (
                     <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
                       <div id="review-full-explanation" className={`relative ${!showFullExplanation ? 'max-h-24 overflow-hidden' : ''}`}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                          {knowledgeItem.explanationMarkdown}
-                        </ReactMarkdown>
+                        <MarkdownContent source={knowledgeItem.explanationMarkdown} />
                         {!showFullExplanation && (
                           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[var(--elevated-color)] to-transparent pointer-events-none" />
                         )}

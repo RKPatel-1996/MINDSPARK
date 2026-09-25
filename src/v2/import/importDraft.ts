@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { taxonomyReferenceSchema, controlledTagSchema } from '../domain/taxonomy';
 import { sourceReferenceSchema } from '../domain/knowledge';
+import { contentBlocksSchema } from '../domain/contentBlock';
 
 /**
  * AI Import DTO Schemas
@@ -15,6 +16,7 @@ import { sourceReferenceSchema } from '../domain/knowledge';
 export const knowledgeItemDraftSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   content: z.string().trim().min(1, 'Core knowledge content is required'),
+  blocks: contentBlocksSchema.optional(),
   explanationMarkdown: z.string().trim().optional(),
   taxonomy: taxonomyReferenceSchema.strict(),
   tags: z.array(controlledTagSchema).optional(),

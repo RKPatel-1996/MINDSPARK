@@ -8,12 +8,6 @@ import { LibraryService } from './libraryService';
 import { InsightsService } from './insightsService';
 import { SettingsService } from './settingsService';
 import { TaxonomyService } from './taxonomyService';
-import {
-  ImageAttachmentService,
-  type ImageStorageGateway,
-} from './imageAttachmentService';
-import { getFirebaseStorage } from '../persistence/firebase/storageConfig';
-import { FirebaseImageStorageService } from '../persistence/firebase/imageStorageService';
 import { bootstrapUserRepositories } from './bootstrapService';
 import { seedInitialLibrary, importDraftPayload, inspectImportDraft, DuplicateImportError, type SeedImportResult, type ImportDraftInspection } from './importService';
 import type { TransformDraftResult } from '../import/transformDraft';
@@ -28,7 +22,6 @@ export interface ApplicationContextValue {
   insightsService: InsightsService;
   settingsService: SettingsService;
   taxonomyService: TaxonomyService;
-  imageAttachmentService: ImageAttachmentService | null;
   user: User | null;
   authLoading: boolean;
   isFirebaseConfigured: boolean;
@@ -60,14 +53,12 @@ const ApplicationContext = createContext<ApplicationContextValue | null>(null);
 export interface ApplicationProviderProps {
   children: React.ReactNode;
   customRepos?: Repositories;
-  customImageStorage?: ImageStorageGateway;
   isDev?: boolean;
 }
 
 export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
   children,
   customRepos,
-  customImageStorage,
   isDev: propIsDev,
 }) => {
   const isDev = propIsDev ?? (typeof import.meta !== 'undefined' && Boolean(import.meta.env?.DEV));
@@ -126,26 +117,6 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
   const insightsService = useMemo(() => new InsightsService(repos), [repos]);
   const settingsService = useMemo(() => new SettingsService(repos), [repos]);
   const taxonomyService = useMemo(() => new TaxonomyService(repos), [repos]);
-
-  const imageAttachmentService = useMemo(() => {
-    if (customImageStorage) {
-      return new ImageAttachmentService(repos, customImageStorage);
-    }
-
-    if (!user || !isFirebaseConfigured) {
-      return null;
-    }
-
-    const storage = getFirebaseStorage();
-    if (!storage) {
-      return null;
-    }
-
-    return new ImageAttachmentService(
-      repos,
-      new FirebaseImageStorageService(storage, user.uid),
-    );
-  }, [repos, user, customImageStorage]);
 
   // Subscribe to sync state changes from reviewService
   useEffect(() => {
@@ -260,7 +231,6 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
       insightsService,
       settingsService,
       taxonomyService,
-      imageAttachmentService,
       user,
       authLoading,
       isFirebaseConfigured,
@@ -290,7 +260,6 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
       insightsService,
       settingsService,
       taxonomyService,
-      imageAttachmentService,
       user,
       authLoading,
       isBootstrapped,

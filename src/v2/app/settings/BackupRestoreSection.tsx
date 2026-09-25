@@ -30,7 +30,12 @@ export interface BackupRestoreSectionProps {
 }
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'The backup operation failed';
+  if (!(error instanceof Error)) return 'The backup operation failed';
+  const cause = (error as Error & { causeValue?: unknown }).causeValue;
+  if (cause instanceof Error && cause.message && !error.message.includes(cause.message)) {
+    return `${error.message}: ${cause.message}`;
+  }
+  return error.message;
 }
 
 export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
@@ -49,7 +54,7 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
     if (!user || isSignedOut || isUnconfigured || isEphemeralDev) return null;
     const db = getFirestoreDb();
     const storage = getFirebaseStorage();
-    if (!db || !storage) return null;
+    if (!db) return null;
     return createFirebaseBackupWorkflow(repos, db, storage, user.uid);
   }, [suppliedWorkflow, repos, user, isSignedOut, isUnconfigured, isEphemeralDev]);
 
@@ -100,7 +105,7 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
   const unavailableMessage = isSignedOut
     ? 'Sign in to export or restore your cloud library.'
     : isUnconfigured
-      ? 'Configure Firebase Firestore and Storage to use backup and restore.'
+      ? 'Configure Firebase Firestore to use backup and restore.'
       : isEphemeralDev
         ? 'Backup and restore require the durable Firebase library.'
         : 'Backup and restore are unavailable until Firebase is ready.';
@@ -208,9 +213,13 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
         );
         triggerRefresh();
       } else {
+        const detail = restoreResult.error
+          ? `: ${errorMessage(restoreResult.error)}`
+          : '';
         setMessage(
           `Restore stopped at ${restoreResult.failedOperationId ?? 'post-restore verification'} ` +
-          `(${restoreResult.category ?? 'unknown error'}). Select the file again for a fresh preflight before retrying.`,
+          `(${restoreResult.category ?? 'unknown error'})${detail}. ` +
+          'Select the file again for a fresh preflight before retrying.',
         );
       }
     } catch (error) {

@@ -1,8 +1,11 @@
 import React from 'react';
+import type { Firestore } from 'firebase/firestore';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApplicationProvider } from '../../../application/ApplicationContext';
+import { bootstrapUserRepositories } from '../../../application/bootstrapService';
 import { createInMemoryRepositories } from '../../../persistence/memory/inMemoryRepositories';
+import { createFirebaseBackupWorkflow } from '../../../persistence/firebase/backupWorkflowFactory';
 import type {
   BackupRestoreInspection,
   BackupUserWorkflowService,
@@ -107,6 +110,35 @@ afterEach(() => {
 });
 
 describe('B7 Settings backup and restore workflow', () => {
+  it('keeps text-only export and inspection available and enables restore with no Storage instance', async () => {
+    const repos = createInMemoryRepositories();
+    await bootstrapUserRepositories(repos);
+    const workflow = createFirebaseBackupWorkflow(repos, {} as Firestore, null, 'owner');
+    const exported = await workflow.exportBackup();
+    expect(exported.backup.media).toEqual([]);
+
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    vi.stubGlobal('URL', {
+      createObjectURL: vi.fn(() => 'blob:text-only-backup'),
+      revokeObjectURL: vi.fn(),
+    });
+    renderSection(workflow);
+
+    const download = screen.getByRole('button', { name: 'Download backup' }) as HTMLButtonElement;
+    expect(download.disabled).toBe(false);
+    fireEvent.click(download);
+    await screen.findByText(/0 media files/);
+
+    fireEvent.change(screen.getByLabelText('Choose backup file'), {
+      target: {
+        files: [new File([exported.bytes as BlobPart], 'text-only.mindspark-backup')],
+      },
+    });
+    await screen.findByText('Knowledge items');
+    expect(
+      (screen.getByRole('button', { name: 'Restore missing data' }) as HTMLButtonElement).disabled,
+    ).toBe(false);
+  });
   it('downloads a generated archive and restores only after a successful preview', async () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     vi.stubGlobal('URL', {
@@ -199,5 +231,36 @@ describe('B7 Settings backup and restore workflow', () => {
     await screen.findByText('Knowledge items');
     expect(workflow.inspectBackup).toHaveBeenCalledTimes(2);
     expect(screen.getByRole('button', { name: 'Restore missing data' })).toBeDefined();
+  });
+  it('reports the configured Storage requirement behind a legacy media export failure', async () => {
+    const failure = Object.assign(new Error('Unable to read legacy image'), {
+      causeValue: new Error('Legacy media requires configured Firebase Storage'),
+    });
+    const workflow = makeWorkflow({
+      exportBackup: vi.fn(async () => { throw failure; }),
+    });
+    renderSection(workflow);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download backup' }));
+    await screen.findByText(/Legacy media requires configured Firebase Storage/);
+  });
+
+  it('reports the configured Storage requirement behind a legacy media restore failure', async () => {
+    const workflow = makeWorkflow({
+      executeRestore: vi.fn(async () => ({
+        status: 'incomplete' as const,
+        category: 'storage_failure' as const,
+        completedOperationIds: [],
+        noOpOperationIds: [],
+        failedOperationId: 'media_prerequisites:media:legacy-image',
+        error: new Error('Legacy media requires configured Firebase Storage'),
+      })),
+    });
+    renderSection(workflow);
+
+    chooseBackup('legacy-media.mindspark-backup');
+    await screen.findByText('Knowledge items');
+    fireEvent.click(screen.getByRole('button', { name: 'Restore missing data' }));
+    await screen.findByText(/Legacy media requires configured Firebase Storage/);
   });
 });

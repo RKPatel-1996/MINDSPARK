@@ -9,9 +9,11 @@ import { DEFAULT_SETTINGS } from '../application/bootstrapService';
 import { generateId } from '../domain/id';
 import type { ReviewCard } from '../domain/card';
 import type { CardState } from '../domain/cardState';
+import type { KnowledgeItem } from '../domain/knowledge';
 import {
   sanitizeFirestoreDto,
   mapKnowledgeItemToDTO,
+  mapDTOToKnowledgeItem,
   mapReviewCardToDTO,
   mapReviewEventToDTO,
   mapTaxonomyToDTO,
@@ -54,6 +56,37 @@ function containsUndefinedValues(val: any): { found: boolean; path: string } {
 }
 
 describe('Firestore DTO Safety & Sanitation', () => {
+  it('round-trips content blocks while keeping legacy KnowledgeItems without blocks readable', () => {
+    const legacyItem: KnowledgeItem = {
+      id: generateId(),
+      schemaVersion: 1,
+      title: 'Shell redirection',
+      content: 'Redirect standard output with >.',
+      taxonomy: {
+        domainId: 'computing',
+        topicId: 'linux',
+        subtopicId: 'shell',
+      },
+      status: 'active',
+      createdAt: '2026-09-15T10:00:00.000Z',
+      updatedAt: '2026-09-15T10:00:00.000Z',
+    };
+
+    const legacyDto = mapKnowledgeItemToDTO(legacyItem);
+    expect(legacyDto).not.toHaveProperty('blocks');
+    expect(mapDTOToKnowledgeItem(legacyDto).blocks).toBeUndefined();
+
+    const blocks: NonNullable<KnowledgeItem['blocks']> = [
+      { type: 'text', content: 'Preserve this order.' },
+      { type: 'code', language: 'bash', content: "printf 'a\n  b\n'" },
+      { type: 'math', content: String.raw`x^2 + y^2 = z^2` },
+    ];
+    const blockItem: KnowledgeItem = { ...legacyItem, blocks };
+    const blockDto = mapKnowledgeItemToDTO(blockItem);
+
+    expect(blockDto.blocks).toEqual(blocks);
+    expect(mapDTOToKnowledgeItem(blockDto).blocks).toEqual(blocks);
+  });
   it('transformDraftToDomain() on canonical seed packets produces Firestore DTOs containing no undefined values', () => {
     expect(canonicalSeedPackets.length).toBeGreaterThan(0);
 

@@ -69,7 +69,7 @@ function harness() {
     }),
   };
   const media: RestoreMediaGateway = {
-    canonicalPath: () => PATH,
+    canonicalPath: vi.fn(() => PATH),
     readImageIfExists: vi.fn(async (path) => stored.get(path) ?? null),
     uploadImage: vi.fn(async ({ blob }) => {
       stored.set(PATH, { bytes: new Uint8Array(await blob.arrayBuffer()), mimeType: blob.type });
@@ -81,6 +81,21 @@ function harness() {
 }
 
 describe('B6 restore execution boundary', () => {
+  it('restores a text-only archive without touching the media gateway', async () => {
+    const { repos, writes, media, service } = harness();
+    const backup = await makeBackup(false);
+    const plan = createRestorePlan(backup, await collectRestoreTargetState(repos));
+
+    const result = await service.execute(plan, { files: new Map() });
+
+    expect(result.status).toBe('complete');
+    expect(writes.applyInsert).toHaveBeenCalledTimes(6);
+    expect(media.canonicalPath).not.toHaveBeenCalled();
+    expect(media.readImageIfExists).not.toHaveBeenCalled();
+    expect(media.uploadImage).not.toHaveBeenCalled();
+    expect((await repos.knowledge.get(ITEM))?.images).toBeUndefined();
+    expect(await repos.reviewEvents.get(EVENT)).toMatchObject({ id: EVENT });
+  });
   it('rejects conflicting plans and bad media before any write', async () => {
     const { repos, writes, media, service } = harness();
     const backup = await makeBackup(true);

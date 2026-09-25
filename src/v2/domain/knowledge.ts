@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { opaqueIdSchema } from './id';
 import { taxonomyReferenceSchema, controlledTagSchema } from './taxonomy';
+import { contentBlocksSchema } from './contentBlock';
 
 /**
  * Knowledge Status
@@ -47,6 +48,7 @@ export const knowledgeItemSchema = z.object({
   schemaVersion: z.literal(1),
   title: z.string().min(1),
   content: z.string().min(1), // Core knowledge text
+  blocks: contentBlocksSchema.optional(), // Ordered text, code, and math content
   explanationMarkdown: z.string().optional(), // Optional Markdown explanation / context
   taxonomy: taxonomyReferenceSchema,
   tags: z.array(controlledTagSchema).optional(),

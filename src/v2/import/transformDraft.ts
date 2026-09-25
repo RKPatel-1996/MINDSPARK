@@ -63,6 +63,7 @@ export function transformDraftToDomain(
     schemaVersion: 1,
     title: validatedDraft.item.title,
     content: validatedDraft.item.content,
+    blocks: validatedDraft.item.blocks,
     explanationMarkdown: validatedDraft.item.explanationMarkdown,
     taxonomy: validatedDraft.item.taxonomy,
     tags: validatedDraft.item.tags,

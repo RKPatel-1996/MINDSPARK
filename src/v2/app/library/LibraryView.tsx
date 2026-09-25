@@ -2,12 +2,10 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useApplication } from '../../application';
 import { Search, Book, AlertTriangle, Archive, Filter, X, Sparkles, Loader2, Edit3, Check, Tag, CheckCircle, RotateCcw, Plus } from 'lucide-react';
 import { useShortcut } from '../shortcuts/useShortcut';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+import { ContentBlocks, MarkdownContent } from '../content/ContentRenderer';
 import type { KnowledgeItemWithCards } from '../../application/types';
 import type { KnowledgeItem, KnowledgeStatus, SourceReference } from '../../domain/knowledge';
+import type { ContentBlock } from '../../domain/contentBlock';
 import type { CardType } from '../../domain/card';
 import { validateTaxonomy, type TaxonomyRegistry, type TaxonomyReference } from '../../domain/taxonomy';
 import { CANONICAL_TAXONOMY_REGISTRY } from '../../application/canonicalTaxonomy';
@@ -19,7 +17,6 @@ import {
   type LibrarySort,
 } from '../../application/libraryQuery';
 import { TaxonomyBrowser } from './TaxonomyBrowser';
-import { LibraryImagesSection } from './LibraryImagesSection';
 import { ImportKnowledgeSection } from '../settings/ImportKnowledgeSection';
 import {
   MAX_BULK_LIFECYCLE_ITEMS,
@@ -102,7 +99,6 @@ export const LibraryView: React.FC = () => {
   const {
     repos,
     libraryService,
-    imageAttachmentService,
     seedLibrary,
     refreshCount,
     triggerRefresh,
@@ -147,6 +143,7 @@ export const LibraryView: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [editBlocks, setEditBlocks] = useState<ContentBlock[]>([]);
   const [editExplanation, setEditExplanation] = useState('');
   const [editDomainId, setEditDomainId] = useState('');
   const [editTopicId, setEditTopicId] = useState('');
@@ -469,6 +466,7 @@ export const LibraryView: React.FC = () => {
     setLifecycleError(null);
     setEditTitle(bundle.item.title);
     setEditContent(bundle.item.content);
+    setEditBlocks(bundle.item.blocks ? bundle.item.blocks.map((block) => ({ ...block })) : []);
     setEditExplanation(bundle.item.explanationMarkdown ?? '');
     setEditDomainId(bundle.item.taxonomy.domainId);
     setEditTopicId(bundle.item.taxonomy.topicId);
@@ -535,6 +533,7 @@ export const LibraryView: React.FC = () => {
       ...selectedItem.item,
       title: editTitle.trim(),
       content: editContent.trim(),
+      blocks: editBlocks.length > 0 ? editBlocks : undefined,
       explanationMarkdown: editExplanation,
       taxonomy: updatedTaxonomy,
       tags: editTags,
@@ -1018,9 +1017,18 @@ export const LibraryView: React.FC = () => {
                       {item.title}
                     </h3>
 
-                    <p className="text-sm text-[var(--muted-color)] font-content line-clamp-2 mb-3">
+                    <p className="text-sm text-[var(--muted-color)] font-content line-clamp-2 mb-2">
                       {item.content}
                     </p>
+                    {item.blocks && (
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {[...new Set(item.blocks.map((block) => block.type))].map((type) => (
+                          <span key={type} className="px-2 py-0.5 rounded bg-[var(--elevated-color)] border border-[var(--border-color)] text-[10px] uppercase font-mono text-[var(--muted-color)]">
+                            {type}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-ui text-[var(--muted-color)]">
@@ -1134,6 +1142,69 @@ export const LibraryView: React.FC = () => {
                       onChange={(e) => setEditExplanation(e.target.value)}
                       className="w-full p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono"
                     />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--muted-color)] font-ui">
+                        Ordered Content Blocks
+                      </label>
+                      <span className="text-[10px] text-[var(--muted-color)] font-ui">
+                        Markdown, code, or LaTeX
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {editBlocks.map((block, index) => (
+                        <div key={index} className="p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-color)]">
+                          <div className="flex items-center justify-between gap-3 mb-2">
+                            <span className="text-xs font-mono uppercase text-[var(--muted-color)]">
+                              {block.type}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setEditBlocks((previous) => previous.filter((_, blockIndex) => blockIndex !== index))}
+                              className="text-xs text-[var(--color-error)] hover:underline font-ui"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          {block.type === 'code' && (
+                            <input
+                              type="text"
+                              value={block.language ?? ''}
+                              onChange={(event) => setEditBlocks((previous) => previous.map((entry, blockIndex) => (
+                                blockIndex === index && entry.type === 'code'
+                                  ? { ...entry, language: event.target.value.trim() || undefined }
+                                  : entry
+                              )))}
+                              placeholder="Optional language (for example: python)"
+                              aria-label={`Language for code block ${index + 1}`}
+                              className="w-full mb-2 p-2 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-lg text-xs font-mono"
+                            />
+                          )}
+                          <textarea
+                            rows={block.type === 'code' ? 8 : 5}
+                            value={block.content}
+                            onChange={(event) => setEditBlocks((previous) => previous.map((entry, blockIndex) => (
+                              blockIndex === index ? { ...entry, content: event.target.value } : entry
+                            )))}
+                            aria-label={`${block.type} block ${index + 1}`}
+                            className="w-full p-2.5 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono whitespace-pre"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <button type="button" onClick={() => setEditBlocks((previous) => [...previous, { type: 'text', content: 'New text block' }])} className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-xs font-ui">
+                        Add text
+                      </button>
+                      <button type="button" onClick={() => setEditBlocks((previous) => [...previous, { type: 'code', content: 'code' }])} className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-xs font-ui">
+                        Add code
+                      </button>
+                      <button type="button" onClick={() => setEditBlocks((previous) => [...previous, { type: 'math', content: 'E = mc^2' }])} className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-xs font-ui">
+                        Add math
+                      </button>
+                    </div>
                   </div>
 
                   {/* Controlled Taxonomy - Human Readable Names Only */}
@@ -1251,48 +1322,35 @@ export const LibraryView: React.FC = () => {
                     <h4 className="text-xs font-semibold text-[var(--muted-color)] uppercase tracking-wider mb-2 font-ui">
                       Knowledge Summary
                     </h4>
-                    <p className="text-base font-content leading-relaxed text-[var(--text-color)]">
-                      {selectedItem.item.content}
-                    </p>
+                    <MarkdownContent
+                      source={selectedItem.item.content}
+                      className="text-base font-content leading-relaxed text-[var(--text-color)]"
+                    />
                   </div>
+
+                  {selectedItem.item.blocks && (
+                    <div>
+                      <h4 className="text-xs font-semibold text-[var(--muted-color)] uppercase tracking-wider mb-2 font-ui">
+                        Content
+                      </h4>
+                      <ContentBlocks blocks={selectedItem.item.blocks} className="space-y-4" />
+                    </div>
+                  )}
 
                   {selectedItem.item.explanationMarkdown && (
                     <div>
                       <h4 className="text-xs font-semibold text-[var(--muted-color)] uppercase tracking-wider mb-2 font-ui">
                         Full Explanation
                       </h4>
-                      <div className="p-4 rounded-xl bg-[var(--bg-color)] border border-[var(--border-color)] text-sm font-content leading-relaxed">
-                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                          {selectedItem.item.explanationMarkdown}
-                        </ReactMarkdown>
-                      </div>
+                      <MarkdownContent
+                        source={selectedItem.item.explanationMarkdown}
+                        className="p-4 rounded-xl bg-[var(--bg-color)] border border-[var(--border-color)] text-sm font-content leading-relaxed"
+                      />
                     </div>
                   )}
 
                   <SourcesSection sources={selectedItem.item.sources} />
-
-                  <LibraryImagesSection
-                    item={selectedItem.item}
-                    cards={selectedItem.cards}
-                    service={imageAttachmentService}
-                    isReadOnly={isReadOnly}
-                    onImagesChanged={(images) => {
-                      setSelectedItem((previous) => (
-                        previous
-                          ? {
-                              ...previous,
-                              item: {
-                                ...previous.item,
-                                images,
-                              },
-                            }
-                          : previous
-                      ));
-                      triggerRefresh();
-                    }}
-                  />
-
-                  <div>
+<div>
                     <h4 className="text-xs font-semibold text-[var(--muted-color)] uppercase tracking-wider mb-3 font-ui">
                       Review Cards ({selectedItem.cards.length})
                     </h4>

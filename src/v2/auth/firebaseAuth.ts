@@ -33,14 +33,24 @@ const firebaseConfig = {
   appId: getEnvVar('VITE_FIREBASE_APP_ID'),
 };
 
-export function getFirebaseConfigState(): FirebaseConfigState {
-  const values = Object.values(firebaseConfig);
-  if (values.every(v => !!v)) return 'configured';
-  if (values.every(v => !v)) return 'missing_configuration';
+export function classifyFirebaseCoreConfig(values: readonly unknown[]): FirebaseConfigState {
+  if (values.every(value => Boolean(value))) return 'configured';
+  if (values.every(value => !value)) return 'missing_configuration';
   return 'invalid_configuration';
 }
 
+export function getFirebaseConfigState(): FirebaseConfigState {
+  return classifyFirebaseCoreConfig([
+    firebaseConfig.apiKey,
+    firebaseConfig.authDomain,
+    firebaseConfig.projectId,
+    firebaseConfig.messagingSenderId,
+    firebaseConfig.appId,
+  ]);
+}
+
 export const isFirebaseConfigured = getFirebaseConfigState() === 'configured';
+export const isFirebaseStorageConfigured = Boolean(firebaseConfig.storageBucket);
 
 export const app = isFirebaseConfigured 
   ? (getApps().length === 0 ? initializeApp(firebaseConfig as any) : getApp())
