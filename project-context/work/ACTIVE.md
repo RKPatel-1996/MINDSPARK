@@ -1,19 +1,18 @@
 # Active Work
 
-ACTIVE_WORK: `WORK-002`
+ACTIVE_WORK: NONE
 
-Title: Promote Governance Foundation to Canonical Main
+WORK-001: COMPLETE
+WORK-002: COMPLETE
 
-Status: PROPOSED / NOT STARTED
+Canonical local `main` now contains the governed project-management foundation.
 
-WORK-001 is complete.
+No product-development WORK item has been started.
 
-WORK-002 may integrate only governance work into canonical `main`.
+## Next proposed work
 
-It must not touch:
+`WORK-003  -  Preserve and Reconcile Text/Code/Math In-Progress Work`
 
-- the dirty `task/text-code-math-content-v1` primary worktree;
-- `task/agent-workflow-infra-v1`;
-- application behavior;
-- Firebase/cloud state;
-- deployment.
+Reason: `task/text-code-math-content-v1` contains substantial uncommitted work and is currently the highest-risk unreconciled project state.
+
+Do not begin WORK-003 until separately authorized.

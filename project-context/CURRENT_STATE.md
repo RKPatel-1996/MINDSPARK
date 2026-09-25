@@ -1,4 +1,4 @@
-# MindSpark — Current State
+# MindSpark  -  Current State
 
 Status: VERIFIED
 Verified: 2026-09-25
@@ -47,15 +47,15 @@ Existing `AGENTS.md` authority was preserved. Live Git, source, tests, and autho
 
 ## Authoritative repository documentation
 
-- `AGENTS.md` — repository operating authority
-- `README.md` — general project workflow
-- `docs/MINDSPARK_V2_ARCHITECTURE.md` — architecture/domain/application/UI authority
-- `docs/MINDSPARK_V2_PERSISTENCE.md` — persistence/Firebase/reconciliation authority
-- `docs/MINDSPARK_IMPORT_FORMAT.md` — import authority
-- `docs/MINDSPARK_BACKUP_RECOVERY.md` — backup/recovery documentation
-- `docs/MINDSPARK_B8_STAGE1_EVIDENCE.md` — B8 Stage 1 evidence
-- `DEPLOYMENT.md` — deployment authority
-- `.github/workflows/web-release-verification.yml` — CI web-release gate
+- `AGENTS.md`  -  repository operating authority
+- `README.md`  -  general project workflow
+- `docs/MINDSPARK_V2_ARCHITECTURE.md`  -  architecture/domain/application/UI authority
+- `docs/MINDSPARK_V2_PERSISTENCE.md`  -  persistence/Firebase/reconciliation authority
+- `docs/MINDSPARK_IMPORT_FORMAT.md`  -  import authority
+- `docs/MINDSPARK_BACKUP_RECOVERY.md`  -  backup/recovery documentation
+- `docs/MINDSPARK_B8_STAGE1_EVIDENCE.md`  -  B8 Stage 1 evidence
+- `DEPLOYMENT.md`  -  deployment authority
+- `.github/workflows/web-release-verification.yml`  -  CI web-release gate
 
 ## Verification commands
 
@@ -115,12 +115,13 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 
 - Management foundation: READY
 - Repository baseline: VERIFIED
-- WORK-001: COMPLETE_PENDING_COMMIT
-- Product repairs started by WORK-001: NO
+- WORK-001: COMPLETE
+- WORK-002: COMPLETE locally; origin push pending
+- Product repairs started by governance work: NO
 - Cloud/Firebase changes: NONE
 
 ## Next proposed bounded work
 
-`WORK-002 — Promote Governance Foundation to Canonical Main`
+`WORK-003 - Preserve and Reconcile Text/Code/Math In-Progress Work`
 
-Purpose: integrate the governance-only work into canonical `main` without touching unfinished product work.
+Purpose: safely preserve, review, checkpoint, and reconcile the substantial uncommitted work currently held in `task/text-code-math-content-v1`.
