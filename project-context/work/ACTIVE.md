@@ -1,17 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: `WORK-003`
+ACTIVE_WORK: NONE
 
-Title: Preserve and Reconcile Text/Code/Math In-Progress Work
+WORK-001: COMPLETE
+WORK-002: COMPLETE
+WORK-003: COMPLETE
 
-Status: VERIFIED / READY FOR PROMOTION
+Canonical `main` contains the verified text/code/math implementation.
 
-Reconciled candidate:
+No product-development WORK item is currently active.
 
-- `2245d31f03c9ba4417127d4bb7233a795817a02e`
+## Next proposed work
 
-All required local verification gates passed.
+`WORK-004 - Review Unmerged Workflow Infrastructure Branch`
 
-Next action: promote the reconciled commit to canonical `main`.
+Purpose: determine whether `task/agent-workflow-infra-v1` should be promoted, revised, or retired based on current canonical main.
 
-Do not begin unrelated product work before promotion is resolved.
+Do not begin WORK-004 until separately authorized.
