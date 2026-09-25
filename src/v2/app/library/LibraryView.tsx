@@ -108,6 +108,7 @@ export const LibraryView: React.FC = () => {
     isUnconfigured,
     isEphemeralDev,
     isDev,
+    isBootstrapped,
   } = useApplication();
   const isReadOnly = isSignedOut || (isUnconfigured && !isEphemeralDev);
 
@@ -159,19 +160,37 @@ export const LibraryView: React.FC = () => {
     }
   }, [repos]);
 
+  const libraryLoadGenerationRef = useRef(0);
+
   const loadLibrary = useCallback(async () => {
+    const generation = ++libraryLoadGenerationRef.current;
     try {
       setLoading(true);
       const data = await libraryService.listKnowledgeItems();
-      setItemsWithCards(data);
+      if (generation === libraryLoadGenerationRef.current) {
+        setItemsWithCards(data);
+      }
     } finally {
-      setLoading(false);
+      if (generation === libraryLoadGenerationRef.current) {
+        setLoading(false);
+      }
     }
   }, [libraryService]);
 
   useEffect(() => {
-    loadLibrary();
-  }, [loadLibrary, refreshCount]);
+    if (!isBootstrapped && (!isUnconfigured || isEphemeralDev)) {
+      libraryLoadGenerationRef.current += 1;
+      setItemsWithCards([]);
+      setLoading(true);
+      return;
+    }
+
+    void loadLibrary();
+
+    return () => {
+      libraryLoadGenerationRef.current += 1;
+    };
+  }, [isBootstrapped, loadLibrary, refreshCount]);
 
   // Helper name resolvers for human-readable taxonomy display
   const getDomainName = useCallback(
