@@ -87,3 +87,20 @@ Use deeper history only when the task requires it.
 4. **Level 4:** large logs, broad history, large regression suites, seed data, and generated artifacts only during investigation.
 
 Do not preload context simply because it exists.
+
+
+<!-- BEGIN GOVERNED_PROJECT_CONTEXT_V1 -->
+## Governed project context
+
+Before making project-specific claims or beginning implementation:
+
+1. Read `project-context/00_START_HERE.md`.
+2. Read `project-context/CURRENT_STATE.md` and `project-context/work/ACTIVE.md` for orientation.
+3. Verify the relevant claim against the live local repository before calling it `CURRENT` or `VERIFIED`.
+4. Treat live Git state, source files, tests, and authoritative subsystem documentation as higher authority than ChatGPT memory or project-context summaries.
+5. If `project-context/` disagrees with live repository evidence, update the context files; do not force the repository to match a stale summary.
+6. Keep work bounded by the active WORK item. Do not widen scope silently.
+7. Do not deploy, alter cloud/Firebase state, or perform destructive/state-shaping operations without the explicit authorization already required by MindSpark governance.
+
+`project-context/` is a durable navigation and handoff layer, not an alternative source tree or substitute for Git verification.
+<!-- END GOVERNED_PROJECT_CONTEXT_V1 -->
