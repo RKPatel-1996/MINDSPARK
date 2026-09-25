@@ -125,3 +125,14 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 `WORK-003 - Preserve and Reconcile Text/Code/Math In-Progress Work`
 
 Purpose: safely preserve, review, checkpoint, and reconcile the substantial uncommitted work currently held in `task/text-code-math-content-v1`.
+
+
+## WORK-003 verified candidate
+
+- checkpoint: `112d856`
+- reconciled candidate: `2245d31`
+- Firebase rules: PASS 60/60
+- ordinary suite: PASS 431/431
+- PWA artifact suite: PASS 7/7
+- production build: PASS
+- promotion: PENDING

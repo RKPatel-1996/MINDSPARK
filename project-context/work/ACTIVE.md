@@ -1,18 +1,17 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: `WORK-003`
 
-WORK-001: COMPLETE
-WORK-002: COMPLETE
+Title: Preserve and Reconcile Text/Code/Math In-Progress Work
 
-Canonical local `main` now contains the governed project-management foundation.
+Status: VERIFIED / READY FOR PROMOTION
 
-No product-development WORK item has been started.
+Reconciled candidate:
 
-## Next proposed work
+- `2245d31f03c9ba4417127d4bb7233a795817a02e`
 
-`WORK-003 - Preserve and Reconcile Text/Code/Math In-Progress Work`
+All required local verification gates passed.
 
-Reason: `task/text-code-math-content-v1` contains substantial uncommitted work and is currently the highest-risk unreconciled project state.
+Next action: promote the reconciled commit to canonical `main`.
 
-Do not begin WORK-003 until separately authorized.
+Do not begin unrelated product work before promotion is resolved.
