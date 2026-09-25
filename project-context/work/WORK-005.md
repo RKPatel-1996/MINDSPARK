@@ -85,3 +85,13 @@ Still requiring explicit validation:
 - text-only/current backup and restore against the controlled cloud environment
 
 Any additional cloud mutation, second-user creation, restore execution, or deployment remains subject to explicit authorization.
+
+## Verified browser offline persistence
+
+- With the existing authenticated cloud item already loaded, MindSpark remained usable after internet connectivity was removed.
+- After an offline reload, the existing review question remained visible from local persistence.
+- Firestore reported backend unavailability and explicitly entered offline mode.
+- Restoring internet connectivity caused the application Sync status to recover automatically without data loss.
+- Browser offline read persistence: PASS.
+- Offline-to-online reconnect behavior: PASS.
+- Repeated Firebase/service-worker network-failure console messages remain a non-blocking observability/polish issue.
