@@ -145,3 +145,12 @@ Repair checkpoint:
 - WORK-005 core cloud acceptance: COMPLETE.
 
 Firebase Storage remained disabled and no billing changes were made.
+
+## Canonical promotion
+
+- WORK-005 was promoted to canonical `main` by fast-forward.
+- Promoted implementation checkpoint: `22d9097`.
+- Canonical `verify:web-release`: 59 test files / 434 tests PASS.
+- PWA artifact verification: 7 / 7 PASS.
+- Canonical `main` and `origin/main` were synchronized at `22d9097` before this closure record.
+- WORK-005 status: COMPLETE.
