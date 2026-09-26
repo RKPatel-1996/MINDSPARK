@@ -13,7 +13,7 @@ MindSpark V2 uses an event-sourced learning model. The authoritative durable dat
 ## 2. No Mutable Authoritative CardState
 **CRITICAL**: `CardState` is derived/rebuildable state.
 We do **not** treat a mutable Firestore `CardState` document as the source of truth because Cloud Firestore resolves offline writes using last-write-wins.
-If two offline devices review the same card, both immutable `ReviewEvent`s must survive and merge. A future reconciliation phase will rebuild `CardState` deterministically from these events.
+If two offline devices review the same card, both immutable `ReviewEvent`s survive and merge. The implemented reconciliation engine rebuilds `CardState` deterministically from the complete applicable event history.
 
 ## 3. Collection Layout (Per-User)
 - `/users/{uid}/knowledgeItems/{knowledgeItemId}`
@@ -47,12 +47,13 @@ Firestore is initialized with `persistentLocalCache` and `persistentMultipleTabM
 - `reviewTimestamp`: The time the event actually occurred on the device. (Used for memory reconstruction).
 - `serverReceivedAt`: The time the server processed the event (via `serverTimestamp()`). (Used for sync and late-arrival detection).
 
-## 7. Sync and Reconciliation Engine (Phase 2B)
+## 7. Sync and Reconciliation Engine
 MindSpark uses a deterministic reconciliation engine to reconstruct state from immutable review events.
 
 **Sync Watermarks:**
 - Events are pulled using `listReceivedAfter`, ordered by `serverReceivedAt` ASC, then `id` ASC.
 - `serverReceivedAt` uses a `PreciseTimestamp` (seconds/nanoseconds) to avoid JS date precision loss.
+- Events whose server timestamp is still unresolved remain pending and do not advance the durable sync watermark.
 
 **Canonical Memory Order:**
 - During reconciliation, events are sorted by `reviewTimestamp` ASC, then `id` ASC (tie-breaker).
