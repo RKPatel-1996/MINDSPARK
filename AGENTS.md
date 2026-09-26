@@ -39,6 +39,12 @@ Do not load all of these documents for every task.
 4. Implement only the requested change.
 5. Run targeted tests while iterating, inspect the diff, then run the appropriate final gate.
 
+Safe tracked-text editing:
+
+- Prefer contextual unified patches for small edits to existing tracked text files.
+- Validate patches with `git apply --check` before applying and `git diff --check` afterward.
+- Avoid whole-file PowerShell/.NET rewrites for small edits. When .NET file APIs are necessary, use absolute paths and preserve the existing encoding and newline style.
+
 Do not run a broad repository audit for ordinary bounded work.
 
 ## Verification Ladder
