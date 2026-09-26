@@ -188,6 +188,33 @@ Canonical promotion / verification checkpoint:
 - PWA build-artifact suite 7 / 7 PASS
 - canonical worktree clean
 
+
+### WORK-008 - Production Bundle Performance Hardening
+
+Status: VERIFIED / READY_FOR_PROMOTION on `task/work-008-bundle-performance-v1`.
+
+Implementation checkpoint:
+
+- `9b4df241ea77098df6fcc23d37aa325ebf4e3d35` - `feat(perf): split production bundles`
+
+Verified feature-branch evidence:
+
+- top-level Review, Library, Insights, and Settings routes are lazy-loaded;
+- initial eager JavaScript gzip reduced from approximately 527.27 kB to 345.89 kB;
+- reduction is approximately 34.4%;
+- every generated JavaScript chunk is below 500 kB minified;
+- Vite large-chunk warnings: 0;
+- final Rollup circular-chunk warnings: 0;
+- PWA precache is approximately 2,381.63 KiB versus the approximately 2,386.22 KiB baseline;
+- direct lazy HashRouter suite: 5 / 5 PASS;
+- ordinary suite: 63 files / 456 tests PASS;
+- PWA build-artifact suite: 8 / 8 PASS;
+- `npm run verify:web-release`: PASS.
+
+`GAP-002` is `RESOLVED_PENDING_PROMOTION` on the WORK-008 branch.
+
+Canonical `main` has not yet received WORK-008. Promotion and canonical verification are still required before WORK-008 or GAP-002 are described as canonically complete/resolved.
+
 ## Current Firebase / cloud posture
 
 Core MindSpark operation does not require Firebase Storage.
@@ -283,17 +310,17 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - WORK-005: COMPLETE / PROMOTED
 - WORK-006: COMPLETE / PROMOTED
 - WORK-007: COMPLETE / PROMOTED
-- Active bounded work item: NONE
-- Open gap: GAP-002 - production bundle performance
+- Active bounded work item: WORK-008 - VERIFIED / READY_FOR_PROMOTION
+- GAP-002: RESOLVED_PENDING_PROMOTION by verified WORK-008; canonical promotion pending
 - Open gap: GAP-003 - production dependency security
 
 ## Next bounded work
 
-No bounded WORK item is currently active.
+WORK-008 is the active bounded work item and is VERIFIED / READY_FOR_PROMOTION.
 
-Two durable technical gaps are open:
+Current durable-gap state:
 
-- `GAP-002` - production bundle performance / code splitting
+- `GAP-002` - RESOLVED_PENDING_PROMOTION by WORK-008
 - `GAP-003` - production dependency security findings
 
-Before implementation, inspect live canonical `main`, choose the next priority explicitly, and register a new bounded WORK item. Do not solve either gap implicitly inside unrelated work.
+Next action: promote WORK-008 to canonical `main`, rerun canonical verification, then close WORK-008 and mark GAP-002 canonically resolved. `GAP-003` remains a separate future work item.

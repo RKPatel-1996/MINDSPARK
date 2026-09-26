@@ -1,6 +1,6 @@
 # WORK-008 - Production Bundle Performance Hardening
 
-Status: ACTIVE
+Status: VERIFIED / READY_FOR_PROMOTION
 
 Base: `b51a0cd5d151c38f4911ebb9bf06c05b0b3de38f`
 
@@ -123,3 +123,80 @@ WORK-008 is complete only when:
 Start with route-level lazy loading because canonical source provides a stable top-level split boundary in `src/App.tsx`.
 
 Measure the resulting production build before introducing `manualChunks` or deeper component-level splitting.
+
+## Verified implementation and acceptance evidence
+
+Implementation checkpoint:
+
+- `9b4df241ea77098df6fcc23d37aa325ebf4e3d35` - `feat(perf): split production bundles`
+
+Implemented:
+
+- top-level Review, Library, Insights, and Settings routes now load through `React.lazy`;
+- `React.Suspense` provides an accessible route-loading status fallback;
+- HashRouter route names and wildcard redirect behavior are preserved;
+- production vendor splitting is evidence-driven rather than generic:
+  - React / React DOM / React Router;
+  - Zod;
+  - `ts-fsrs`;
+  - Firebase core;
+  - Firebase Authentication;
+  - Firestore;
+  - Firestore transport dependencies;
+- the Vite default warning threshold was not increased;
+- generated route chunks remain covered by the existing Workbox precache model.
+
+Measured before/after production evidence:
+
+- WORK-007 baseline main JavaScript:
+  - approximately 1,930.59 kB minified;
+  - approximately 527.27 kB gzip;
+- verified WORK-008 eager initial JavaScript set:
+  - approximately 1,265.68 kB minified;
+  - approximately 345.89 kB gzip;
+- initial gzip reduction:
+  - approximately 34.4%, exceeding the required 20% reduction;
+- final generated JavaScript:
+  - no chunk exceeds 500 kB minified;
+  - largest application/content chunk is approximately 435.58 kB;
+  - Firestore chunk is approximately 425.92 kB;
+- Vite large-chunk warnings:
+  - 0;
+- Rollup circular-chunk warnings from the final chunk design:
+  - 0;
+- PWA precache:
+  - baseline approximately 2,386.22 KiB;
+  - WORK-008 approximately 2,381.63 KiB;
+  - no precache regression.
+
+Behavioral and release verification:
+
+- direct HashRouter lazy-route regression suite: 5 / 5 PASS;
+- `/review`, `/library`, `/insights`, and `/settings` direct hash routes PASS;
+- wildcard redirect to `/review` PASS;
+- lazy route chunks are verified present in Workbox precache output;
+- production JavaScript <500 kB artifact contract PASS;
+- TypeScript `tsc --noEmit`: PASS;
+- ordinary Vitest suite: 63 files / 456 tests PASS;
+- production Vite build: PASS;
+- PWA build-artifact suite: 8 / 8 PASS;
+- `npm run verify:web-release`: PASS;
+- `git diff --check`: PASS.
+
+Known non-blocking output remains unchanged in category:
+
+- existing React `act(...)` warnings occur in some tests;
+- Rollup reports Zod annotation warnings.
+
+Neither fails the authoritative release gate.
+
+## Acceptance disposition
+
+All registered WORK-008 acceptance conditions are satisfied on
+`task/work-008-bundle-performance-v1`.
+
+WORK-008 is therefore VERIFIED / READY_FOR_PROMOTION.
+
+This branch has not yet been promoted to canonical `main`; canonical status must not be claimed until promotion and canonical verification complete.
+
+`GAP-002` may be marked `RESOLVED_PENDING_PROMOTION` on this branch. It becomes canonically resolved only after WORK-008 is promoted and verified on canonical `main`.
