@@ -1,17 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: WORK-009
 
-Last completed work: WORK-008 - Production Bundle Performance Hardening
+Title: Production Dependency Security Remediation
 
-Status: COMPLETE / PROMOTED
+Status: ACTIVE
 
-Canonical verification checkpoint: `10da13cf3068a4916f89ffc86da6a555ffe0eb6a`
+Base: `aee00bf7c544bbe7634dfb9ae029e54525bdedee`
 
-Verification: initial eager JavaScript gzip reduced from approximately 527.27 kB to 345.89 kB (34.4%); all generated JavaScript chunks are below 500 kB; PWA precache is approximately 2,381.63 KiB; 63 files / 456 ordinary tests PASS; PWA artifact suite 8 / 8 PASS; canonical `verify:web-release` PASS.
+Branch: `task/work-009-dependency-security-v1`
 
-GAP-002: RESOLVED.
+Derived from: `GAP-003`
 
-GAP-003 remains OPEN as a separate dependency-security work item.
+Current phase: Registered after audit, dependency-path, reachability, and compatible-version reconnaissance. No dependency changes have been applied yet.
 
-Safety boundary remains unchanged: no deployment, Firebase/cloud mutation, Storage enablement, billing change, or dependency-security remediation was performed by WORK-008.
+Scope: Remove the verified dependency-security findings through minimal compatible direct and transitive updates while preserving application, backup, routing, build, PWA, and Firebase tooling behavior.
+
+Safety: No force audit fix, major-version upgrade, cloud mutation, deployment, Storage enablement, billing change, or unrelated dependency modernization.
