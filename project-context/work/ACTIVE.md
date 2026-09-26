@@ -1,16 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: WORK-008
 
-Last completed: WORK-007 - Canonical Documentation Reconciliation + Capability Audit
+Title: Production Bundle Performance Hardening
 
-Status: COMPLETE / PROMOTED
+Status: ACTIVE
 
-Canonical promotion / verification checkpoint: `dae5c97de6876d22e75fbfcfab30c03030eebadb`
+Base: `b51a0cd5d151c38f4911ebb9bf06c05b0b3de38f`
 
-Open durable gaps:
+Branch: `task/work-008-bundle-performance-v1`
 
-- GAP-002 - Oversized Single Production JavaScript Bundle
-- GAP-003 - Production Dependency Security Findings
+Derived from: `GAP-002`
 
-Next action: inspect live canonical `main` and register the next bounded WORK item before implementation.
+Current phase: Registered from canonical bundle reconnaissance. Phase A route-level lazy-loading implementation has not started.
+
+Scope: Reduce the oversized initial production JavaScript bundle through measured code splitting while preserving routing, offline-first PWA behavior, and product semantics.
+
+Safety: No deployment, Firebase/cloud mutation, dependency-security remediation, FSRS changes, billing changes, or warning-limit suppression.
