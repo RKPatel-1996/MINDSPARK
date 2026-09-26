@@ -77,11 +77,11 @@ describe('MindSpark PWA Fresh Build Artifact Verification', () => {
     expect(combinedJs).toContain('./sw.js');
   });
 
-  it('5. verifies static shell assets appear in service worker precache output', () => {
+  it('5. verifies static shell and lazy route assets appear in service worker precache output', () => {
     const swContent = fs.readFileSync(swPath, 'utf-8');
     expect(swContent).toContain('precacheAndRoute(');
 
-    // Static application shell assets (handles minified & unminified keys):
+    // Static application shell assets:
     expect(swContent).toMatch(/(?:"url"|url):\s*"index\.html"/);
     expect(swContent).toMatch(/(?:"url"|url):\s*"manifest\.json"/);
     expect(swContent).toMatch(/(?:"url"|url):\s*"assets\/index-.*\.js"/);
@@ -90,9 +90,39 @@ describe('MindSpark PWA Fresh Build Artifact Verification', () => {
     expect(swContent).toMatch(/(?:"url"|url):\s*"icon-512\.png"/);
     expect(swContent).toMatch(/(?:"url"|url):\s*"icon\.svg"/);
     expect(swContent).toMatch(/(?:"url"|url):\s*"icon-maskable-512\.png"/);
+
+    // Lazy route surfaces remain available in the installed/offline PWA.
+    expect(swContent).toMatch(/(?:"url"|url):\s*"assets\/ReviewView-.*\.js"/);
+    expect(swContent).toMatch(/(?:"url"|url):\s*"assets\/LibraryView-.*\.js"/);
+    expect(swContent).toMatch(/(?:"url"|url):\s*"assets\/InsightsView-.*\.js"/);
+    expect(swContent).toMatch(/(?:"url"|url):\s*"assets\/SettingsView-.*\.js"/);
   });
 
-  it('6. verifies no Firestore/Firebase network runtime-caching rule was introduced', () => {
+  it('6. keeps every generated production JavaScript chunk below 500 kB', () => {
+    const assetsDir = path.join(distDir, 'assets');
+    const jsFiles = fs.readdirSync(assetsDir).filter((file) => file.endsWith('.js'));
+
+    expect(jsFiles.length).toBeGreaterThan(1);
+
+    const oversized = jsFiles
+      .map((file) => ({
+        file,
+        bytes: fs.statSync(path.join(assetsDir, file)).size,
+      }))
+      .filter(({ bytes }) => bytes > 500_000);
+
+    if (oversized.length > 0) {
+      throw new Error(
+        `Oversized production chunks: ${oversized
+          .map(({ file, bytes }) => `${file}=${bytes}`)
+          .join(', ')}`,
+      );
+    }
+
+    expect(oversized).toEqual([]);
+  });
+
+  it('7. verifies no Firestore/Firebase network runtime-caching rule was introduced', () => {
     const swContent = fs.readFileSync(swPath, 'utf-8');
 
     // Confirm no Firebase / Firestore / Google Auth endpoints are cached or intercepted
@@ -108,7 +138,7 @@ describe('MindSpark PWA Fresh Build Artifact Verification', () => {
     expect(swContent).not.toContain('StaleWhileRevalidate');
   });
 
-  it('7. verifies relative-base / GitHub Pages deployment compatibility', () => {
+  it('8. verifies relative-base / GitHub Pages deployment compatibility', () => {
     const distIndexContent = fs.readFileSync(distIndexPath, 'utf-8');
 
     // Assets must resolve relatively

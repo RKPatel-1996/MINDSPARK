@@ -25,6 +25,64 @@ export default defineConfig(({ mode }) => {
           },
         }),
       ],
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks(id) {
+              const moduleId = id.replace(/\\/g, '/');
+
+              if (
+                moduleId.includes('/node_modules/@firebase/firestore/') ||
+                moduleId.includes('/node_modules/firebase/firestore/')
+              ) {
+                return 'vendor-firestore';
+              }
+
+              if (
+                moduleId.includes('/node_modules/@firebase/webchannel-wrapper/') ||
+                moduleId.includes('/node_modules/idb/') ||
+                moduleId.includes('/node_modules/re2js/')
+              ) {
+                return 'vendor-firestore-transport';
+              }
+
+              if (
+                moduleId.includes('/node_modules/@firebase/auth/') ||
+                moduleId.includes('/node_modules/firebase/auth/')
+              ) {
+                return 'vendor-firebase-auth';
+              }
+
+              if (
+                moduleId.includes('/node_modules/@firebase/') ||
+                moduleId.includes('/node_modules/firebase/')
+              ) {
+                return 'vendor-firebase-core';
+              }
+
+              if (
+                moduleId.includes('/node_modules/react/') ||
+                moduleId.includes('/node_modules/react-dom/') ||
+                moduleId.includes('/node_modules/react-router/') ||
+                moduleId.includes('/node_modules/react-router-dom/') ||
+                moduleId.includes('/node_modules/scheduler/')
+              ) {
+                return 'vendor-react';
+              }
+
+              if (moduleId.includes('/node_modules/zod/')) {
+                return 'vendor-zod';
+              }
+
+              if (moduleId.includes('/node_modules/ts-fsrs/')) {
+                return 'vendor-fsrs';
+              }
+
+              return undefined;
+            },
+          },
+        },
+      },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
