@@ -314,15 +314,19 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - WORK-009: COMPLETE / PROMOTED
 - GAP-002: RESOLVED
 - GAP-003: RESOLVED
-- Active bounded work item: NONE
+- GAP-004: OPEN
+- GAP-005: OPEN
+- Active bounded work item: WORK-010 - REGISTERED / NOT_STARTED
 
 ## Next bounded work
 
-No bounded WORK item is currently active.
+WORK-010 is the active bounded work item and is REGISTERED / NOT_STARTED. It addresses GAP-004, the confirmed High review-submission persistence defect recorded in DISC-002.
 
 Current durable-gap state:
 
 - `GAP-002` - RESOLVED by WORK-008
 - `GAP-003` - RESOLVED by WORK-009; five moderate `firebase-tools` development-tooling residuals remain explicitly characterized and are absent from the production audit
+- `GAP-004` - OPEN; Review submission can be lost after UI advancement
+- `GAP-005` - OPEN; immutable ReviewEvent Firestore rules are weaker than domain validation
 
-WORK-009 is complete and canonically reverified. Next technical work must be registered as a new bounded WORK item before implementation begins.
+Next action: begin WORK-010 from the freshly verified canonical repository. GAP-005 remains queued for a separately registered bounded correction after WORK-010 closes. DISC-002 preserves the remaining confirmed, suspected, testing, architecture, accessibility, and documentation findings for later triage.
