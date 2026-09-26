@@ -1,6 +1,6 @@
 # WORK-008 - Production Bundle Performance Hardening
 
-Status: VERIFIED / READY_FOR_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `b51a0cd5d151c38f4911ebb9bf06c05b0b3de38f`
 
@@ -195,8 +195,8 @@ Neither fails the authoritative release gate.
 All registered WORK-008 acceptance conditions are satisfied on
 `task/work-008-bundle-performance-v1`.
 
-WORK-008 is therefore VERIFIED / READY_FOR_PROMOTION.
+WORK-008 is COMPLETE / PROMOTED.
 
-This branch has not yet been promoted to canonical `main`; canonical status must not be claimed until promotion and canonical verification complete.
+WORK-008 was fast-forward promoted to canonical `main` at `10da13cf3068a4916f89ffc86da6a555ffe0eb6a` and the canonical `npm run verify:web-release` gate passed.
 
-`GAP-002` may be marked `RESOLVED_PENDING_PROMOTION` on this branch. It becomes canonically resolved only after WORK-008 is promoted and verified on canonical `main`.
+`GAP-002` is canonically RESOLVED by the promoted and reverified WORK-008 implementation.

@@ -36,9 +36,9 @@ This `CURRENT_STATE.md` is part of the subsequent governance-closure update; use
 Canonical `npm run verify:web-release`:
 
 - TypeScript `tsc --noEmit`: PASS
-- ordinary Vitest suite: 62 files / 451 tests PASS
+- ordinary Vitest suite: 63 files / 456 tests PASS
 - production Vite build: PASS
-- PWA build-artifact suite: 7 / 7 PASS
+- PWA build-artifact suite: 8 / 8 PASS
 - canonical `git diff --check`: PASS
 - canonical worktree after verification: clean
 
@@ -191,7 +191,7 @@ Canonical promotion / verification checkpoint:
 
 ### WORK-008 - Production Bundle Performance Hardening
 
-Status: VERIFIED / READY_FOR_PROMOTION on `task/work-008-bundle-performance-v1`.
+Status: COMPLETE / PROMOTED.
 
 Implementation checkpoint:
 
@@ -211,9 +211,9 @@ Verified feature-branch evidence:
 - PWA build-artifact suite: 8 / 8 PASS;
 - `npm run verify:web-release`: PASS.
 
-`GAP-002` is `RESOLVED_PENDING_PROMOTION` on the WORK-008 branch.
+`GAP-002` is RESOLVED.
 
-Canonical `main` has not yet received WORK-008. Promotion and canonical verification are still required before WORK-008 or GAP-002 are described as canonically complete/resolved.
+WORK-008 was fast-forward promoted to canonical `main` at `10da13cf3068a4916f89ffc86da6a555ffe0eb6a`. Canonical `npm run verify:web-release` passed after promotion.
 
 ## Current Firebase / cloud posture
 
@@ -310,17 +310,17 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - WORK-005: COMPLETE / PROMOTED
 - WORK-006: COMPLETE / PROMOTED
 - WORK-007: COMPLETE / PROMOTED
-- Active bounded work item: WORK-008 - VERIFIED / READY_FOR_PROMOTION
-- GAP-002: RESOLVED_PENDING_PROMOTION by verified WORK-008; canonical promotion pending
+- WORK-008: COMPLETE / PROMOTED
+- GAP-002: RESOLVED
 - Open gap: GAP-003 - production dependency security
 
 ## Next bounded work
 
-WORK-008 is the active bounded work item and is VERIFIED / READY_FOR_PROMOTION.
+No bounded WORK item is currently active.
 
 Current durable-gap state:
 
-- `GAP-002` - RESOLVED_PENDING_PROMOTION by WORK-008
+- `GAP-002` - RESOLVED by WORK-008
 - `GAP-003` - production dependency security findings
 
-Next action: promote WORK-008 to canonical `main`, rerun canonical verification, then close WORK-008 and mark GAP-002 canonically resolved. `GAP-003` remains a separate future work item.
+WORK-008 is complete. `GAP-003` remains the next durable open technical gap and must be handled as a separately registered bounded work item.
