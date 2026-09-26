@@ -1,6 +1,6 @@
 # WORK-007 - Canonical Documentation Reconciliation + Capability Audit
 
-Status: ACTIVE
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `9c91d6ea9779a27db59b6e840eb3c85e38228eb9`
 
@@ -134,3 +134,56 @@ WORK-007 is complete only when:
 - No FSRS or scheduler-semantic changes.
 - Do not rewrite historical evidence to make old checkpoints appear current.
 - Live source, schemas, tests, and canonical Git outrank stale documentation.
+
+## Completion evidence
+
+WORK-007 completed its registered documentation-reconciliation and bounded-audit scope on the feature branch.
+
+Documentation reconciliation completed:
+
+- AI import documentation now reflects the strict current schema;
+- all five review-card types, including `cloze`, are documented;
+- ordered `text`, `code`, and `math` content blocks are documented;
+- persistence documentation describes reconciliation as implemented rather than future work;
+- current cloud documentation reflects the verified Authentication + Firestore core path;
+- Firebase Storage is documented as disabled/optional for legacy-media workflows rather than a core requirement;
+- historical B8 Stage-1 evidence remains historically intact with an explicit later-status note;
+- README, deployment, backup, persistence, and import documentation are mutually reconciled.
+
+Capability audit findings:
+
+- `GAP-002` - oversized single production JavaScript bundle - OPEN;
+- `GAP-003` - production dependency security findings - OPEN;
+- optional Firebase Storage / legacy media remains intentionally deferred and was not promoted as a current priority gap.
+
+Measured GAP-002 baseline:
+
+- production JavaScript bundle: approximately 1,930.59 kB minified;
+- gzip size: approximately 527.27 kB;
+- PWA precache: approximately 2,386.22 KiB;
+- no deliberate application-level route/view lazy loading or manual chunk strategy was found.
+
+Measured GAP-003 baseline:
+
+- full npm audit: 15 findings - 9 moderate, 6 high, 0 critical;
+- production-only npm audit: 5 findings - 2 moderate, 3 high, 0 critical;
+- affected direct production dependencies include `react-router-dom` and `fflate`;
+- no package upgrades or audit fixes were performed in WORK-007.
+
+Final verification:
+
+- scope boundary: PASS - documentation/project-context only;
+- stale import-contract check: PASS;
+- stale persistence check: PASS;
+- stale current-cloud-status check: PASS;
+- historical Stage-1 supersession note: PRESENT;
+- TypeScript: PASS;
+- ordinary Vitest suite: 62 files / 451 tests PASS;
+- production build: PASS;
+- PWA build-artifact suite: 7 / 7 PASS;
+- `git diff --check`: PASS;
+- final tracked worktree: CLEAN.
+
+No product implementation, dependency change, Firebase mutation, Storage enablement, billing change, scheduler change, or deployment was performed.
+
+Promotion to canonical `main` remains pending.
