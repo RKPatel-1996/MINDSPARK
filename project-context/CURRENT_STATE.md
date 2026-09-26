@@ -312,15 +312,15 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - WORK-007: COMPLETE / PROMOTED
 - WORK-008: COMPLETE / PROMOTED
 - GAP-002: RESOLVED
-- Open gap: GAP-003 - production dependency security
+- Active bounded work item: WORK-009 - VERIFIED / READY_FOR_PROMOTION
 
 ## Next bounded work
 
-No bounded WORK item is currently active.
+WORK-009 is the active bounded work item and is VERIFIED / READY_FOR_PROMOTION.
 
 Current durable-gap state:
 
 - `GAP-002` - RESOLVED by WORK-008
-- `GAP-003` - production dependency security findings
+- `GAP-003` - RESOLVED_PENDING_PROMOTION by WORK-009; five moderate `firebase-tools` development-tooling residuals characterized
 
-WORK-008 is complete. `GAP-003` remains the next durable open technical gap and must be handled as a separately registered bounded work item.
+Next action: promote WORK-009 to canonical `main`, rerun canonical verification, then close WORK-009 and mark GAP-003 canonically resolved. The five moderate `firebase-tools` development-tooling residuals remain explicitly characterized and are not production-audit findings.

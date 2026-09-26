@@ -1,6 +1,6 @@
 # WORK-009 - Production Dependency Security Remediation
 
-Status: ACTIVE
+Status: VERIFIED / READY_FOR_PROMOTION
 
 Base: `aee00bf7c544bbe7634dfb9ae029e54525bdedee`
 
@@ -156,3 +156,95 @@ WORK-009 is complete only when:
 - No major dependency upgrades merely to remove an audit warning.
 - Preserve WORK-008 bundle-performance behavior and chunk-size contract.
 - Preserve historical governance evidence.
+## Verified implementation outcome
+
+Implementation checkpoint:
+
+`6970a313768045d02c4c15a6235a510e5d25d458`
+
+Direct dependency changes:
+
+- `fflate` 0.8.2 -> 0.8.3;
+- `react-router-dom` resolved from 7.18.1 to 7.18.4;
+- `react-router` resolved from 7.18.1 to 7.18.4;
+- `firebase-tools` 15.30.0 -> 15.31.0.
+
+Compatible transitive remediation:
+
+- `postcss` 8.5.19 -> 8.5.28;
+- `nanoid` 3.3.16 -> 3.3.19;
+- `@xmldom/xmldom` 0.9.10 -> 0.9.12;
+- `tar` 7.5.20 -> 7.5.22;
+- vulnerable `brace-expansion` 5.0.7 resolved to 5.0.12.
+
+No major-version upgrade, dependency override, or `npm audit fix --force` was used.
+
+### Security result
+
+Production-only audit after remediation:
+
+- 0 total findings;
+- 0 moderate;
+- 0 high;
+- 0 critical.
+
+Full-tree audit after remediation:
+
+- 5 total findings;
+- 5 moderate;
+- 0 high;
+- 0 critical.
+
+The remaining five findings are confined to the current `firebase-tools` development/tooling dependency graph and involve the reported `@opentelemetry/core` / `@google-cloud/pubsub` and `uuid` / `gaxios` paths.
+
+`firebase-tools` 15.31.0 is the newest inspected 15.x candidate. npm does not offer a compatible non-forced resolution for these residuals. Its proposed `npm audit fix --force` path would install `firebase-tools` 14.23.0, a breaking downgrade.
+
+That forced downgrade was intentionally rejected. These residual findings are not part of the production dependency audit and are explicitly characterized rather than hidden.
+
+### Verification evidence
+
+Targeted backup and HashRouter regression:
+
+- 4 test files PASS;
+- 30 tests PASS.
+
+Canonical web-release-equivalent gate on the WORK-009 branch:
+
+- TypeScript: PASS;
+- ordinary Vitest suite: 63 files / 456 tests PASS;
+- production Vite build: PASS;
+- PWA build-artifact suite: 8 / 8 PASS;
+- `npm run verify:web-release`: PASS;
+- all generated JavaScript chunks remain below the WORK-008 500 kB contract;
+- PWA precache remains 24 entries.
+
+Local Firebase emulator regression:
+
+- Firestore + Storage emulators: PASS;
+- 6 Firebase persistence/rules test files PASS;
+- 61 tests PASS.
+
+Final dependency audits:
+
+- `npm audit --omit=dev`: 0 vulnerabilities;
+- full `npm audit`: 5 moderate development/tooling findings, 0 high, 0 critical.
+
+`git diff --check`: PASS.
+
+### Acceptance assessment
+
+All WORK-009 acceptance conditions are satisfied:
+
+- the application-relevant `fflate` finding is removed;
+- React Router is outside the reported vulnerable range;
+- PostCSS and nanoid baseline findings are removed;
+- all compatible non-major high-severity tooling fixes were applied;
+- production dependency audit is clean;
+- no baseline high or critical finding remains in the full tree;
+- the five non-production moderate residuals are explicitly characterized;
+- no unsafe forced fix or breaking downgrade was accepted;
+- backup, routing, release, PWA, Firestore, Storage, and persistence regression gates pass.
+
+WORK-009 is therefore VERIFIED / READY_FOR_PROMOTION.
+
+Canonical `main` has not yet received WORK-009. Do not describe WORK-009 or GAP-003 as canonically complete/resolved until promotion and canonical reverification are complete.
