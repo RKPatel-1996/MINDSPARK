@@ -73,9 +73,9 @@ export const InsightsView: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full content-container pt-safe">
-      <div className="p-6">
-        <h1 className="text-3xl font-semibold mb-8 font-ui">Insights</h1>
+    <div data-testid="insights-shell" className="flex flex-col h-full w-full max-w-[1280px] mx-auto pt-safe">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-safe">
+        <h1 className="sr-only">Insights</h1>
 
         {/* Reconciliation Errors if any */}
         {insights.reconciliationErrors && insights.reconciliationErrors.length > 0 && (

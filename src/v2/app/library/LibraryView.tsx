@@ -596,12 +596,12 @@ export const LibraryView: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full content-container pt-safe">
+    <div data-testid="library-shell" className="flex flex-col h-full w-full max-w-[1440px] mx-auto pt-safe">
       {/* Header & Controls */}
       <div className="p-4 md:p-6 border-b border-[var(--border-color)] bg-[var(--surface-color)] flex-none">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-semibold font-ui">Library</h1>
+            <h1 className="sr-only">Library</h1>
             <span
               id="library-result-count"
               className="text-xs px-2.5 py-1 bg-[var(--elevated-color)] border border-[var(--border-color)] rounded-full text-[var(--muted-color)] font-mono"
@@ -1491,7 +1491,7 @@ export const LibraryView: React.FC = () => {
             aria-modal="true"
             aria-label="Import knowledge"
             data-testid="import-modal-dialog"
-            className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col paper-shadow overflow-hidden my-auto"
+            className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col paper-shadow overflow-hidden my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 md:p-6 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--elevated-color)] shrink-0">

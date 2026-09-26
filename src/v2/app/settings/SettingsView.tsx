@@ -131,17 +131,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
   };
 
   return (
-    <div className="flex flex-col h-full content-container pt-safe">
-      <div className="px-6 py-6 border-b border-[var(--border-color)]">
-        <h1 className="text-3xl font-semibold font-ui">Settings</h1>
-      </div>
+    <div data-testid="settings-shell" className="flex flex-col h-full w-full max-w-[1440px] mx-auto pt-safe">
+      <h1 className="sr-only">Settings</h1>
 
-      <div className="flex border-b border-[var(--border-color)] overflow-x-auto">
+      <div data-testid="settings-tabs" className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 border-b border-[var(--border-color)]">
         {(['app', 'appearance', 'shortcuts', 'scheduler', 'sync', 'backup', 'library'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-6 py-4 font-medium text-sm whitespace-nowrap transition-colors border-b-2 font-ui uppercase tracking-wider ${
+            className={`px-3 py-3 sm:py-4 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors border-b-2 font-ui uppercase tracking-wider ${
               activeTab === tab
                 ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                 : 'border-transparent text-[var(--muted-color)] hover:text-[var(--text-color)]'
@@ -152,18 +150,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 pb-safe">
-        <div className="animate-in fade-in slide-in-from-top-2 duration-300 max-w-3xl">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-safe">
+        <div data-testid="settings-content" className="animate-in fade-in slide-in-from-top-2 duration-300 w-full max-w-6xl mx-auto">
           {/* App Tab */}
           {activeTab === 'app' && (
-            <div className="space-y-8 max-w-2xl">
+            <div className="space-y-8 w-full max-w-5xl">
               <PwaInstallControl />
             </div>
           )}
 
           {/* Appearance Tab */}
           {activeTab === 'appearance' && (
-            <div className="space-y-12 max-w-2xl">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10 w-full">
               <section>
                 <h2 className="text-xl font-semibold mb-6 font-ui">Theme</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -246,7 +244,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
 
           {/* Shortcuts Tab */}
           {activeTab === 'shortcuts' && (
-            <div className="space-y-6 max-w-2xl">
+            <div className="space-y-6 w-full max-w-5xl">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold font-ui">Keyboard Shortcuts</h2>
                 <button
@@ -302,7 +300,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
 
           {/* Scheduler Tab */}
           {activeTab === 'scheduler' && (
-            <div className="space-y-8 max-w-2xl">
+            <div className="space-y-8 w-full max-w-5xl">
               <div className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl p-6 paper-shadow space-y-6">
                 <div>
                   <h3 className="font-semibold text-lg font-ui mb-1">FSRS-6 Engine Parameters</h3>
@@ -403,7 +401,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
 
           {/* Sync Tab */}
           {activeTab === 'sync' && (
-            <div className="space-y-8 max-w-2xl">
+            <div className="space-y-8 w-full max-w-5xl">
               {/* Genuine Synchronization Engine Status */}
               <div className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl p-6 paper-shadow">
                 <div className="flex items-center justify-between mb-4">
@@ -584,7 +582,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ initialTab = 'app' }
 
           {/* Library & Import Tab */}
           {activeTab === 'library' && (
-            <div className="space-y-8 max-w-2xl">
+            <div className="space-y-8 w-full">
               {isUnconfigured && !isEphemeralDev && (
                 <div className="p-4 bg-[var(--color-soft-warning)] text-[var(--color-warning)] rounded-xl border border-[var(--color-warning)] text-xs flex items-center gap-3">
                   <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600" />

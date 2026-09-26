@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApplication } from '../../application';
-import { Upload, Check, Loader2, AlertTriangle, Lock } from 'lucide-react';
+import { Upload, Check, Loader2, AlertTriangle, Lock, Copy, Eye, EyeOff } from 'lucide-react';
 import { isDuplicateImportError, type ImportDraftInspection } from '../../application/importService';
+import { buildMindSparkGenerationPrompt } from '../../import/generationPrompt';
 
 export type ImportUiStatus =
   | 'empty'
@@ -34,6 +35,8 @@ export const ImportKnowledgeSection: React.FC<ImportKnowledgeSectionProps> = ({
   const {
     inspectImportPacket,
     importPacket,
+    taxonomyService,
+    refreshCount,
     isSignedOut,
     isUnconfigured,
     isEphemeralDev,
@@ -45,8 +48,39 @@ export const ImportKnowledgeSection: React.FC<ImportKnowledgeSectionProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
 
+  const [generationPrompt, setGenerationPrompt] = useState<string | null>(null);
+  const [generationPromptError, setGenerationPromptError] = useState<string | null>(null);
+  const [isGenerationPromptVisible, setIsGenerationPromptVisible] = useState(false);
+  const [copyPromptStatus, setCopyPromptStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+
   const inspectionVersionRef = useRef<number>(0);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setGenerationPrompt(null);
+    setGenerationPromptError(null);
+    setCopyPromptStatus('idle');
+
+    taxonomyService.getRegistry()
+      .then((registry) => {
+        if (cancelled) return;
+        setGenerationPrompt(buildMindSparkGenerationPrompt(registry));
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setGenerationPromptError(
+          err instanceof Error
+            ? err.message
+            : 'Unable to load the current taxonomy registry.'
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [taxonomyService, refreshCount]);
 
   // Clean up debounce timer on unmount
   useEffect(() => {
@@ -118,6 +152,21 @@ export const ImportKnowledgeSection: React.FC<ImportKnowledgeSectionProps> = ({
 
   const isPersistenceDisabled = isSignedOut || (isUnconfigured && !isEphemeralDev);
 
+  const handleCopyGenerationPrompt = async () => {
+    if (!generationPrompt) return;
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('Clipboard access is unavailable in this browser context.');
+      }
+
+      await navigator.clipboard.writeText(generationPrompt);
+      setCopyPromptStatus('copied');
+    } catch {
+      setCopyPromptStatus('error');
+    }
+  };
+
   const handleImportPacket = async () => {
     if (isPersistenceDisabled || status !== 'ready' || !importJson.trim()) return;
 
@@ -157,6 +206,100 @@ export const ImportKnowledgeSection: React.FC<ImportKnowledgeSectionProps> = ({
       <p className="text-sm text-[var(--muted-color)] font-content mb-4">
         Paste a valid MindSpark JSON packet adhering to the schema specification.
       </p>
+
+      <section
+        className="mb-5 rounded-xl border border-[var(--border-color)] bg-[var(--elevated-color)] p-4"
+        aria-labelledby="create-with-ai-heading"
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1">
+            <h4 id="create-with-ai-heading" className="font-semibold text-sm font-ui">
+              Create with AI
+            </h4>
+            <p className="text-xs text-[var(--muted-color)] font-content leading-relaxed">
+              Copy MindSpark&apos;s generation prompt, give it to ChatGPT or another chatbot
+              together with your study material, then paste the returned JSON below.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleCopyGenerationPrompt}
+              disabled={!generationPrompt}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--surface-color)] text-xs font-medium font-ui hover:border-[var(--color-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              {copyPromptStatus === 'copied' ? 'Copied' : 'Copy generation prompt'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsGenerationPromptVisible((visible) => !visible)}
+              disabled={!generationPrompt}
+              aria-expanded={isGenerationPromptVisible}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--surface-color)] text-xs font-medium font-ui hover:border-[var(--color-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGenerationPromptVisible ? (
+                <EyeOff className="w-3.5 h-3.5" />
+              ) : (
+                <Eye className="w-3.5 h-3.5" />
+              )}
+              {isGenerationPromptVisible ? 'Hide prompt' : 'View prompt'}
+            </button>
+          </div>
+        </div>
+
+        <ol className="mt-3 ml-4 list-decimal space-y-1 text-xs text-[var(--muted-color)] font-content">
+          <li>Copy the MindSpark generation prompt.</li>
+          <li>Send it with the source or study material you want converted.</li>
+          <li>Paste the chatbot&apos;s JSON-only response into the import box below.</li>
+        </ol>
+
+        {!generationPrompt && !generationPromptError && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-[var(--muted-color)] font-ui">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            Loading current taxonomy for the generation prompt...
+          </div>
+        )}
+
+        {generationPromptError && (
+          <div
+            className="mt-3 rounded-lg bg-[var(--color-soft-error)] p-3 text-xs text-[var(--color-error)] font-ui"
+            role="alert"
+          >
+            Generation prompt unavailable: {generationPromptError}
+          </div>
+        )}
+
+        {copyPromptStatus === 'copied' && (
+          <div
+            className="mt-3 flex items-center gap-2 text-xs text-[var(--color-success)] font-ui"
+            role="status"
+          >
+            <Check className="w-3.5 h-3.5" />
+            Generation prompt copied to clipboard.
+          </div>
+        )}
+
+        {copyPromptStatus === 'error' && (
+          <div
+            className="mt-3 rounded-lg bg-[var(--color-soft-error)] p-3 text-xs text-[var(--color-error)] font-ui"
+            role="alert"
+          >
+            Could not copy automatically. Use View prompt and copy it manually.
+          </div>
+        )}
+
+        {isGenerationPromptVisible && generationPrompt && (
+          <pre
+            aria-label="MindSpark generation prompt"
+            className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg border border-[var(--border-color)] bg-[var(--bg-color)] p-3 text-[11px] leading-relaxed font-mono"
+          >
+            {generationPrompt}
+          </pre>
+        )}
+      </section>
 
       {/* Read-only / unconfigured status banner */}
       {isPersistenceDisabled && (
