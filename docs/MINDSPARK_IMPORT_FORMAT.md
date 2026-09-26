@@ -33,6 +33,7 @@ The knowledge item draft represents the canonical factual content the user seeks
 {
   "title": string,                   // Required, trimmed, min length 1
   "content": string,                 // Required, trimmed, min length 1
+  "blocks"?: ContentBlock[],         // Optional, ordered, min 1 when present
   "taxonomy": {                      // Required, strict
     "domainId": string,              // Required, min length 1
     "topicId": string,               // Required, min length 1
@@ -50,6 +51,7 @@ The knowledge item draft represents the canonical factual content the user seeks
 | :--- | :--- | :--- | :--- |
 | `title` | **Required** | `string`, trimmed, `min(1)` | Concise title of the concept or principle. |
 | `content` | **Required** | `string`, trimmed, `min(1)` | Core factual statement or explanation of the knowledge item. |
+| `blocks` | Optional | `ContentBlock[]`, `min(1)` when present | Ordered rich-content blocks. Supported block types are `text`, `code`, and `math`. |
 | `taxonomy` | **Required** | `object`, `.strict()` | Hierarchical classification referencing the controlled taxonomy registry. |
 | `taxonomy.domainId` | **Required** | `string`, `min(1)` | ID of the domain. Must exist in `TaxonomyRegistry.domains`. |
 | `taxonomy.topicId` | **Required** | `string`, `min(1)` | ID of the topic. Must exist in `TaxonomyRegistry.topics` and belong to `domainId`. |
@@ -67,15 +69,52 @@ Each object in `sources` is validated with `.strict()`:
 | `url` | Optional | `string`, valid URL | Web URL to the source (`z.string().url()`). |
 | `citation` | Optional | `string`, `min(1)` | Formal academic or literary citation. |
 
+### Ordered Content Blocks (`blocks[]`)
+
+`blocks`, when present, must be a non-empty ordered array. Each block is validated with `.strict()`, and block order is preserved.
+
+Supported block shapes:
+
+```typescript
+// Text
+{
+  "type": "text",
+  "content": string
+}
+
+// Code
+{
+  "type": "code",
+  "language"?: string,
+  "content": string
+}
+
+// Math
+{
+  "type": "math",
+  "content": string
+}
+```
+
+Block constraints:
+
+- `type` must be exactly `text`, `code`, or `math`.
+- `content` must contain at least one non-whitespace character.
+- Block source content is preserved rather than globally trimmed, so meaningful code/math whitespace is retained.
+- `language` is permitted only on `code` blocks; when provided it is trimmed and must be non-empty.
+- Unknown block keys are rejected.
+- `blocks: []` is invalid; omit `blocks` when no ordered rich-content blocks are needed.
+
 ---
 
 ## 3. Review Card Drafts (`cards`)
 
-The `cards` array is a discriminated union keyed on `type`. Exactly four card types are supported:
+The `cards` array is a discriminated union keyed on `type`. Exactly five card types are supported:
 1. `free_recall`
 2. `flashcard`
 3. `mcq`
 4. `true_false`
+5. `cloze`
 
 All card drafts are validated with `.strict()`.
 
@@ -168,6 +207,26 @@ Binary proposition verification.
 
 ---
 
+### 3.5. Cloze (`type: "cloze"`)
+
+Prompt-and-answer retrieval in which the prompt contains the context or omission to be recalled.
+
+```typescript
+{
+  "type": "cloze",
+  "prompt": string,    // Required, trimmed, min length 1
+  "answer": string     // Required, trimmed, min length 1
+}
+```
+
+| Field | Required / Optional | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `type` | **Required** | Literal `"cloze"` | Discriminated union key. |
+| `prompt` | **Required** | `string`, trimmed, `min(1)` | Retrieval prompt containing the context or omission. |
+| `answer` | **Required** | `string`, trimmed, `min(1)` | Answer expected when the prompt is revealed. |
+
+---
+
 ## 4. Taxonomy & Controlled Tags
 
 MindSpark V2 uses a **strictly controlled taxonomy**. Category trees and tags must be registered in the user's `TaxonomyRegistry`. Free-form category invention is forbidden.
@@ -196,19 +255,35 @@ To preserve system invariants, security, and scheduling integrity, the import pa
 | `suspended` / `suspendedReason` | Card suspension states are governed by user action or reconciliation. | Initialized automatically to `suspended: false`, `suspendedReason: undefined`. |
 | `createdAt` / `updatedAt` | Client/server authoritative timestamps. | Generated using the system ingestion timestamp (`toISOString()`). |
 | FSRS parameters (`stability`, `difficulty`, `due`, `elapsedDays`, `scheduledDays`, `reps`, `lapses`, `learningSteps`, `state`, `retrievability`) | Memory state is exclusively calculated by the FSRS engine (`createInitialCardState`). | Initialized with default FSRS-6 values (`state: 'new'`, `reps: 0`, `learningSteps: 0`, `stability: 0`, `difficulty: 0`). |
+| Image / Storage / Firebase metadata (`images`, storage paths, download URLs, Firebase document metadata) | These fields are outside the current AI import draft contract. | Rejected by `.strict()`; current AI import accepts text/code/math content through `blocks`. |
 | Arbitrary metadata (`priority`, `difficultyRating`, `deckId`, `aiConfidence`) | Not recognized by the schema and would violate zero-decision scheduling principles. | Rejected by `.strict()`. |
 
 ---
 
 ## 6. Complete Valid Example Packet
 
-Below is a complete, fully valid import packet illustrating a knowledge item with all optional fields and all four card types:
+Below is a complete, fully valid import packet illustrating a knowledge item with the current optional content fields and all five card types:
 
 ```json
 {
   "item": {
     "title": "DNA Double Helix Structure",
     "content": "DNA is a double-stranded polymer of deoxyribonucleotides arranged in a right-handed double helix, stabilized by hydrogen bonding between complementary base pairs (Adenine-Thymine and Guanine-Cytosine) and base-stacking interactions.",
+    "blocks": [
+      {
+        "type": "text",
+        "content": "Complementary base pairing is sequence-specific and contributes to faithful information storage."
+      },
+      {
+        "type": "code",
+        "language": "text",
+        "content": "A-T: 2 hydrogen bonds\nG-C: 3 hydrogen bonds"
+      },
+      {
+        "type": "math",
+        "content": "A=T\\quad G\\equiv C"
+      }
+    ],
     "explanationMarkdown": "The structure was published by James Watson and Francis Crick in 1953, utilizing X-ray diffraction images collected by Rosalind Franklin and Raymond Gosling, alongside Chargaff's rules of base equivalence.",
     "taxonomy": {
       "domainId": "biology",
@@ -252,6 +327,11 @@ Below is a complete, fully valid import packet illustrating a knowledge item wit
       "statement": "The phosphodiester backbone of DNA carries a net positive charge in physiological pH conditions.",
       "isTrue": false,
       "explanation": "The phosphate groups in the phosphodiester backbone are negatively charged at physiological pH, giving DNA its overall negative charge."
+    },
+    {
+      "type": "cloze",
+      "prompt": "In double-stranded DNA, Guanine pairs with ____ via three hydrogen bonds.",
+      "answer": "Cytosine"
     }
   ]
 }
@@ -292,7 +372,7 @@ The following draft illustrates common formatting errors that cause schema valid
       "isTrue": "false"             // ERROR 7: isTrue must be a boolean (false), not a string ("false")
     },
     {
-      "type": "qa",                 // ERROR 8: Invalid type "qa"; must be free_recall, flashcard, mcq, or true_false
+      "type": "qa",                 // ERROR 8: Invalid type "qa"; must be free_recall, flashcard, mcq, true_false, or cloze
       "front": "What is F?",
       "back": "G * m1 * m2 / r²"
     },
