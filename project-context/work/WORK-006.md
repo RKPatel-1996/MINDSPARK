@@ -1,6 +1,6 @@
 # WORK-006 — Desktop Settings Layout + AI Generation Prompt Surface
 
-Status: ACTIVE
+Status: VERIFIED_PENDING_PROMOTION
 
 Base: `fa44f03`
 
@@ -66,3 +66,78 @@ Repair the desktop Settings experience so it uses available screen space effecti
 - Do not auto-create taxonomy from AI output.
 - Do not change Firestore, Firebase rules, billing, Storage, backup semantics, or FSRS behavior.
 - No deployment.
+
+## Implementation and verification
+
+Implementation commit:
+
+- `9bc7abd8bcfa64fc18be9779f579dd5e405770ce`
+- `feat(ui): add AI generation prompt and responsive layouts`
+
+Implemented product behavior:
+
+- Added one canonical deterministic AI-generation prompt builder.
+- Prompt is generated from the current persisted taxonomy registry.
+- Added `Create with AI`, `Copy generation prompt`, and `View prompt` to the shared import surface.
+- Existing automatic JSON inspection, duplicate detection, preview, and import behavior remains intact.
+- Settings now uses responsive tabs with no horizontal tab scrolling.
+- Settings uses a substantially wider desktop canvas while retaining narrow/mobile usability.
+- Redundant visible destination titles were removed from Settings, Library, and Insights while semantic `h1` headings remain available to assistive technology.
+- Library and Insights now use responsive desktop-width shells.
+- Insights owns vertical scrolling explicitly.
+- Review retains its deliberately constrained reading/focus width.
+- Library import modal was widened for the generation/import workflow.
+
+Automated verification:
+
+- `npm run verify:web-release`: PASS.
+- TypeScript `tsc --noEmit`: PASS.
+- Ordinary Vitest suite: 62 files / 451 tests PASS.
+- PWA production build: PASS.
+- PWA build-artifact suite: 7/7 PASS.
+- Final staged `git diff --cached --check`: PASS.
+- Final implementation index contained exactly 8 intended files.
+- Unstaged files before implementation commit: NONE.
+- Untracked files before implementation commit: NONE.
+
+Focused verification included:
+
+- generation prompt builder: 8 tests PASS.
+- generation prompt UI: 4 tests PASS.
+- Settings responsive layout: 5 tests PASS.
+- existing import preview regression: 11 tests PASS.
+- affected Insights / Settings / Library UI regression set: 28/28 PASS.
+
+Manual visual verification:
+
+- Settings desktop layout: PASS.
+- Settings narrow/mobile responsive tab grid: PASS.
+- Library desktop and mobile layout: PASS.
+- Insights desktop and mobile layout: PASS.
+- Insights vertical scrolling: PASS after explicit scroll-wrapper repair.
+- Review desktop/mobile constrained layout: accepted unchanged.
+- Library `+` import workflow exposes Create with AI / Copy / View prompt as intended.
+
+Known non-blocking output:
+
+- Existing-style React `act(...)` warnings remain in unrelated/current tests.
+- Rollup reports Zod annotation warnings during build.
+- Vite reports the existing large-chunk advisory.
+- These warnings did not fail the authoritative release gate.
+
+Safety / scope confirmation:
+
+- No Firebase rules changes.
+- No Firestore state-shaping changes.
+- No Storage enablement.
+- No billing changes.
+- No FSRS/scheduler semantic changes.
+- No deployment.
+
+## Promotion state
+
+The WORK-006 implementation is verified on `task/work-006-settings-prompt-v1`.
+
+Canonical-main promotion has not yet been performed.
+
+Do not mark WORK-006 `COMPLETE / PROMOTED` until canonical `main` is updated and verified from the canonical worktree.
