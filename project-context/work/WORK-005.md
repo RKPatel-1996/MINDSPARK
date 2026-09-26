@@ -131,3 +131,17 @@ Repair checkpoint:
 - Backup/restore acceptance: PASS.
 - Missing backup query index was added to Git and protected by `firestoreIndexesContract.test.ts`.
 - Index checkpoint: `c71e1d0` (`fix(firestore): declare backup review-event index`).
+
+## Verified real-cloud cross-owner rejection
+
+- A temporary second Firebase Authentication user authenticated successfully against the production-preview application.
+- Owner Firestore data was not exposed to the second user.
+- Cross-owner read attempts were rejected by Firestore with missing/insufficient-permissions errors.
+- A controlled write attempt by the second user was rejected immediately with a permission error.
+- Firestore inspection confirmed that no data subtree or document was created for the second user.
+- The temporary second Firebase Authentication user was deleted after validation.
+- Cross-owner read rejection: PASS.
+- Cross-owner write rejection: PASS.
+- WORK-005 core cloud acceptance: COMPLETE.
+
+Firebase Storage remained disabled and no billing changes were made.

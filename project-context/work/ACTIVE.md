@@ -4,10 +4,10 @@ ACTIVE_WORK: WORK-005
 
 Title: B8 Stage 2 Core Cloud Readiness
 
-Status: ACTIVE
+Status: COMPLETE_PENDING_PROMOTION
 
 Target Firebase project: `mindspark-b8-test`
 
-Current phase: Auth + Firestore real-cloud round-trip, browser offline persistence/reconnect, installed-PWA Firestore operation, and real-cloud text-only backup/restore are verified. The Library bootstrap defect, active-card reconnect-status defect, and missing backup-query index are repaired and regression-protected. Remaining acceptance is real cross-owner Firestore rejection.
+Current phase: All WORK-005 core acceptance is verified, including Auth + Firestore real-cloud round-trip, browser offline persistence/reconnect, installed-PWA Firestore operation, real-cloud text-only backup/restore, and real cross-owner read/write rejection. The temporary second Auth user has been deleted. Pending canonical promotion to main.
 
 Safety: Firebase Storage remains disabled and optional. No billing changes. Additional cloud mutations or deployments require explicit authorization.
