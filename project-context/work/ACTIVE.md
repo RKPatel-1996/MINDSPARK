@@ -1,11 +1,17 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: WORK-007
 
-Status: NONE
+Title: Canonical Documentation Reconciliation + Capability Audit
 
-Current phase: WORK-006 is complete, canonically promoted, and verified. No bounded work item is currently active.
+Status: ACTIVE
 
-Latest completed work: WORK-006 - Desktop Settings Layout + AI Generation Prompt Surface.
+Base: `9c91d6ea9779a27db59b6e840eb3c85e38228eb9`
 
-Safety: Firebase Storage remains disabled and optional. No billing changes. No deployment is authorized by this record.
+Branch: `task/work-007-doc-reconciliation-v1`
+
+Current phase: Registered after canonical documentation/source reconnaissance. Documentation reconciliation and bounded capability audit have not started.
+
+Scope: Reconcile authoritative current-reference documentation with canonical source and verified WORK-003 through WORK-006 state, then record genuine remaining gaps without implementing them.
+
+Safety: Documentation/audit only. No product code, dependencies, Firebase rules, cloud-state mutation, Storage enablement, billing changes, scheduler changes, or deployment.
