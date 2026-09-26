@@ -1,17 +1,16 @@
 # Active Work
 
-ACTIVE_WORK: WORK-007
+ACTIVE_WORK: NONE
 
-Title: Canonical Documentation Reconciliation + Capability Audit
+Last completed: WORK-007 - Canonical Documentation Reconciliation + Capability Audit
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
-Base: `9c91d6ea9779a27db59b6e840eb3c85e38228eb9`
+Canonical promotion / verification checkpoint: `dae5c97de6876d22e75fbfcfab30c03030eebadb`
 
-Branch: `task/work-007-doc-reconciliation-v1`
+Open durable gaps:
 
-Current phase: WORK-007 implementation/audit scope and verification are complete on the feature branch. Canonical promotion remains pending.
+- GAP-002 - Oversized Single Production JavaScript Bundle
+- GAP-003 - Production Dependency Security Findings
 
-Scope result: Documentation reconciliation completed. Capability audit recorded GAP-002 (bundle performance) and GAP-003 (production dependency security). No gap implementation was performed.
-
-Safety: Documentation/audit only. No product code, dependencies, Firebase rules, cloud-state mutation, Storage enablement, billing changes, scheduler changes, or deployment.
+Next action: inspect live canonical `main` and register the next bounded WORK item before implementation.

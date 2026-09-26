@@ -17,18 +17,19 @@ Live Git and repository-native evidence outrank project-context summaries.
 
 ## Canonical promotion state
 
-WORK-006 was promoted and canonically verified at:
+WORK-007 was promoted to canonical `main` by fast-forward and canonically verified at:
 
-`69822ce4e28a9f96e938cb93e5e73d858263d965`
+`dae5c97de6876d22e75fbfcfab30c03030eebadb`
 
 At that verified promotion checkpoint:
 
-- `main == origin/main`
+- canonical `main` was at `dae5c97de6876d22e75fbfcfab30c03030eebadb`
 - canonical worktree was clean
-- WORK-006 was a fast-forward promotion from `fa44f03`
+- WORK-007 was a fast-forward promotion from `9c91d6ea9779a27db59b6e840eb3c85e38228eb9`
 - no merge commit was introduced
+- the full web-release verification gate passed
 
-This `CURRENT_STATE.md` is part of the subsequent governance-closure update; use live Git for the exact latest HEAD.
+This `CURRENT_STATE.md` is part of the subsequent governance-closure update; use live Git for the exact latest HEAD and remote synchronization state.
 
 ## Current verification baseline
 
@@ -146,6 +147,47 @@ WORK-006 verification/governance checkpoint:
 
 Manual desktop/mobile product verification: PASS.
 
+### WORK-007 - Canonical Documentation Reconciliation + Capability Audit
+
+Status: COMPLETE / PROMOTED.
+
+Authoritative current-reference documentation was reconciled with canonical source and verified WORK-003 through WORK-006 state.
+
+Completed reconciliation includes:
+
+- all five supported review-card types, including Cloze
+- ordered text/code/math content blocks
+- implemented deterministic persistence reconciliation
+- current Authentication + Firestore core-cloud posture
+- Firebase Storage as disabled/optional for legacy media rather than a core requirement
+- historically accurate B8 Stage-1 evidence with a later-status note
+- mutually consistent README, deployment, backup, import, and persistence documentation
+
+Capability audit recorded two durable open gaps:
+
+- `GAP-002` - oversized single production JavaScript bundle
+- `GAP-003` - production dependency security findings
+
+Measured bundle baseline:
+
+- main production JavaScript: approximately 1,930.59 kB minified
+- gzip: approximately 527.27 kB
+- PWA precache: approximately 2,386.22 KiB
+
+Dependency-security baseline:
+
+- full dependency tree: 15 findings - 9 moderate, 6 high, 0 critical
+- production-only dependency tree: 5 findings - 2 moderate, 3 high, 0 critical
+- no dependency changes or `npm audit fix` operations were performed
+
+Canonical promotion / verification checkpoint:
+
+- `dae5c97de6876d22e75fbfcfab30c03030eebadb`
+- 62 test files / 451 tests PASS
+- production build PASS
+- PWA build-artifact suite 7 / 7 PASS
+- canonical worktree clean
+
 ## Current Firebase / cloud posture
 
 Core MindSpark operation does not require Firebase Storage.
@@ -240,10 +282,18 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - WORK-004: COMPLETE / PROMOTED
 - WORK-005: COMPLETE / PROMOTED
 - WORK-006: COMPLETE / PROMOTED
+- WORK-007: COMPLETE / PROMOTED
 - Active bounded work item: NONE
+- Open gap: GAP-002 - production bundle performance
+- Open gap: GAP-003 - production dependency security
 
 ## Next bounded work
 
-No product WORK item is currently active.
+No bounded WORK item is currently active.
 
-Before beginning another implementation, inspect live canonical `main` and open a new bounded WORK item from verified repository evidence.
+Two durable technical gaps are open:
+
+- `GAP-002` - production bundle performance / code splitting
+- `GAP-003` - production dependency security findings
+
+Before implementation, inspect live canonical `main`, choose the next priority explicitly, and register a new bounded WORK item. Do not solve either gap implicitly inside unrelated work.

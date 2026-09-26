@@ -1,6 +1,6 @@
 # WORK-007 - Canonical Documentation Reconciliation + Capability Audit
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `9c91d6ea9779a27db59b6e840eb3c85e38228eb9`
 
@@ -186,4 +186,18 @@ Final verification:
 
 No product implementation, dependency change, Firebase mutation, Storage enablement, billing change, scheduler change, or deployment was performed.
 
-Promotion to canonical `main` remains pending.
+Promotion to canonical main completed by fast-forward.
+
+Canonical promotion / verification checkpoint:
+
+dae5c97de6876d22e75fbfcfab30c03030eebadb
+
+Canonical verification after promotion:
+
+- TypeScript: PASS;
+- ordinary Vitest suite: 62 files / 451 tests PASS;
+- production build: PASS;
+- PWA build-artifact suite: 7 / 7 PASS;
+- canonical worktree: CLEAN.
+
+No merge commit was introduced.
