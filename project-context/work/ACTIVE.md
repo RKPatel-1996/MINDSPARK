@@ -1,13 +1,17 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: WORK-006
 
-Title: B8 Stage 2 Core Cloud Readiness
+Title: Desktop Settings Layout + AI Generation Prompt Surface
 
-Status: NONE
+Status: ACTIVE
 
-Target Firebase project: `mindspark-b8-test`
+Base: `fa44f03`
 
-Current phase: WORK-005 is complete and promoted to canonical main. No bounded work item is currently active.
+Branch: `task/work-006-settings-prompt-v1`
 
-Safety: Firebase Storage remains disabled and optional. No billing changes. Additional cloud mutations or deployments require explicit authorization.
+Current phase: Registered after source/schema reconnaissance. Implementation has not started.
+
+Scope: Improve desktop Settings space utilization and add the canonical external-AI generation-prompt workflow to the shared MindSpark import surface.
+
+Safety: No Firebase rules, cloud-state, Storage, billing, backup, or scheduler changes. No deployment.
