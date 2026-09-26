@@ -119,3 +119,15 @@ A stale reconnect-status defect was discovered during production-preview validat
 Repair checkpoint:
 
 `3db21ed` - `fix(sync): recover active-card status after reconnect`
+
+## Verified real-cloud text-only backup and restore
+
+- Production backup export completed successfully after the required review-event composite index was deployed.
+- Export contained the controlled cloud KnowledgeItem, one review card, taxonomy, settings, and scheduler parameter data.
+- Backup contained 0 media files and required no Firebase Storage.
+- First restore completed with 1 insert, 4 already matching, and 0 conflicts.
+- Re-inspecting the same backup immediately afterward reported 0 inserts, 5 already matching, and 0 conflicts.
+- Real-cloud text-only restore is complete and idempotent.
+- Backup/restore acceptance: PASS.
+- Missing backup query index was added to Git and protected by `firestoreIndexesContract.test.ts`.
+- Index checkpoint: `c71e1d0` (`fix(firestore): declare backup review-event index`).

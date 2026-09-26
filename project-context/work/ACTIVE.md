@@ -8,6 +8,6 @@ Status: ACTIVE
 
 Target Firebase project: `mindspark-b8-test`
 
-Current phase: Auth + Firestore real-cloud round-trip, browser offline persistence/reconnect, and installed-PWA Firestore operation are verified. The Library bootstrap defect and active-card reconnect-status defect are repaired and regression-tested. Remaining acceptance is real cross-owner rejection and text-only/current backup-restore validation.
+Current phase: Auth + Firestore real-cloud round-trip, browser offline persistence/reconnect, installed-PWA Firestore operation, and real-cloud text-only backup/restore are verified. The Library bootstrap defect, active-card reconnect-status defect, and missing backup-query index are repaired and regression-protected. Remaining acceptance is real cross-owner Firestore rejection.
 
 Safety: Firebase Storage remains disabled and optional. No billing changes. Additional cloud mutations or deployments require explicit authorization.
