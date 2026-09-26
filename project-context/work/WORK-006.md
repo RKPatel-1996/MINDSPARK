@@ -1,6 +1,6 @@
 # WORK-006 — Desktop Settings Layout + AI Generation Prompt Surface
 
-Status: VERIFIED_PENDING_PROMOTION
+Status: COMPLETE
 
 Base: `fa44f03`
 
@@ -134,10 +134,16 @@ Safety / scope confirmation:
 - No FSRS/scheduler semantic changes.
 - No deployment.
 
-## Promotion state
+## Canonical promotion and closure
 
-The WORK-006 implementation is verified on `task/work-006-settings-prompt-v1`.
-
-Canonical-main promotion has not yet been performed.
-
-Do not mark WORK-006 `COMPLETE / PROMOTED` until canonical `main` is updated and verified from the canonical worktree.
+- WORK-006 was promoted to canonical `main` by fast-forward.
+- Promoted verified checkpoint: `69822ce4e28a9f96e938cb93e5e73d858263d965`.
+- `main` and `origin/main` were synchronized at that checkpoint before this closure update.
+- Canonical `npm run verify:web-release`: PASS.
+- Canonical ordinary suite: 62 test files / 451 tests PASS.
+- Canonical production build: PASS.
+- Canonical PWA artifact verification: 7 / 7 PASS.
+- Canonical worktree after verification: clean.
+- Manual desktop/mobile product verification: PASS.
+- No deployment, Firebase-rule change, Storage enablement, billing change, or scheduler-semantic change occurred.
+- WORK-006 status: COMPLETE / PROMOTED.

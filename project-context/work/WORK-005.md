@@ -1,6 +1,6 @@
 # WORK-005 - B8 Stage 2 Core Cloud Readiness
 
-Status: ACTIVE
+Status: COMPLETE
 
 ## Aim
 
