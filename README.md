@@ -42,21 +42,23 @@ npm run verify:web-release
 ```
 
 ### Firebase & Security Rules
-MindSpark uses a strict single-owner Firestore security model. Firebase Storage is optional for legacy media workflows.
-To test rules against the local emulator (requires Java):
+MindSpark uses a strict single-owner Firestore security model. Core current operation uses Firebase Authentication + Firestore; Firebase Storage is optional for legacy media workflows.
+To test the core Firestore rules against the local emulator (requires Java):
 ```bash
-npm run test:rules
+npm run test:firestore-rules
 ```
-*Note: Production Firestore and Storage rule deployment requires setting the `MINDSPARK_OWNER_UID` environment variable.*
+Use `npm run test:rules` only when deliberately validating the stricter legacy Firestore + Storage rule path.
+
+*Note: Core Firestore rule generation and deployment requires setting the `MINDSPARK_OWNER_UID` environment variable. Storage rule deployment is separate and is only relevant when the optional legacy-media path is deliberately enabled and validated.*
 
 ### Backup and Recovery
 
 See [MindSpark V1 Backup and Recovery](docs/MINDSPARK_BACKUP_RECOVERY.md) for the archive format, non-destructive restore workflow, conflict behavior, security model, and recovery limitations.
 
-### Image Storage & Offline Behavior
-Knowledge-item image metadata is stored with the normal application data, while image bytes are stored separately in Firebase Storage.
+### Optional Legacy Image Storage & Offline Behavior
+Normal text/code/math operation does not require Firebase Storage. For legacy media-bearing knowledge items, image metadata is stored with the normal application data while image bytes are stored separately in Firebase Storage.
 
-In v1, the PWA shell and review data remain usable offline, but Firebase Storage image bytes are **not guaranteed to be available offline** unless the browser already has them cached. If an image URL cannot be resolved, Library and Review degrade to the stored alt text rather than blocking the workflow.
+When that optional media path is used, Firebase Storage image bytes are **not guaranteed to be available offline** unless the browser already has them cached. If an image URL cannot be resolved, Library and Review degrade to the stored alt text rather than blocking the workflow.
 
 ### Important Notes
 - `dist/` and `.generated/` are generated artifact directories and **must not be committed** to version control.

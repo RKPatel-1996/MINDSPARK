@@ -13,7 +13,7 @@ npm run deploy
 - `predeploy` automatically runs this verification when `npm run deploy` is executed.
 - The verified `dist/` directory produced during verification is the exact artifact published by `gh-pages`.
 
-Firebase deployment remains a completely separate process (detailed below) requiring an owner UID and Java for emulator rules tests. It covers both Firestore and Firebase Storage. The `npm run deploy` command **does not** deploy to Firebase.
+Firebase deployment remains a completely separate process requiring an owner UID and Java for emulator rule tests. The core path uses Authentication + Firestore only; the Storage-aware rule path is retained separately for optional legacy media. The `npm run deploy` command **does not** deploy to Firebase.
 
 Do not commit `dist/` or `.generated/` to version control.
 
@@ -34,16 +34,16 @@ Deployment sequence:
    ```
 3. Deploy Firestore only:
    ```bash
-   firebase deploy --only firestore --project mindspark-b8-test
+   firebase deploy --only firestore --project <target-project-id>
    ```
 
-Do not commit generated files under `.generated/` or your real UID.
+Do not commit generated files under `.generated/` or your real UID. Any Firebase deployment remains an explicit, separately authorized operation.
 
-### Image Storage Note
-Knowledge-item image metadata is stored in Firestore, while image bytes are stored in Firebase Storage under the owner-scoped `knowledgeImages` path.
+### Optional Legacy Image Storage
+Normal text/code/math operation does not require Firebase Storage. For legacy media-bearing records, image metadata is stored in Firestore while image bytes are stored in Firebase Storage under the owner-scoped `knowledgeImages` path.
 
-The current v1 PWA does not guarantee offline availability of Firebase Storage image bytes. Review and Library remain functional when an image cannot be resolved and fall back to the image alt text.
+When that optional media path is used, the PWA does not guarantee offline availability of Firebase Storage image bytes. Review and Library remain functional when an image cannot be resolved and fall back to the stored image alt text.
 
 ## Optional Legacy Media
 
-Firebase Storage is optional and only required for legacy media-bearing workflows. The existing preflight:production and 	est:rules commands remain the stricter Firestore + Storage verification path.
+Firebase Storage is optional and only required for legacy media-bearing workflows. `npm run preflight:production` and `npm run test:rules` retain the stricter Firestore + Storage verification path; they are not prerequisites for the current Firestore-only core path.

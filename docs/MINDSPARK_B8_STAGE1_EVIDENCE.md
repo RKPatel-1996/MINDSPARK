@@ -4,6 +4,8 @@
 
 B8 Stage 1 exercised the frozen local and Firebase Emulator Suite scenarios. Cloud, browser, and installed-PWA scenarios remain blocked and are not represented as passed.
 
+> **Later-status note (2026-09-26):** This file preserves the Stage 1 checkpoint as recorded at that time. WORK-005 subsequently verified the core Authentication + Firestore cloud path, browser offline persistence, installed-PWA Firestore operation, text-only backup/restore, and cross-owner rejection in the disposable Firebase test environment. Firebase Storage remained disabled and optional; no real-cloud legacy-media Storage round trip was claimed. See `project-context/work/WORK-005.md` and `project-context/CURRENT_STATE.md` for the later verified state.
+
 - Run ID: `20260922T033450Z`
 - Execution commit: `499691abab560187415d3cbb39a84a1ba613ca05`
 - Environment aliases: `LOCAL`, `FIREBASE_EMULATOR`, `B8_OWNER`, `B8_NONOWNER`

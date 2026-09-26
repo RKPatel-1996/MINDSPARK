@@ -123,6 +123,10 @@ A backup should be tested periodically in a disposable environment. Archive inte
 
 ## B8 verification status
 
-B8 Stage 1 local and emulator evidence is maintained in `docs/MINDSPARK_B8_STAGE1_EVIDENCE.md`.
+B8 Stage 1 local and emulator evidence is maintained as a historical checkpoint in `docs/MINDSPARK_B8_STAGE1_EVIDENCE.md`.
 
-Cloud browser and installed-PWA testing against the disposable `B8_NONPROD` environment remains pending. Stage 1 results must not be interpreted as completed production deployment or public release verification.
+Subsequent WORK-005 validation verified the current core cloud path against the disposable Firebase test environment using Authentication + Firestore. Verified behavior includes durable owner-scoped Firestore operation, browser offline persistence, installed-PWA Firestore operation, text-only backup export and restore, idempotent re-inspection, and cross-owner read/write rejection.
+
+Firebase Storage remained disabled throughout that core validation. A real-cloud legacy-media/Storage round trip was not required for WORK-005 core acceptance and remains outside the current text/code/math operating requirement.
+
+These validations establish core cloud readiness; they do **not** represent public application deployment or authorization for future Firebase deployments.
