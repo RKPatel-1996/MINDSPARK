@@ -1,6 +1,6 @@
 # WORK-009 - Production Dependency Security Remediation
 
-Status: VERIFIED / READY_FOR_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `aee00bf7c544bbe7634dfb9ae029e54525bdedee`
 
@@ -245,6 +245,25 @@ All WORK-009 acceptance conditions are satisfied:
 - no unsafe forced fix or breaking downgrade was accepted;
 - backup, routing, release, PWA, Firestore, Storage, and persistence regression gates pass.
 
-WORK-009 is therefore VERIFIED / READY_FOR_PROMOTION.
+WORK-009 is therefore COMPLETE / PROMOTED.
 
-Canonical `main` has not yet received WORK-009. Do not describe WORK-009 or GAP-003 as canonically complete/resolved until promotion and canonical reverification are complete.
+## Canonical promotion and reverification
+
+WORK-009 was fast-forward promoted to canonical local `main` at:
+
+`151ca2d05af9a0eacea4dcc1c70fc26a5efb017e`
+
+Canonical reverification passed:
+
+- `npm ci`: PASS;
+- production audit: 0 vulnerabilities;
+- full-tree audit: 5 moderate / 0 high / 0 critical, matching the characterized `firebase-tools` development-tooling residual;
+- Firebase emulator/rules suite: 6 files / 61 tests PASS;
+- TypeScript: PASS;
+- ordinary Vitest suite: 63 files / 456 tests PASS;
+- production build: PASS;
+- PWA build-artifact suite: 8 / 8 PASS;
+- `git diff --check`: PASS;
+- canonical worktree remained clean.
+
+GAP-003 is canonically RESOLVED. Remote synchronization is handled separately from this local canonical closure.
