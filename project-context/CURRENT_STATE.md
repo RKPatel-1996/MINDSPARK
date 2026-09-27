@@ -316,12 +316,14 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-003: RESOLVED
 - GAP-004: RESOLVED
 - GAP-005: OPEN
-- Active bounded work item: NONE
 - WORK-010: COMPLETE / PROMOTED
+- Active bounded work item: WORK-011 - REGISTERED / NOT_STARTED
 
 ## Current bounded work
 
-No bounded WORK item is currently active.
+WORK-011 - ReviewEvent Firestore Rule Parity - is the active bounded work item and is REGISTERED / NOT_STARTED.
+
+It addresses GAP-005, the confirmed mismatch between the authoritative ReviewEvent domain contract and Firestore ReviewEvent create validation.
 
 WORK-010 - Durable Review Submission Acknowledgement - was fast-forward promoted to canonical local `main` at `0d198d42cd0849388384a8b27c9b6bb273e43106` and canonically reverified.
 
@@ -343,4 +345,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - OPEN; immutable ReviewEvent Firestore rules are weaker than domain validation
 
-Next action: if work continues on the confirmed post-hardening findings, register a fresh bounded work item for GAP-005 before implementation. DISC-002 remains the historical post-hardening review record. Remote synchronization of the canonical WORK-010 closure remains a separate Git step.
+Next action: begin WORK-011 with a domain-to-Firestore-rules parity matrix, then implement the smallest validated rule/test correction. No deployment is authorized. DISC-002 remains the historical post-hardening review record. WORK-010 is already synchronized with `origin/main`.
