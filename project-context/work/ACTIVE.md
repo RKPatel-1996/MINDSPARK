@@ -16,4 +16,4 @@ Current phase: WORK-012 implementation has started on its bounded task branch. T
 
 Scope: add a read-only unattended export path around the existing validated V1 backup contract, then create daily off-site recovery points in a dedicated private GitHub repository with bounded retention and failure detection.
 
-Safety: no automatic restore, production-data mutation, Firebase deployment, Storage enablement, billing change, backup-format redesign, encryption layer, or Android/PWA redesign.
+Safety: no automatic restore, production-data mutation, Firebase deployment, Storage enablement, billing activation/change, paid-required Firebase/Google Cloud/GitHub feature, backup-format redesign, encryption layer, or Android/PWA redesign.

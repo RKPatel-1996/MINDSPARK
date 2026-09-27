@@ -73,6 +73,8 @@ Do not give the routine backup path Firestore write, delete, restore, deployment
 
 Do not commit credentials or long-lived private keys to Git.
 
+The selected unattended backup design must remain operable without enabling billing or adopting a feature that requires paid Firebase, Google Cloud, or GitHub service. Free-tier quotas may be used, but billing activation must not be a prerequisite. If a proposed authentication, execution, storage, or retention mechanism requires billing, it must be rejected or separately re-scoped rather than silently introduced.
+
 ### Off-site storage
 
 Use a dedicated private GitHub repository as the off-site recovery location.
@@ -144,6 +146,7 @@ WORK-012 is complete only when:
 - recovery using a produced archive is validated through the existing restore inspection path in a safe test/disposable environment;
 - backup automation credentials are absent from Git history;
 - backup automation has no routine Firestore mutation authority;
+- routine unattended backup operation does not require billing activation or a paid-required Firebase, Google Cloud, or GitHub feature;
 - ordinary application backup/export/restore behavior remains unchanged;
 - focused WORK-012 tests pass;
 - relevant backup/restore tests pass;
