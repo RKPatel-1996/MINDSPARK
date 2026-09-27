@@ -125,7 +125,10 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
       setPendingWritesCount(count);
       setSyncError(error ?? null);
     });
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      reviewService.destroy();
+    };
   }, [reviewService]);
 
   // Bootstrap user repositories when authenticated or running with custom repos or dev mode
