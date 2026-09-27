@@ -1,6 +1,6 @@
 # WORK-011 - ReviewEvent Firestore Rule Parity
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `904d6a3d9cd2842af1c8a8638180538948f6f3ba`
 
@@ -117,6 +117,51 @@ Do not expand WORK-011 into:
 - backup-format redesign;
 - deployment;
 - unrelated security hardening.
+
+## Verified implementation
+
+Implementation commit:
+
+- `8f96e79` - `fix(firestore): enforce ReviewEvent rule parity`
+
+Implemented in the authoritative `firestore.rules.template`:
+
+- opaque UUID validation for ReviewEvent, card, and knowledge-item identifiers;
+- ReviewEvent rating enum validation;
+- card-type enum validation;
+- card-type/objective-correctness consistency;
+- non-empty device identity;
+- optional non-negative integer `durationMs`;
+- required scheduler metadata structure and field types;
+- non-empty scheduler identity strings;
+- scheduler numeric bounds;
+- `schemaVersion == 1`;
+- existing owner isolation, server-received timestamp enforcement, top-level field contract, and append-only semantics preserved.
+
+The rule remains representation-aware: persisted ReviewEvent timestamps are validated as Firestore timestamps, matching the repository mapper and restore gateway.
+
+Scheduler metadata requires the application-domain fields and their constraints but does not add a nested `hasOnly(...)` restriction, because the authoritative application-domain scheduler metadata schema is not strict. Backup input remains independently stricter.
+
+## Verification
+
+Verified on the WORK-011 task branch:
+
+- RED characterization before the rule change: 18 new domain-parity assertions failed because the existing rule accepted malformed ReviewEvents;
+- focused Firestore security-rule suite after implementation: 33 / 33 PASS;
+- repository Firebase rule/emulator gate: 6 files / 81 tests PASS;
+- B8 Stage 1 representative backup/restore: 7 / 7 PASS;
+- Firebase restore gateway: 9 / 9 PASS;
+- Firestore ReviewEvent repository emulator suite: 9 / 9 PASS, including WORK-010 terminal rejection characterization;
+- targeted WORK-010/application regressions: 3 files / 27 tests PASS;
+- TypeScript: PASS;
+- ordinary Vitest suite: 63 files / 458 tests PASS;
+- production Vite/PWA build: PASS;
+- PWA artifact verification: 8 / 8 PASS;
+- `npm run verify:web-release`: PASS;
+- `git diff --check`: PASS;
+- no Firebase deployment, production cloud mutation, Storage enablement, or billing change occurred.
+
+All WORK-011 acceptance criteria are satisfied locally. Promotion to canonical `main` remains a separate governance step.
 
 ## Governance boundary
 

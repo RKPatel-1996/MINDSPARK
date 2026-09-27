@@ -315,13 +315,13 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-002: RESOLVED
 - GAP-003: RESOLVED
 - GAP-004: RESOLVED
-- GAP-005: OPEN
+- GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-011 - IN_PROGRESS
+- Active bounded work item: WORK-011 - COMPLETE_PENDING_PROMOTION
 
 ## Current bounded work
 
-WORK-011 - ReviewEvent Firestore Rule Parity - is the active bounded work item and is IN_PROGRESS.
+WORK-011 - ReviewEvent Firestore Rule Parity - is implementation-complete and locally verified on `task/work-011-review-event-rule-parity-v1` at `8f96e79`; status is COMPLETE_PENDING_PROMOTION.
 
 It addresses GAP-005, the confirmed mismatch between the authoritative ReviewEvent domain contract and Firestore ReviewEvent create validation.
 
@@ -343,6 +343,6 @@ Current durable-gap state:
 - `GAP-002` - RESOLVED by WORK-008
 - `GAP-003` - RESOLVED by WORK-009; five moderate `firebase-tools` development-tooling residuals remain explicitly characterized and are absent from the production audit
 - `GAP-004` - RESOLVED by WORK-010
-- `GAP-005` - OPEN; immutable ReviewEvent Firestore rules are weaker than domain validation
+- `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: begin WORK-011 with a domain-to-Firestore-rules parity matrix, then implement the smallest validated rule/test correction. No deployment is authorized. DISC-002 remains the historical post-hardening review record. WORK-010 is already synchronized with `origin/main`.
+Next action: commit the WORK-011 governance closure, then perform the governed promotion check and fast-forward promotion to canonical `main`. No Firebase deployment is authorized.
