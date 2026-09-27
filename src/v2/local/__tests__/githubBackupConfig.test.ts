@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
   GitHubBackupConfigError,
   clearGitHubBackupConnectionConfig,
   clearGitHubBackupSessionToken,
@@ -15,29 +16,40 @@ describe('GitHub backup device-local configuration', () => {
     sessionStorage.clear();
   });
 
+  it('provides editable default connection values without a built-in PAT', () => {
+    expect(DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG).toEqual({
+      owner: 'RKPatel-1996',
+      repository: 'MINDSPARK_android_sync',
+      releaseTag: 'mindspark-recovery-points',
+    });
+
+    expect(sessionStorage.length).toBe(0);
+    expect(localStorage.length).toBe(0);
+  });
+
   it('persists only non-secret connection configuration in localStorage', () => {
     const saved = saveGitHubBackupConnectionConfig({
       owner: '  owner-name  ',
       repository: '  mindspark-backups  ',
-      releaseId: 123,
+      releaseTag: '  mindspark-recovery-points  ',
     });
 
     expect(saved).toEqual({
       owner: 'owner-name',
       repository: 'mindspark-backups',
-      releaseId: 123,
+      releaseTag: 'mindspark-recovery-points',
     });
 
     expect(loadGitHubBackupConnectionConfig()).toEqual(saved);
     expect(localStorage.length).toBe(1);
 
     const stored = localStorage.getItem(
-      'mindspark_github_backup_connection_v1',
+      'mindspark_github_backup_connection_v2',
     );
 
     expect(stored).toContain('owner-name');
     expect(stored).toContain('mindspark-backups');
-    expect(stored).toContain('123');
+    expect(stored).toContain('mindspark-recovery-points');
     expect(stored).not.toMatch(/token|pat|secret/i);
   });
 
@@ -64,7 +76,7 @@ describe('GitHub backup device-local configuration', () => {
     saveGitHubBackupConnectionConfig({
       owner: 'owner',
       repository: 'backups',
-      releaseId: 10,
+      releaseTag: 'recovery',
     });
     saveGitHubBackupSessionToken('github_pat_test_secret');
 
@@ -83,7 +95,7 @@ describe('GitHub backup device-local configuration', () => {
       saveGitHubBackupConnectionConfig({
         owner: '',
         repository: 'backups',
-        releaseId: 10,
+        releaseTag: 'recovery',
       }),
     ).toThrowError(
       expect.objectContaining({
@@ -96,8 +108,17 @@ describe('GitHub backup device-local configuration', () => {
 
   it('treats malformed stored connection data as absent', () => {
     localStorage.setItem(
+      'mindspark_github_backup_connection_v2',
+      '{"owner":"owner","repository":"backups","releaseTag":123}',
+    );
+
+    expect(loadGitHubBackupConnectionConfig()).toBeNull();
+  });
+
+  it('does not treat the old release-ID configuration as current configuration', () => {
+    localStorage.setItem(
       'mindspark_github_backup_connection_v1',
-      '{"owner":"owner","repository":"backups","releaseId":"wrong"}',
+      '{"owner":"owner","repository":"backups","releaseId":123}',
     );
 
     expect(loadGitHubBackupConnectionConfig()).toBeNull();

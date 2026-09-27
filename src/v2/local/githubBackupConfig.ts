@@ -1,8 +1,15 @@
 export interface GitHubBackupConnectionConfig {
   owner: string;
   repository: string;
-  releaseId: number;
+  releaseTag: string;
 }
+
+export const DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG:
+  GitHubBackupConnectionConfig = {
+    owner: 'RKPatel-1996',
+    repository: 'MINDSPARK_android_sync',
+    releaseTag: 'mindspark-recovery-points',
+  };
 
 export type GitHubBackupConfigErrorCode =
   | 'invalid_connection_config'
@@ -18,7 +25,8 @@ export class GitHubBackupConfigError extends Error {
   }
 }
 
-const CONNECTION_STORAGE_KEY = 'mindspark_github_backup_connection_v1';
+const CONNECTION_STORAGE_KEY = 'mindspark_github_backup_connection_v2';
+const LEGACY_CONNECTION_STORAGE_KEY = 'mindspark_github_backup_connection_v1';
 const TOKEN_SESSION_KEY = 'mindspark_github_backup_pat_v1';
 
 function validateConnectionConfig(
@@ -26,13 +34,9 @@ function validateConnectionConfig(
 ): GitHubBackupConnectionConfig {
   const owner = value.owner.trim();
   const repository = value.repository.trim();
+  const releaseTag = value.releaseTag.trim();
 
-  if (
-    !owner ||
-    !repository ||
-    !Number.isSafeInteger(value.releaseId) ||
-    value.releaseId <= 0
-  ) {
+  if (!owner || !repository || !releaseTag) {
     throw new GitHubBackupConfigError(
       'invalid_connection_config',
       'GitHub backup connection configuration is invalid.',
@@ -42,7 +46,7 @@ function validateConnectionConfig(
   return {
     owner,
     repository,
-    releaseId: value.releaseId,
+    releaseTag,
   };
 }
 
@@ -55,6 +59,7 @@ export function saveGitHubBackupConnectionConfig(
     CONNECTION_STORAGE_KEY,
     JSON.stringify(normalized),
   );
+  localStorage.removeItem(LEGACY_CONNECTION_STORAGE_KEY);
 
   return normalized;
 }
@@ -88,10 +93,10 @@ export function loadGitHubBackupConnectionConfig():
         typeof candidate.repository === 'string'
           ? candidate.repository
           : '',
-      releaseId:
-        typeof candidate.releaseId === 'number'
-          ? candidate.releaseId
-          : Number.NaN,
+      releaseTag:
+        typeof candidate.releaseTag === 'string'
+          ? candidate.releaseTag
+          : '',
     });
   } catch {
     return null;
@@ -100,6 +105,7 @@ export function loadGitHubBackupConnectionConfig():
 
 export function clearGitHubBackupConnectionConfig(): void {
   localStorage.removeItem(CONNECTION_STORAGE_KEY);
+  localStorage.removeItem(LEGACY_CONNECTION_STORAGE_KEY);
 }
 
 export function saveGitHubBackupSessionToken(token: string): void {

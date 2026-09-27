@@ -12,6 +12,7 @@ import {
   type DirectOffsiteBackupResult,
 } from '../../application/directOffsiteBackupService';
 import {
+  DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
   clearGitHubBackupSessionToken,
   loadGitHubBackupConnectionConfig,
   loadGitHubBackupSessionToken,
@@ -57,16 +58,18 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
   } = useApplication();
 
   const initialConnection = useMemo(
-    () => loadGitHubBackupConnectionConfig(),
+    () =>
+      loadGitHubBackupConnectionConfig() ??
+      DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
     [],
   );
 
-  const [owner, setOwner] = useState(initialConnection?.owner ?? '');
+  const [owner, setOwner] = useState(initialConnection.owner);
   const [repository, setRepository] = useState(
-    initialConnection?.repository ?? '',
+    initialConnection.repository,
   );
-  const [releaseId, setReleaseId] = useState(
-    initialConnection?.releaseId.toString() ?? '',
+  const [releaseTag, setReleaseTag] = useState(
+    initialConnection.releaseTag,
   );
   const [token, setToken] = useState(
     () => loadGitHubBackupSessionToken() ?? '',
@@ -100,7 +103,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
       const target = new GitHubReleaseBackupGateway({
         owner: config.owner,
         repository: config.repository,
-        releaseId: config.releaseId,
+        releaseTag: config.releaseTag,
         token: sessionToken,
       });
 
@@ -121,7 +124,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
   const connectionFromInputs = (): GitHubBackupConnectionConfig => ({
     owner,
     repository,
-    releaseId: Number(releaseId),
+    releaseTag,
   });
 
   const handleSaveConnection = () => {
@@ -134,7 +137,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
 
       setOwner(saved.owner);
       setRepository(saved.repository);
-      setReleaseId(saved.releaseId.toString());
+      setReleaseTag(saved.releaseTag);
 
       if (token.trim()) {
         saveGitHubBackupSessionToken(token);
@@ -187,7 +190,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
 
       setOwner(config.owner);
       setRepository(config.repository);
-      setReleaseId(config.releaseId.toString());
+      setReleaseTag(config.releaseTag);
       setToken(sessionToken);
 
       const result = await liveRunner(
@@ -261,38 +264,12 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className="text-sm font-ui">
-          <span className="block mb-1.5 font-medium">GitHub owner</span>
-          <input
-            aria-label="GitHub owner"
-            type="text"
-            value={owner}
-            onChange={(event) => setOwner(event.target.value)}
-            disabled={backingUp}
-            className="w-full p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono"
-          />
-        </label>
-
-        <label className="text-sm font-ui">
           <span className="block mb-1.5 font-medium">Backup repository</span>
           <input
             aria-label="Backup repository"
             type="text"
             value={repository}
             onChange={(event) => setRepository(event.target.value)}
-            disabled={backingUp}
-            className="w-full p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono"
-          />
-        </label>
-
-        <label className="text-sm font-ui">
-          <span className="block mb-1.5 font-medium">Release ID</span>
-          <input
-            aria-label="Release ID"
-            type="number"
-            min="1"
-            step="1"
-            value={releaseId}
-            onChange={(event) => setReleaseId(event.target.value)}
             disabled={backingUp}
             className="w-full p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono"
           />
@@ -317,8 +294,40 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
         </label>
       </div>
 
+      <details className="mt-4 rounded-lg border border-[var(--border-color)] p-3">
+        <summary className="cursor-pointer text-sm font-medium font-ui">
+          Advanced GitHub backup settings
+        </summary>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <label className="text-sm font-ui">
+            <span className="block mb-1.5 font-medium">GitHub owner</span>
+            <input
+              aria-label="GitHub owner"
+              type="text"
+              value={owner}
+              onChange={(event) => setOwner(event.target.value)}
+              disabled={backingUp}
+              className="w-full p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono"
+            />
+          </label>
+
+          <label className="text-sm font-ui">
+            <span className="block mb-1.5 font-medium">Release tag</span>
+            <input
+              aria-label="Release tag"
+              type="text"
+              value={releaseTag}
+              onChange={(event) => setReleaseTag(event.target.value)}
+              disabled={backingUp}
+              className="w-full p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono"
+            />
+          </label>
+        </div>
+      </details>
+
       <p className="mt-3 text-xs text-[var(--muted-color)] font-content">
-        Owner, repository, and Release ID stay on this device. The PAT is
+        Repository, owner, and Release tag stay on this device. The PAT is
         session-only and is not stored in MindSpark cloud settings or backup
         archives.
       </p>

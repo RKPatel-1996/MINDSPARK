@@ -1,7 +1,7 @@
 export interface GitHubReleaseBackupGatewayConfig {
   owner: string;
   repository: string;
-  releaseId: number;
+  releaseTag: string;
   token: string;
   fetchImpl?: typeof fetch;
 }
@@ -40,6 +40,10 @@ export class GitHubReleaseBackupError extends Error {
   }
 }
 
+interface GitHubReleaseDto {
+  id?: unknown;
+}
+
 interface GitHubReleaseAssetDto {
   id?: unknown;
   name?: unknown;
@@ -53,6 +57,26 @@ interface GitHubReleaseAssetDto {
 const API_VERSION = '2022-11-28';
 const BACKUP_SUFFIX = '.mindspark-backup';
 const SHA256_PATTERN = /^[a-f0-9]{64}$/i;
+
+function normalizeReleaseId(value: unknown): number {
+  if (typeof value !== 'object' || value === null) {
+    throw new GitHubReleaseBackupError(
+      'invalid_response',
+      'GitHub returned an invalid Release.',
+    );
+  }
+
+  const dto = value as GitHubReleaseDto;
+
+  if (!Number.isSafeInteger(dto.id) || (dto.id as number) <= 0) {
+    throw new GitHubReleaseBackupError(
+      'invalid_response',
+      'GitHub returned an invalid Release ID.',
+    );
+  }
+
+  return dto.id as number;
+}
 
 function normalizeAsset(value: unknown): GitHubBackupAsset {
   if (typeof value !== 'object' || value === null) {
@@ -105,13 +129,13 @@ function normalizeAsset(value: unknown): GitHubBackupAsset {
 
 export class GitHubReleaseBackupGateway {
   private readonly fetchImpl: typeof fetch;
+  private releaseIdPromise: Promise<number> | null = null;
 
   constructor(private readonly config: GitHubReleaseBackupGatewayConfig) {
     if (
       !config.owner.trim() ||
       !config.repository.trim() ||
-      !Number.isSafeInteger(config.releaseId) ||
-      config.releaseId <= 0 ||
+      !config.releaseTag.trim() ||
       !config.token.trim()
     ) {
       throw new GitHubReleaseBackupError(
@@ -142,10 +166,12 @@ export class GitHubReleaseBackupGateway {
       );
     }
 
+    const releaseId = await this.getReleaseId();
+
     const url =
       `https://uploads.github.com/repos/${encodeURIComponent(this.config.owner)}` +
       `/${encodeURIComponent(this.config.repository)}` +
-      `/releases/${this.config.releaseId}/assets` +
+      `/releases/${releaseId}/assets` +
       `?name=${encodeURIComponent(input.fileName)}`;
 
     const response = await this.fetchImpl(url, {
@@ -187,13 +213,14 @@ export class GitHubReleaseBackupGateway {
   }
 
   async listBackupAssets(): Promise<GitHubBackupAsset[]> {
+    const releaseId = await this.getReleaseId();
     const result: GitHubBackupAsset[] = [];
 
     for (let page = 1; ; page += 1) {
       const url =
         `https://api.github.com/repos/${encodeURIComponent(this.config.owner)}` +
         `/${encodeURIComponent(this.config.repository)}` +
-        `/releases/${this.config.releaseId}/assets?per_page=100&page=${page}`;
+        `/releases/${releaseId}/assets?per_page=100&page=${page}`;
 
       const response = await this.fetchImpl(url, {
         method: 'GET',
@@ -254,6 +281,36 @@ export class GitHubReleaseBackupGateway {
         response.status,
       );
     }
+  }
+
+  private getReleaseId(): Promise<number> {
+    if (this.releaseIdPromise === null) {
+      this.releaseIdPromise = this.resolveReleaseId();
+    }
+
+    return this.releaseIdPromise;
+  }
+
+  private async resolveReleaseId(): Promise<number> {
+    const url =
+      `https://api.github.com/repos/${encodeURIComponent(this.config.owner)}` +
+      `/${encodeURIComponent(this.config.repository)}` +
+      `/releases/tags/${encodeURIComponent(this.config.releaseTag)}`;
+
+    const response = await this.fetchImpl(url, {
+      method: 'GET',
+      headers: this.headers(),
+    });
+
+    if (!response.ok) {
+      throw new GitHubReleaseBackupError(
+        'request_failed',
+        `GitHub Release lookup failed with HTTP ${response.status}.`,
+        response.status,
+      );
+    }
+
+    return normalizeReleaseId(await response.json());
   }
 
   private headers(additional: Record<string, string> = {}): Record<string, string> {
