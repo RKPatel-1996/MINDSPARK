@@ -8,6 +8,22 @@ import { settingsSchema } from './settingsService';
 import type { Settings } from '../persistence/repository/interfaces';
 import type { Repositories } from './types';
 
+/**
+ * Minimal read-only persistence surface required to create an authoritative
+ * backup source snapshot.
+ *
+ * Keeping this contract narrower than Repositories prevents unattended backup
+ * code from receiving normal application mutation methods.
+ */
+export interface BackupSourceRepositories {
+  readonly taxonomy: Pick<Repositories['taxonomy'], 'get'>;
+  readonly settings: Pick<Repositories['settings'], 'get'>;
+  readonly parameterSets: Pick<Repositories['parameterSets'], 'list'>;
+  readonly knowledge: Pick<Repositories['knowledge'], 'list'>;
+  readonly reviewCards: Pick<Repositories['reviewCards'], 'list'>;
+  readonly reviewEvents: Pick<Repositories['reviewEvents'], 'list'>;
+}
+
 export interface BackupSourceSnapshot {
   exportedAt: string;
   taxonomy: TaxonomyRegistry;
@@ -31,7 +47,7 @@ export class BackupSourceSnapshotValidationError extends Error {
  */
 export class BackupSnapshotService {
   constructor(
-    private readonly repos: Repositories,
+    private readonly repos: BackupSourceRepositories,
     private readonly now: () => string = () => new Date().toISOString(),
   ) {}
 

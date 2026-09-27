@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   BackupSnapshotService,
   BackupSourceSnapshotValidationError,
+  type BackupSourceRepositories,
 } from '../backupSnapshotService';
 import { createInMemoryRepositories } from '../../persistence/memory/inMemoryRepositories';
 import type { Repositories } from '../types';
@@ -109,6 +110,30 @@ describe('BackupSnapshotService', () => {
       reserveHorizonHours: 24,
     });
     service = new BackupSnapshotService(repos, () => FIXED_EXPORTED_AT);
+  });
+
+  it('depends only on the six read capabilities required for backup snapshots', async () => {
+    const readOnlySource = {
+      taxonomy: { get: () => repos.taxonomy.get() },
+      settings: { get: () => repos.settings.get() },
+      parameterSets: { list: () => repos.parameterSets.list() },
+      knowledge: { list: () => repos.knowledge.list() },
+      reviewCards: { list: () => repos.reviewCards.list() },
+      reviewEvents: { list: () => repos.reviewEvents.list() },
+    } satisfies BackupSourceRepositories;
+
+    const readOnlyService = new BackupSnapshotService(
+      readOnlySource,
+      () => FIXED_EXPORTED_AT,
+    );
+
+    const snapshot = await readOnlyService.createSnapshot();
+
+    expect(snapshot.exportedAt).toBe(FIXED_EXPORTED_AT);
+    expect(snapshot.schedulerParameterSets).toHaveLength(1);
+    expect(snapshot.knowledgeItems).toEqual([]);
+    expect(snapshot.reviewCards).toEqual([]);
+    expect(snapshot.reviewEvents).toEqual([]);
   });
 
   it('includes every event, archived and needs-review items, and suspended cards', async () => {
