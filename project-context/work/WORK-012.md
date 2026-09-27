@@ -53,6 +53,8 @@ The verified GitHub storage representation is one dedicated private repository w
 
 GitHub authentication will use a fine-grained PAT restricted to the dedicated backup repository with only the minimum repository permission required for Release asset operations. The application will target an already-created Release rather than requiring permission to create repository workflows or other automation.
 
+GitHub off-site configuration is strictly device-local and must not use the Firestore-backed MindSpark Settings repository. Non-secret connection values (GitHub owner, repository name, and Release ID) may be persisted in browser `localStorage` for convenience. The PAT is session-only: it may be held in component memory and/or browser `sessionStorage`, must be cleared with the browser/PWA session, and must never be written to `localStorage`, IndexedDB, Firestore, backup archives, URLs, or application logs. Losing the session credential is acceptable; the user can paste the PAT again before the next off-site backup.
+
 Automatic background backup and unattended server execution are no longer acceptance requirements for WORK-012.
 
 ## Verified starting condition
