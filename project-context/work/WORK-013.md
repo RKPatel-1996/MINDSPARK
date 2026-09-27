@@ -1,6 +1,6 @@
 # WORK-013 - Application Runtime Resilience Hardening
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `30af8a220d249f1a958f2373f07aa7dae73e838c`
 
@@ -112,6 +112,26 @@ WORK-013 is complete only when:
 - `npm run typecheck` passes;
 - `npm run verify:web-release` passes;
 - `git diff --check` passes.
+
+## Completion evidence
+
+Implementation commits:
+
+- `7db87c1af11d3059633bd83f4b2c0d06d342e00f` - provider-owned `ReviewService` disposal;
+- `0a5821bd9604127a0439eb9f531c3d69ad1fe180` - scheduler-parameter cache invalidation after successful restore;
+- `42e511467c47669228fc0ccb321480479c284ad5` - explicit bootstrap failure, current-authority retry, stale-result suppression, and Library recovery UI.
+
+Verification:
+
+- unified focused and relevant regression suite: PASS, 7 files / 48 tests;
+- `npm run typecheck`: PASS;
+- final `npm run verify:web-release`: PASS with 74 ordinary test files / 523 tests plus 8 / 8 PWA artifact tests;
+- final `git diff --check`: PASS;
+- implementation worktree: clean at `42e511467c47669228fc0ccb321480479c284ad5`.
+
+The release gate emitted only non-blocking Vitest environment-performance guidance and Rollup warnings about annotation placement in installed Zod code.
+
+WORK-013 is complete and awaits promotion to canonical `main`.
 
 ## Out of scope
 

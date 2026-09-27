@@ -317,11 +317,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-013 - IN_PROGRESS
+- Active bounded work item: WORK-013 - COMPLETE_PENDING_PROMOTION
 
 ## Current bounded work
 
-WORK-013 - Application Runtime Resilience Hardening - is the active bounded work item and is IN_PROGRESS on `task/work-013-application-runtime-resilience-v1`.
+WORK-013 - Application Runtime Resilience Hardening - is COMPLETE_PENDING_PROMOTION on `task/work-013-application-runtime-resilience-v1` at verified implementation HEAD `42e511467c47669228fc0ccb321480479c284ad5`.
 
 It addresses three revalidated runtime-resilience findings from `DISC-002`: MSR-05 provider-owned ReviewService disposal, MSR-06 scheduler-parameter cache invalidation after successful restore, and MSR-07 explicit bootstrap failure/retry behavior.
 
