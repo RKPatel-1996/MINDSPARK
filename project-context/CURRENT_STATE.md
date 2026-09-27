@@ -321,9 +321,9 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 
 ## Current bounded work
 
-WORK-012 - Automated Off-site Recovery Points - is the active bounded work item and is IN_PROGRESS on `task/work-012-automated-offsite-recovery-points-v1`.
+WORK-012 - Direct Off-site Recovery Points - is the active bounded work item and is IN_PROGRESS on `task/work-012-automated-offsite-recovery-points-v1`.
 
-It addresses the confirmed absence of automatic independent recovery points by reusing the existing validated `.mindspark-backup` contract through a read-only unattended export path with private GitHub off-site retention.
+It addresses the absence of independent off-site recovery points by reusing the existing validated `.mindspark-backup` contract and allowing explicit user-triggered upload to a dedicated private GitHub backup repository.
 
 WORK-011 - ReviewEvent Firestore Rule Parity - is COMPLETE / PROMOTED. Its verified branch was fast-forward promoted to canonical `main`, and final governance synchronization subsequently advanced canonical `main` to `eb9074e760495c3a97257bb420dbfae6af7cfce2`.
 

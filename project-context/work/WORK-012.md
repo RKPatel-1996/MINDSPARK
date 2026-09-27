@@ -1,4 +1,4 @@
-# WORK-012 - Automated Off-site Recovery Points
+# WORK-012 - Direct Off-site Recovery Points
 
 Status: IN_PROGRESS
 
@@ -19,6 +19,39 @@ The intended recovery model is:
 `Firestore -> read-only headless snapshot -> existing BackupSnapshotService -> existing BackupExportService -> validated .mindspark-backup -> SHA-256 -> private GitHub off-site storage`
 
 Recovery remains explicit and manual through the existing MindSpark Backup UI.
+
+## Approved scope amendment - 2026-09-27
+
+The user approved a simpler, no-cost, user-triggered design. This amendment supersedes conflicting unattended-automation requirements elsewhere in this WORK item.
+
+The approved recovery-point model is:
+
+`MindSpark authenticated application -> existing repositories -> BackupSnapshotService -> BackupRecoveryPointService -> validated .mindspark-backup + SHA-256 -> direct upload to dedicated private GitHub backup repository`
+
+The following previously considered architecture is abandoned for WORK-012:
+
+- GitHub Actions scheduled backup execution;
+- Google service accounts for Firestore backup reads;
+- Workload Identity Federation / GitHub OIDC;
+- a server-side `@google-cloud/firestore` or `firebase-admin` backup reader;
+- automatic daily execution while MindSpark is closed;
+- cloud scheduler infrastructure;
+- stale scheduled-job detection.
+
+The direct-upload design instead requires:
+
+- the user explicitly initiates backup/upload from MindSpark;
+- MindSpark uses its already-authenticated application repositories to read the user's data;
+- the normal V1 `.mindspark-backup` representation remains authoritative;
+- the archive SHA-256 remains part of the recovery-point integrity record;
+- GitHub authentication uses a fine-grained credential restricted to the dedicated private backup repository and only the minimum permissions required by the selected upload API;
+- the GitHub credential must never be written to Firestore, included in a backup archive, committed to Git, or emitted into application logs;
+- no Firebase/Google Cloud billing activation or paid-required feature is introduced;
+- restore remains explicit and manual.
+
+The exact GitHub storage representation and bounded retention policy must favor the simplest no-cost implementation and will be selected only after the relevant GitHub API behavior is verified.
+
+Automatic background backup and unattended server execution are no longer acceptance requirements for WORK-012.
 
 ## Verified starting condition
 
