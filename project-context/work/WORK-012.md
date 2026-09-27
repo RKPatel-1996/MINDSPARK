@@ -49,7 +49,9 @@ The direct-upload design instead requires:
 - no Firebase/Google Cloud billing activation or paid-required feature is introduced;
 - restore remains explicit and manual.
 
-The exact GitHub storage representation and bounded retention policy must favor the simplest no-cost implementation and will be selected only after the relevant GitHub API behavior is verified.
+The verified GitHub storage representation is one dedicated private repository with one long-lived MindSpark recovery-points Release. Each user-triggered backup uploads a uniquely named `.mindspark-backup` Release asset as raw binary data rather than committing the binary to Git history. The application will verify the uploaded asset against the locally computed SHA-256 when GitHub supplies its asset digest. Bounded retention will operate by listing and deleting old Release assets while preserving the newest known-good recovery point.
+
+GitHub authentication will use a fine-grained PAT restricted to the dedicated backup repository with only the minimum repository permission required for Release asset operations. The application will target an already-created Release rather than requiring permission to create repository workflows or other automation.
 
 Automatic background backup and unattended server execution are no longer acceptance requirements for WORK-012.
 
