@@ -17,8 +17,8 @@ import {
   getFirebaseStorage,
 } from '../../persistence/firebase/storageConfig';
 import {
-  GitHubReleaseBackupGateway,
-} from '../../persistence/github/githubReleaseBackupGateway';
+  GitHubContentsBackupGateway,
+} from '../../persistence/github/githubContentsBackupGateway';
 
 export type OffsiteBackupRunner = (
   config: GitHubBackupConnectionConfig,
@@ -40,10 +40,9 @@ export function createGitHubOffsiteBackupRunner(
       );
 
     const target =
-      new GitHubReleaseBackupGateway({
+      new GitHubContentsBackupGateway({
         owner: config.owner,
         repository: config.repository,
-        releaseTag: config.releaseTag,
         token,
       });
 
