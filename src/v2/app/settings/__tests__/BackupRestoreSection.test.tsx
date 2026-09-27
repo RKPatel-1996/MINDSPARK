@@ -110,6 +110,25 @@ afterEach(() => {
 });
 
 describe('B7 Settings backup and restore workflow', () => {
+  it('mounts the WORK-012 off-site backup control without replacing B7 backup and restore controls', async () => {
+    await act(async () => {
+      renderSection(makeWorkflow());
+      await Promise.resolve();
+    });
+
+    expect(
+      screen.getByRole('heading', { name: 'Off-site backup to GitHub' }),
+    ).toBeTruthy();
+
+    expect(
+      screen.getByRole('button', { name: 'Download backup' }),
+    ).toBeTruthy();
+
+    expect(
+      screen.getByLabelText('Choose backup file'),
+    ).toBeTruthy();
+  });
+
   it('keeps text-only export and inspection available and enables restore with no Storage instance', async () => {
     const repos = createInMemoryRepositories();
     await bootstrapUserRepositories(repos);

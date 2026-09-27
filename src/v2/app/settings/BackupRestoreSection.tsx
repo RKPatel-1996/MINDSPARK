@@ -9,6 +9,7 @@ import type { FirebaseRestoreResult } from '../../application/backupFirebaseRest
 import { getFirestoreDb } from '../../persistence/firebase/config';
 import { getFirebaseStorage } from '../../persistence/firebase/storageConfig';
 import { createFirebaseBackupWorkflow } from '../../persistence/firebase/backupWorkflowFactory';
+import { OffsiteBackupSection } from './OffsiteBackupSection';
 
 type BackupWorkflow = Pick<
   BackupUserWorkflowService,
@@ -264,6 +265,8 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
           {exporting ? 'Creating backup...' : 'Download backup'}
         </button>
       </section>
+
+      <OffsiteBackupSection />
 
       <section className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl p-6 paper-shadow">
         <div className="flex items-start gap-3 mb-5">
