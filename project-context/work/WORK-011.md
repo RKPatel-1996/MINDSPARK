@@ -1,6 +1,6 @@
 # WORK-011 - ReviewEvent Firestore Rule Parity
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `904d6a3d9cd2842af1c8a8638180538948f6f3ba`
 
@@ -161,7 +161,7 @@ Verified on the WORK-011 task branch:
 - `git diff --check`: PASS;
 - no Firebase deployment, production cloud mutation, Storage enablement, or billing change occurred.
 
-All WORK-011 acceptance criteria are satisfied locally. Promotion to canonical `main` remains a separate governance step.
+All WORK-011 acceptance criteria are satisfied. The verified WORK-011 branch was fast-forward promoted to canonical `main`, and canonical `main` was synchronized with `origin/main` at `8012cc8273b41818aeeacc08272362b011bc856b`.
 
 ## Governance boundary
 
