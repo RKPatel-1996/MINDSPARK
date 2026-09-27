@@ -1,6 +1,6 @@
 # WORK-012 - Automated Off-site Recovery Points
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
 Base: `eb9074e760495c3a97257bb420dbfae6af7cfce2`
 

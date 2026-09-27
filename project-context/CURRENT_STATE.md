@@ -317,11 +317,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-012 - REGISTERED / NOT_STARTED
+- Active bounded work item: WORK-012 - IN_PROGRESS
 
 ## Current bounded work
 
-WORK-012 - Automated Off-site Recovery Points - is the active bounded work item and is REGISTERED / NOT_STARTED.
+WORK-012 - Automated Off-site Recovery Points - is the active bounded work item and is IN_PROGRESS on `task/work-012-automated-offsite-recovery-points-v1`.
 
 It addresses the confirmed absence of automatic independent recovery points by reusing the existing validated `.mindspark-backup` contract through a read-only unattended export path with private GitHub off-site retention.
 
@@ -349,4 +349,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: review and commit the WORK-012 registration, then create its bounded task branch. Begin with a local read-only headless backup adapter and tests; do not create external GitHub or Google Cloud configuration until that local boundary is verified. No Firebase deployment is authorized.
+Next action: define and verify the smallest read-only headless backup-source contract, then prove local archive creation against controlled data. Do not create external GitHub or Google Cloud configuration until that local boundary is verified. No Firebase deployment is authorized.

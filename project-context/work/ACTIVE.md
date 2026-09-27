@@ -4,7 +4,7 @@ ACTIVE_WORK: WORK-012
 
 Title: Automated Off-site Recovery Points
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
 Base: `eb9074e760495c3a97257bb420dbfae6af7cfce2`
 
@@ -12,7 +12,7 @@ Planned branch: `task/work-012-automated-offsite-recovery-points-v1`
 
 Derived from: 2026-09-27 durability and disaster-recovery reconnaissance
 
-Current phase: automatic recovery-point absence has been verified; WORK-012 is registered but implementation has not started.
+Current phase: WORK-012 implementation has started on its bounded task branch. The first implementation phase is the local read-only headless backup-source contract and controlled-data export path; no external GitHub or Google Cloud configuration is authorized yet.
 
 Scope: add a read-only unattended export path around the existing validated V1 backup contract, then create daily off-site recovery points in a dedicated private GitHub repository with bounded retention and failure detection.
 
