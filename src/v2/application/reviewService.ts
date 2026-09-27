@@ -64,6 +64,13 @@ export class ReviewService {
     this.syncListeners.clear();
   }
 
+  /**
+   * Force the next scheduling operation to re-read scheduler parameter sets.
+   */
+  invalidateParameterSetCache(): void {
+    this.cachedParameterSets = null;
+  }
+
   private applyRepoSyncMetadata(meta: SyncMetadata): void {
     if (meta.rejectedEvents?.length) {
       for (const event of meta.rejectedEvents) {

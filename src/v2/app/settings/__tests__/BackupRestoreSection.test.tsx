@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApplicationProvider } from '../../../application/ApplicationContext';
 import { bootstrapUserRepositories } from '../../../application/bootstrapService';
+import { ReviewService } from '../../../application/reviewService';
 import { createInMemoryRepositories } from '../../../persistence/memory/inMemoryRepositories';
 import { createFirebaseBackupWorkflow } from '../../../persistence/firebase/backupWorkflowFactory';
 import type {
@@ -165,6 +166,7 @@ describe('B7 Settings backup and restore workflow', () => {
       revokeObjectURL: vi.fn(),
     });
     const workflow = makeWorkflow();
+    const invalidateParameterSetCache = vi.spyOn(ReviewService.prototype, 'invalidateParameterSetCache');
     renderSection(workflow);
 
     fireEvent.click(screen.getByRole('button', { name: 'Download backup' }));
@@ -179,6 +181,7 @@ describe('B7 Settings backup and restore workflow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Restore missing data' }));
     await screen.findByText(/Restore complete: 1 inserted, 1 already matched/);
     expect(workflow.executeRestore).toHaveBeenCalledWith(inspection);
+    expect(invalidateParameterSetCache).toHaveBeenCalledOnce();
   });
 
   it('invalidates a completed preview when workflow authority changes', async () => {
@@ -265,6 +268,7 @@ describe('B7 Settings backup and restore workflow', () => {
   });
 
   it('reports the configured Storage requirement behind a legacy media restore failure', async () => {
+    const invalidateParameterSetCache = vi.spyOn(ReviewService.prototype, 'invalidateParameterSetCache');
     const workflow = makeWorkflow({
       executeRestore: vi.fn(async () => ({
         status: 'incomplete' as const,
@@ -281,5 +285,6 @@ describe('B7 Settings backup and restore workflow', () => {
     await screen.findByText('Knowledge items');
     fireEvent.click(screen.getByRole('button', { name: 'Restore missing data' }));
     await screen.findByText(/Legacy media requires configured Firebase Storage/);
+    expect(invalidateParameterSetCache).not.toHaveBeenCalled();
   });
 });

@@ -44,6 +44,7 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
 }) => {
   const {
     repos,
+    reviewService,
     user,
     isSignedOut,
     isUnconfigured,
@@ -212,6 +213,7 @@ export const BackupRestoreSection: React.FC<BackupRestoreSectionProps> = ({
           `Restore complete: ${restoreResult.completedOperationIds.length} inserted, ` +
           `${restoreResult.noOpOperationIds.length} already matched.`,
         );
+        reviewService.invalidateParameterSetCache();
         triggerRefresh();
       } else {
         const detail = restoreResult.error

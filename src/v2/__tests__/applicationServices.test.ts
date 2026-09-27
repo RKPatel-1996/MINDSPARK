@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createInMemoryRepositories } from '../persistence/memory/inMemoryRepositories';
 import { bootstrapUserRepositories } from '../application/bootstrapService';
 import { seedInitialLibrary, importDraftPayload } from '../application/importService';
@@ -33,6 +33,21 @@ describe('MindSpark V2 Application Services (Phase 3B Vertical Slice)', () => {
     const taxonomy = await repos.taxonomy.get();
     expect(taxonomy).toBeDefined();
     expect(taxonomy?.domains.length).toBeGreaterThan(0);
+  });
+
+  it('re-reads scheduler parameter sets after explicit cache invalidation', async () => {
+    await seedInitialLibrary(repos);
+    const listParameterSets = vi.spyOn(repos.parameterSets, 'list');
+    const reviewService = new ReviewService(repos);
+
+    await reviewService.getNextReview();
+    await reviewService.getNextReview();
+    expect(listParameterSets).toHaveBeenCalledTimes(1);
+
+    reviewService.invalidateParameterSetCache();
+    await reviewService.getNextReview();
+    expect(listParameterSets).toHaveBeenCalledTimes(2);
+    reviewService.destroy();
   });
 
   it('seeds authoritative seed library and verifies all items and cards are persisted', async () => {
