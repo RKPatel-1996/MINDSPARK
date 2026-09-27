@@ -16,6 +16,7 @@ import {
   mapDTOToKnowledgeItem,
   mapReviewCardToDTO,
   mapReviewEventToDTO,
+  mapDTOToReviewEvent,
   mapTaxonomyToDTO,
   mapSchedulerParameterSetToDTO,
   mapSettingsToDTO,
@@ -56,6 +57,80 @@ function containsUndefinedValues(val: any): { found: boolean; path: string } {
 }
 
 describe('Firestore DTO Safety & Sanitation', () => {
+  it('reads client and server-style Firestore review timestamps identically', () => {
+    const iso = '2026-09-15T10:00:00.123Z';
+    const date = new Date(iso);
+    const seconds = Math.floor(date.getTime() / 1000);
+
+    const base = {
+      id: generateId(),
+      cardId: generateId(),
+      knowledgeItemId: generateId(),
+      rating: 'good' as const,
+      cardType: 'flashcard' as const,
+      objectiveCorrect: null,
+      guessedOrStruggled: false,
+      deviceId: 'timestamp-test-device',
+      schedulerMetadata: {
+        algorithm: 'fsrs-6',
+        implementation: 'ts-fsrs',
+        implementationVersion: '5.4.2',
+        parameterSetId: DEFAULT_PARAMETER_SET.id,
+        scheduledDays: 1,
+        stability: 2,
+        difficulty: 5,
+        desiredRetention: 0.9,
+      },
+      schemaVersion: 1 as const,
+    };
+
+    const client = mapDTOToReviewEvent({
+      ...base,
+      reviewTimestamp: Timestamp.fromDate(date),
+    });
+
+    const serverStyle = mapDTOToReviewEvent({
+      ...base,
+      reviewTimestamp: {
+        seconds,
+        nanoseconds: 123_000_000,
+      },
+    });
+
+    const alreadyPortable = mapDTOToReviewEvent({
+      ...base,
+      reviewTimestamp: iso,
+    });
+
+    expect(client.reviewTimestamp).toBe(iso);
+    expect(serverStyle.reviewTimestamp).toBe(iso);
+    expect(alreadyPortable.reviewTimestamp).toBe(iso);
+  });
+
+  it('does not reinterpret malformed timestamp-shaped review values', () => {
+    expect(() => mapDTOToReviewEvent({
+      id: generateId(),
+      cardId: generateId(),
+      knowledgeItemId: generateId(),
+      reviewTimestamp: { seconds: 1, nanoseconds: 1_000_000_000 },
+      rating: 'good',
+      cardType: 'flashcard',
+      objectiveCorrect: null,
+      guessedOrStruggled: false,
+      deviceId: 'timestamp-test-device',
+      schedulerMetadata: {
+        algorithm: 'fsrs-6',
+        implementation: 'ts-fsrs',
+        implementationVersion: '5.4.2',
+        parameterSetId: DEFAULT_PARAMETER_SET.id,
+        scheduledDays: 1,
+        stability: 2,
+        difficulty: 5,
+        desiredRetention: 0.9,
+      },
+      schemaVersion: 1,
+    })).toThrow();
+  });
   it('round-trips content blocks while keeping legacy KnowledgeItems without blocks readable', () => {
     const legacyItem: KnowledgeItem = {
       id: generateId(),

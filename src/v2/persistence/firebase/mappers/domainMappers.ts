@@ -89,12 +89,41 @@ export function mapReviewEventToDTO(event: ReviewEvent): any {
   return sanitizeFirestoreDto(dto);
 }
 
+function normalizeFirestoreTimestamp(value: unknown): unknown {
+  if (value instanceof Timestamp) {
+    return value.toDate().toISOString();
+  }
+
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+
+  const candidate = value as {
+    seconds?: unknown;
+    nanoseconds?: unknown;
+  };
+
+  if (
+    !Number.isSafeInteger(candidate.seconds) ||
+    !Number.isInteger(candidate.nanoseconds) ||
+    (candidate.nanoseconds as number) < 0 ||
+    (candidate.nanoseconds as number) > 999_999_999
+  ) {
+    return value;
+  }
+
+  const milliseconds =
+    (candidate.seconds as number) * 1000 +
+    Math.floor((candidate.nanoseconds as number) / 1_000_000);
+  const date = new Date(milliseconds);
+
+  return Number.isNaN(date.getTime()) ? value : date.toISOString();
+}
+
 export function mapDTOToReviewEvent(data: any): ReviewEvent {
   const parsedData = {
     ...data,
-    reviewTimestamp: data.reviewTimestamp instanceof Timestamp
-      ? data.reviewTimestamp.toDate().toISOString()
-      : data.reviewTimestamp,
+    reviewTimestamp: normalizeFirestoreTimestamp(data.reviewTimestamp),
   };
   return reviewEventSchema.parse(parsedData);
 }
