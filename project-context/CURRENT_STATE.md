@@ -317,11 +317,15 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Most recently completed bounded work item: WORK-011 - COMPLETE / PROMOTED
+- Active bounded work item: WORK-012 - REGISTERED / NOT_STARTED
 
 ## Current bounded work
 
-WORK-011 - ReviewEvent Firestore Rule Parity - is COMPLETE / PROMOTED. Its verified branch was fast-forward promoted to canonical `main`, and `main == origin/main == 8012cc8273b41818aeeacc08272362b011bc856b` was confirmed after push.
+WORK-012 - Automated Off-site Recovery Points - is the active bounded work item and is REGISTERED / NOT_STARTED.
+
+It addresses the confirmed absence of automatic independent recovery points by reusing the existing validated `.mindspark-backup` contract through a read-only unattended export path with private GitHub off-site retention.
+
+WORK-011 - ReviewEvent Firestore Rule Parity - is COMPLETE / PROMOTED. Its verified branch was fast-forward promoted to canonical `main`, and final governance synchronization subsequently advanced canonical `main` to `eb9074e760495c3a97257bb420dbfae6af7cfce2`.
 
 It addresses GAP-005, the confirmed mismatch between the authoritative ReviewEvent domain contract and Firestore ReviewEvent create validation.
 
@@ -345,4 +349,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: no bounded implementation work is currently registered after WORK-011. Register and verify the next WORK item before making further substantive repository changes. No Firebase deployment is authorized.
+Next action: review and commit the WORK-012 registration, then create its bounded task branch. Begin with a local read-only headless backup adapter and tests; do not create external GitHub or Google Cloud configuration until that local boundary is verified. No Firebase deployment is authorized.
