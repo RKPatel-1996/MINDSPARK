@@ -1,6 +1,6 @@
 # WORK-012 - Direct Off-site Recovery Points
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `eb9074e760495c3a97257bb420dbfae6af7cfce2`
 
@@ -258,12 +258,17 @@ Completed:
 - live GitHub repository-file recovery-point creation;
 - retirement of the superseded GitHub Release-asset gateway.
 
-Remaining before WORK-012 completion:
+Completion evidence:
 
-1. validate the GitHub-produced `.mindspark-backup` through the existing restore inspection workflow without destructive production restore;
-2. run the final full `npm run verify:web-release` gate;
-3. perform final governance/status alignment;
-4. promote only after the bounded WORK-012 completion review accepts the result.
+- the live GitHub Contents API path successfully stored `mindspark-2026-09-27T15-42-48-246Z.mindspark-backup`;
+- the stored recovery point was downloaded from GitHub and accepted by the existing MindSpark restore inspection workflow as a valid backup file without executing restore;
+- focused WORK-012 verification passed;
+- final `npm run verify:web-release` passed with 73 test files / 514 tests plus 8 PWA artifact tests;
+- final `git diff --check` passed;
+- `.env.local` remained present while Vitest stayed isolated from developer Firebase configuration;
+- the final implementation worktree was clean at `15c1e87b7c4631a5a328e2b3ca9db3e3b0bd242b`.
+
+WORK-012 is complete and awaits promotion to canonical `main`.
 
 ## Out of scope
 

@@ -317,11 +317,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-012 - IN_PROGRESS
+- Active bounded work item: WORK-012 - COMPLETE_PENDING_PROMOTION
 
 ## Current bounded work
 
-WORK-012 - Direct Off-site Recovery Points - is the active bounded work item and is IN_PROGRESS on `task/work-012-automated-offsite-recovery-points-v1`.
+WORK-012 - Direct Off-site Recovery Points - is COMPLETE_PENDING_PROMOTION on `task/work-012-automated-offsite-recovery-points-v1` at verified implementation HEAD `15c1e87b7c4631a5a328e2b3ca9db3e3b0bd242b`.
 
 It addresses the absence of independent off-site recovery points by reusing the existing validated `.mindspark-backup` contract and allowing explicit user-triggered upload to a dedicated private GitHub backup repository.
 
