@@ -13,6 +13,53 @@ service cloud.firestore {
         uid == 'REPLACE_WITH_OWNER_UID';
     }
 
+    function isOpaqueUuid(value) {
+      return value is string &&
+        value.matches('^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[1-5][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$');
+    }
+
+    function isValidSchedulerMetadata(metadata) {
+      return metadata is map
+        && metadata.keys().hasAll([
+          'algorithm',
+          'implementation',
+          'implementationVersion',
+          'parameterSetId',
+          'scheduledDays',
+          'stability',
+          'difficulty',
+          'desiredRetention'
+        ])
+        && metadata.algorithm is string
+        && metadata.algorithm.size() > 0
+        && metadata.implementation is string
+        && metadata.implementation.size() > 0
+        && metadata.implementationVersion is string
+        && metadata.implementationVersion.size() > 0
+        && metadata.parameterSetId is string
+        && metadata.parameterSetId.size() > 0
+        && metadata.scheduledDays is number
+        && metadata.scheduledDays >= 0
+        && metadata.stability is number
+        && metadata.stability >= 0
+        && metadata.difficulty is number
+        && metadata.difficulty >= 0
+        && metadata.difficulty <= 10
+        && metadata.desiredRetention is number
+        && metadata.desiredRetention >= 0.7
+        && metadata.desiredRetention <= 0.99;
+    }
+
+    function isValidObjectiveCorrect(cardType, objectiveCorrect) {
+      return (
+          cardType in ['mcq', 'true_false']
+          && objectiveCorrect is bool
+        ) || (
+          cardType in ['free_recall', 'flashcard', 'cloze']
+          && objectiveCorrect == null
+        );
+    }
+
     // Default deny
     match /{document=**} {
       allow read, write: if false;
@@ -36,17 +83,26 @@ service cloud.firestore {
           && request.resource.data.serverReceivedAt == request.time // enforce serverTimestamp
           && request.resource.data.keys().hasAll(['id', 'cardId', 'knowledgeItemId', 'reviewTimestamp', 'rating', 'cardType', 'objectiveCorrect', 'guessedOrStruggled', 'deviceId', 'schedulerMetadata', 'schemaVersion', 'serverReceivedAt'])
           && request.resource.data.keys().hasOnly(['id', 'cardId', 'knowledgeItemId', 'reviewTimestamp', 'rating', 'cardType', 'objectiveCorrect', 'guessedOrStruggled', 'durationMs', 'deviceId', 'schedulerMetadata', 'schemaVersion', 'serverReceivedAt'])
-          && request.resource.data.id is string
-          && request.resource.data.cardId is string
-          && request.resource.data.knowledgeItemId is string
+          && isOpaqueUuid(request.resource.data.id)
+          && isOpaqueUuid(request.resource.data.cardId)
+          && isOpaqueUuid(request.resource.data.knowledgeItemId)
           && request.resource.data.reviewTimestamp is timestamp
-          && request.resource.data.rating is string
-          && request.resource.data.cardType is string
-          && (!('objectiveCorrect' in request.resource.data) || request.resource.data.objectiveCorrect is bool || request.resource.data.objectiveCorrect == null)
+          && request.resource.data.rating in ['again', 'hard', 'good', 'easy']
+          && request.resource.data.cardType in ['free_recall', 'flashcard', 'mcq', 'true_false', 'cloze']
+          && isValidObjectiveCorrect(
+            request.resource.data.cardType,
+            request.resource.data.objectiveCorrect
+          )
           && request.resource.data.guessedOrStruggled is bool
           && request.resource.data.deviceId is string
-          && request.resource.data.schedulerMetadata is map
-          && request.resource.data.schemaVersion is int;
+          && request.resource.data.deviceId.size() > 0
+          && (!('durationMs' in request.resource.data) || (
+            request.resource.data.durationMs is int
+            && request.resource.data.durationMs >= 0
+          ))
+          && isValidSchedulerMetadata(request.resource.data.schedulerMetadata)
+          && request.resource.data.schemaVersion is int
+          && request.resource.data.schemaVersion == 1;
         allow update, delete: if false; // Append-only
       }
 
