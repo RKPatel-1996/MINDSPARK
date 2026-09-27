@@ -12,7 +12,7 @@ Planned branch: `task/work-012-automated-offsite-recovery-points-v1`
 
 Derived from: 2026-09-27 durability and disaster-recovery reconnaissance
 
-Current phase: local recovery-point generation is proven and the direct GitHub storage contract is selected: upload timestamped `.mindspark-backup` assets to one long-lived Release in a dedicated private repository. Next implement the GitHub Release gateway locally with mocked HTTP before creating any real repository credential.
+Current phase: local recovery-point generation, GitHub Release transport, and direct off-site application composition are implemented and locally verified. Next implement the fixed-count retention rule: after a successful upload, keep the newest 30 MindSpark backup assets and delete only older MindSpark backup assets.
 
 Scope: reuse the existing validated V1 backup contract and WORK-012 recovery-point service, then let the user explicitly create and upload an off-site recovery point from MindSpark to a dedicated private GitHub repository using a narrowly scoped GitHub credential.
 
