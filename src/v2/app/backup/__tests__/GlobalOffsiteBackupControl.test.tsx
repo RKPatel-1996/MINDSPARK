@@ -202,6 +202,18 @@ describe(
       expect(
         loadLastSuccessfulOffsiteBackupAt(),
       ).not.toBeNull();
+
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'Dismiss backup message',
+        }),
+      );
+
+      expect(
+        screen.queryByText(
+          /cleanup of older recovery points failed/,
+        ),
+      ).toBeNull();
     });
 
     it('allows a manual backup even when the previous backup is still recent', async () => {

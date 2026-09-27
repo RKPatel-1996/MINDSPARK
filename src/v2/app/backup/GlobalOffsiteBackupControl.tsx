@@ -8,6 +8,7 @@ import {
   Check,
   CloudUpload,
   Loader2,
+  X,
 } from 'lucide-react';
 import {
   useNavigate,
@@ -202,7 +203,7 @@ export const GlobalOffsiteBackupControl:
 
       if (!liveRunner) {
         setMessage({
-          kind: 'error',
+          kind: 'warning',
           text: isSignedOut
             ? 'Sign in before creating an off-site backup.'
             : 'Off-site backup is unavailable until the durable Firebase library is ready.',
@@ -272,7 +273,23 @@ export const GlobalOffsiteBackupControl:
                   : 'bg-[var(--color-soft-attention)] text-[var(--color-error)] border-[var(--color-attention)]'
             }`}
           >
-            {message.text}
+            <div className="flex items-start gap-2">
+              <span className="flex-1">
+                {message.text}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setMessage(null)}
+                aria-label="Dismiss backup message"
+                className="shrink-0 rounded p-0.5 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+              >
+                <X
+                  className="w-3.5 h-3.5"
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
           </div>
         )}
 
