@@ -10,6 +10,7 @@ export interface SyncMetadata {
   state: SyncState;
   hasPendingWrites: boolean;
   fromCache: boolean;
+  rejectedEvents?: ReviewEvent[];
 }
 
 export interface Settings {

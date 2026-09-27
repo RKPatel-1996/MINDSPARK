@@ -4,15 +4,15 @@ ACTIVE_WORK: WORK-010
 
 Title: Durable Review Submission Acknowledgement
 
-Status: REGISTERED / NOT_STARTED
+Status: COMPLETE
 
-Base: `2483a5cb05c32ab2e19f0723ac01d43a1a5f66b7`
+Base: `c604f96811e01e86c7549a2d49914358336f32e5`
 
-Planned branch: `task/work-010-durable-review-persistence-v1`
+Branch: `task/work-010-durable-review-persistence-v1`
 
 Derived from: `GAP-004`
 
-Current phase: Post-hardening review is recorded in `DISC-002`; WORK-010 is registered but implementation has not started.
+Current phase: implementation and task-branch verification are complete. Targeted ReviewService/UI/emulator regressions, the full Firestore repository emulator suite, `npm run verify:web-release`, and `git diff --check` pass. Commit, canonical promotion, and canonical reverification remain pending before GAP-004 closure.
 
 Scope: prevent Review UI progression from silently outliving failed ReviewEvent persistence while preserving offline-first behavior and duplicate-submission protection.
 

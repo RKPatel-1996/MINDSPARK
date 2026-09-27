@@ -1,10 +1,10 @@
 # WORK-010 - Durable Review Submission Acknowledgement
 
-Status: REGISTERED / NOT_STARTED
+Status: COMPLETE
 
-Base: `2483a5cb05c32ab2e19f0723ac01d43a1a5f66b7`
+Base: `c604f96811e01e86c7549a2d49914358336f32e5`
 
-Planned branch: `task/work-010-durable-review-persistence-v1`
+Branch: `task/work-010-durable-review-persistence-v1`
 
 Derived from: `GAP-004`
 
@@ -82,3 +82,58 @@ Before implementation:
 4. inspect the exact current ReviewService, repository, and Review UI behavior before choosing persistence semantics.
 
 Do not assume the read-only review's proposed remediation mechanism is necessarily the final implementation design. Preserve the confirmed defect and acceptance boundary; choose the smallest correct solution from current source evidence.
+
+## Verified implementation outcome
+
+The task-branch implementation preserves provisional offline-first review submission while preventing a later terminal repository rejection from silently discarding the completed review.
+
+Implemented contract:
+
+- Firestore ReviewEvent sync observation retains the payload of locally pending ReviewEvents and reports an event through `SyncMetadata.rejectedEvents` when a previously pending immutable event disappears after terminal rejection;
+- `ReviewService` retains rejected ReviewEvents in its pending overlay and exposes them as failed submissions instead of deleting them;
+- retry reuses the exact immutable ReviewEvent and event ID rather than running review scheduling/submission again;
+- concurrent repeated retry activation for the same failed event is suppressed;
+- failed state is cleared only after the retry append succeeds;
+- `ReviewView` gives failed durable persistence precedence over later queue/focus progression and exposes a direct `Retry saving review` recovery action;
+- normal `submitReview()` remains provisional and does not wait indefinitely for server acknowledgement, preserving Firestore offline queued-write behavior;
+- scheduler and reconciliation semantics were not changed.
+
+### Verification evidence
+
+Targeted Review UI safety regression:
+
+- `ReviewSubmissionSafetyUI.test.tsx`: 7 / 7 PASS;
+- includes the real late-failure sequence: provisional submission -> UI advances -> repository append rejects -> recovery UI appears -> exact event is retried.
+
+ReviewService regression:
+
+- `phase3b1Regression.test.ts`: 16 / 16 PASS;
+- terminal rejection retains the event;
+- rapid duplicate retry activation produces only one retry append;
+- successful retry leaves exactly one ReviewEvent with the original event ID.
+
+Firestore repository emulator regression:
+
+- `firestoreRepositories.test.ts`: 9 / 9 PASS;
+- reconstructed repository observes the locally queued event from Firestore cache;
+- terminal rules rejection rolls the queued event back;
+- `observeSyncState()` directly reports the exact rejected ReviewEvent through `rejectedEvents`.
+
+Canonical web-release-equivalent gate on the WORK-010 task branch:
+
+- TypeScript: PASS;
+- ordinary Vitest suite: 63 files / 458 tests PASS;
+- production Vite build: PASS;
+- PWA build-artifact suite: 8 / 8 PASS;
+- `npm run verify:web-release`: PASS;
+- `git diff --check`: PASS.
+
+No deployment, billing change, Storage enablement, production cloud mutation, GAP-005 rule hardening, or unrelated feature work occurred.
+
+### Acceptance assessment
+
+All WORK-010 implementation and task-branch verification conditions are satisfied.
+
+WORK-010 is therefore COMPLETE on `task/work-010-durable-review-persistence-v1`.
+
+Canonical promotion and canonical reverification remain pending. `GAP-004` remains OPEN until that promotion boundary is completed.

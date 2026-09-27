@@ -185,6 +185,7 @@ export class FirestoreReviewEventRepository implements ReviewEventRepository {
     hasPendingWrites: false,
     fromCache: false,
   };
+  private pendingSnapshotEvents = new Map<string, ReviewEvent>();
 
   constructor(private db: Firestore, private uid: string) {}
 
@@ -198,7 +199,7 @@ export class FirestoreReviewEventRepository implements ReviewEventRepository {
 
   observeSyncState(callback: (metadata: SyncMetadata) => void): () => void {
     // Note: A more scalable dedicated sync-metadata strategy can be introduced later if history becomes very large.
-    // For now, observing the entire collection guarantees that any locally cached pending ReviewEvent 
+    // For now, observing the entire collection guarantees that any locally cached pending ReviewEvent
     // is represented in the observed snapshot.
     return onSnapshot(
       this.getCollection(),
@@ -206,12 +207,36 @@ export class FirestoreReviewEventRepository implements ReviewEventRepository {
       (snapshot) => {
         const hasPendingWrites = snapshot.metadata.hasPendingWrites;
         const fromCache = snapshot.metadata.fromCache;
+        const snapshotIds = new Set(snapshot.docs.map((document) => document.id));
+        const nextPendingSnapshotEvents = new Map<string, ReviewEvent>();
+
+        for (const document of snapshot.docs) {
+          if (document.metadata.hasPendingWrites) {
+            nextPendingSnapshotEvents.set(
+              document.id,
+              mapDTOToReviewEvent(document.data())
+            );
+          }
+        }
+
+        const rejectedEvents = Array.from(this.pendingSnapshotEvents.entries())
+          .filter(([eventId]) => !snapshotIds.has(eventId))
+          .map(([, event]) => event);
+
+        this.pendingSnapshotEvents = nextPendingSnapshotEvents;
+
         const state: SyncState = hasPendingWrites
           ? 'pending_writes'
           : fromCache
           ? 'offline_or_cache'
           : 'synced';
-        this.currentSyncMetadata = { state, hasPendingWrites, fromCache };
+
+        this.currentSyncMetadata = {
+          state,
+          hasPendingWrites,
+          fromCache,
+          ...(rejectedEvents.length > 0 ? { rejectedEvents } : {}),
+        };
         callback(this.currentSyncMetadata);
       },
       (error) => {

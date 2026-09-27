@@ -28,6 +28,8 @@ export class ReviewService {
   
   // Pending write overlay for offline-first responsiveness
   private pendingEvents = new Map<string, ReviewEvent>();
+  private failedEvents = new Map<string, { event: ReviewEvent; error: string }>();
+  private retryingFailedEventIds = new Set<string>();
   private pendingWritesCount = 0;
   private isOfflineOrCache = false;
   private repoHasPendingWrites = false;
@@ -63,11 +65,28 @@ export class ReviewService {
   }
 
   private applyRepoSyncMetadata(meta: SyncMetadata): void {
-    if (meta.state === 'error') {
+    if (meta.rejectedEvents?.length) {
+      for (const event of meta.rejectedEvents) {
+        this.pendingEvents.set(event.id, event);
+        if (!this.failedEvents.has(event.id)) {
+          this.failedEvents.set(event.id, {
+            event,
+            error: 'Review persistence was rejected.',
+          });
+        }
+      }
+    }
+
+    if (this.failedEvents.size > 0) {
+      this.lastSyncError =
+        this.failedEvents.values().next().value?.error ??
+        'Review persistence failed.';
+    } else if (meta.state === 'error') {
       this.lastSyncError = 'Sync failure';
     } else {
       this.lastSyncError = null;
     }
+
     this.repoHasPendingWrites = Boolean(meta.hasPendingWrites);
     this.repoIsOfflineOrCache = Boolean(meta.fromCache);
     this.notifySyncListeners();
@@ -117,6 +136,41 @@ export class ReviewService {
       this.pendingWritesCount = 0;
     }
     this.notifySyncListeners();
+  }
+
+  getFailedReviewSubmissions(): Array<{ event: ReviewEvent; error: string }> {
+    return Array.from(this.failedEvents.values()).map(({ event, error }) => ({
+      event,
+      error,
+    }));
+  }
+
+  async retryFailedReviewEvent(eventId: string): Promise<void> {
+    const failed = this.failedEvents.get(eventId);
+
+    if (!failed || this.retryingFailedEventIds.has(eventId)) return;
+
+    this.retryingFailedEventIds.add(eventId);
+    this.pendingWritesCount++;
+    this.notifySyncListeners();
+
+    try {
+      await this.repos.reviewEvents.append(failed.event);
+      this.failedEvents.delete(eventId);
+      this.pendingEvents.delete(eventId);
+      this.lastSyncError =
+        this.failedEvents.values().next().value?.error ?? null;
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      this.pendingEvents.set(eventId, failed.event);
+      this.failedEvents.set(eventId, { event: failed.event, error });
+      this.lastSyncError = error;
+      throw err;
+    } finally {
+      this.retryingFailedEventIds.delete(eventId);
+      this.pendingWritesCount = Math.max(0, this.pendingWritesCount - 1);
+      this.notifySyncListeners();
+    }
   }
 
   getPendingWritesCount(): number {
@@ -417,21 +471,11 @@ export class ReviewService {
         this.notifySyncListeners();
       })
       .catch((err) => {
-        this.pendingEvents.delete(event.id);
         this.pendingWritesCount = Math.max(0, this.pendingWritesCount - 1);
         const msg = err instanceof Error ? err.message : String(err);
-        const isOffline =
-          (typeof navigator !== 'undefined' && !navigator.onLine) ||
-          msg.includes('unavailable') ||
-          msg.includes('offline') ||
-          msg.includes('Failed to fetch') ||
-          msg.includes('network');
-        if (isOffline) {
-          this.isOfflineOrCache = true;
-          this.lastSyncError = null;
-        } else {
-          this.lastSyncError = msg;
-        }
+        this.pendingEvents.set(event.id, event);
+        this.failedEvents.set(event.id, { event, error: msg });
+        this.lastSyncError = msg;
         this.notifySyncListeners();
       });
 

@@ -218,4 +218,64 @@ describe('Review submission safety UI (D1)', () => {
     expect(submitSpy).toHaveBeenCalledTimes(2);
     expect(await repos.reviewEvents.listForCard(card.id)).toHaveLength(1);
   });
+
+  it('offers recovery when persistence fails after the UI has already advanced', async () => {
+    const { repos, card } = await createReviewFixture('mcq');
+
+    let rejectInitialAppend!: (reason?: unknown) => void;
+    const initialAppendGate = new Promise<void>((_resolve, reject) => {
+      rejectInitialAppend = reject;
+    });
+
+    const originalAppend = repos.reviewEvents.append.bind(repos.reviewEvents);
+    const appendedIds: string[] = [];
+    let appendAttempt = 0;
+
+    repos.reviewEvents.append = async (event) => {
+      appendAttempt++;
+      appendedIds.push(event.id);
+
+      if (appendAttempt === 1) {
+        await initialAppendGate;
+        return;
+      }
+
+      return originalAppend(event);
+    };
+
+    const submitSpy = vi.spyOn(ReviewService.prototype, 'submitReview');
+
+    renderReview(repos);
+    await prepareAnsweredMcq();
+
+    fireEvent.click(screen.getByRole('button', { name: /^Continue$/i }));
+
+    await waitFor(() => expect(screen.getByText('All caught up')).toBeDefined());
+    expect(submitSpy).toHaveBeenCalledTimes(1);
+    expect(appendedIds).toHaveLength(1);
+
+    rejectInitialAppend(new Error('terminal persistence failure'));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Retry saving review/i })
+      ).toBeDefined()
+    );
+
+    expect(
+      screen.getByText(/A completed review still needs to be saved/i)
+    ).toBeDefined();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Retry saving review/i })
+    );
+
+    await waitFor(async () => {
+      const events = await repos.reviewEvents.listForCard(card.id);
+      expect(events).toHaveLength(1);
+    });
+
+    expect(submitSpy).toHaveBeenCalledTimes(1);
+    expect(appendedIds).toEqual([appendedIds[0], appendedIds[0]]);
+  });
 });

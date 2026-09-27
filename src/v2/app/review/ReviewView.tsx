@@ -138,6 +138,18 @@ export const ReviewView: React.FC = () => {
     }
   }, [focusCardIndex, loadNextCard, reviewService]);
 
+  const failedReview = reviewService.getFailedReviewSubmissions()[0] ?? null;
+
+  const handleRetryFailedReview = useCallback(async () => {
+    if (!failedReview) return;
+
+    try {
+      await reviewService.retryFailedReviewEvent(failedReview.event.id);
+    } catch {
+      // ReviewService retains the same immutable event and latest error for another retry.
+    }
+  }, [failedReview, reviewService]);
+
   const handleContinue = async (isCorrect: boolean, guessed = false) => {
     if (!activeCard || !activeItem || !activeState || isSignedOut || (isUnconfigured && !isEphemeralDev)) return;
 
@@ -257,6 +269,37 @@ export const ReviewView: React.FC = () => {
           <p className="text-sm text-[var(--muted-color)] mb-6 font-content">
             Your personal spaced-repetition cards and review history are stored securely in Cloud Firestore. Sign in to access your library.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // A terminal persistence failure takes precedence over queue progression.
+  // The exact immutable ReviewEvent is retained by ReviewService and must be
+  // recovered before additional reviews can continue.
+  if (failedReview) {
+    return (
+      <div className="flex h-full items-center justify-center p-6">
+        <div className="text-center max-w-md p-8 bg-[var(--surface-color)] border border-[var(--color-error)] rounded-2xl paper-shadow">
+          <div className="w-14 h-14 bg-[var(--color-soft-attention)] text-[var(--color-error)] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2 text-[var(--color-error)] font-ui">
+            Review save failed
+          </h2>
+          <p className="text-sm text-[var(--text-color)] mb-3 font-content">
+            A completed review still needs to be saved before you continue.
+          </p>
+          <p className="text-xs text-[var(--muted-color)] mb-5 font-content">
+            {failedReview.error}
+          </p>
+          <button
+            type="button"
+            onClick={handleRetryFailedReview}
+            className="px-6 py-2.5 bg-[var(--color-action-primary-bg)] text-[var(--color-action-primary-text)] rounded-xl font-medium font-ui hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+          >
+            Retry saving review
+          </button>
         </div>
       </div>
     );

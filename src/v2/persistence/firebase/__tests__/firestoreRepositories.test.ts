@@ -223,6 +223,103 @@ describe('FirestoreReviewEventRepository (Emulator)', () => {
     unsub();
     await enableNetwork(db as any);
   });
+
+  it('characterizes offline queued ReviewEvent rejection across repository reconstruction', async () => {
+    const db = testEnv.authenticatedContext(TEST_OWNER_UID).firestore();
+    const writeRepo = new FirestoreReviewEventRepository(db as any, TEST_OWNER_UID);
+    const event = Object.assign(
+      createTestEvent(),
+      { unexpectedField: 'rejected-by-rules' }
+    ) as ReviewEvent;
+
+    await disableNetwork(db as any);
+
+    let appendSettled = false;
+    const appendResult = writeRepo.append(event).then(
+      () => {
+        appendSettled = true;
+        return { status: 'resolved' as const };
+      },
+      (error) => {
+        appendSettled = true;
+        return { status: 'rejected' as const, error };
+      }
+    );
+
+    // Reconstruct a repository over the same Firestore instance/local cache.
+    const reconstructedRepo = new FirestoreReviewEventRepository(db as any, TEST_OWNER_UID);
+    const observations: Array<{ ids: string[]; meta: SyncMetadata }> = [];
+    const syncObservations: SyncMetadata[] = [];
+    const waitUntil = async (predicate: () => boolean, message: string) => {
+      const deadline = Date.now() + 5000;
+      while (!predicate()) {
+        if (Date.now() >= deadline) throw new Error(message);
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+    };
+
+    const unsub = reconstructedRepo.observeForCard(event.cardId, (events, meta) => {
+      observations.push({
+        ids: events.map((value) => value.id),
+        meta,
+      });
+    });
+    const unsubSync = reconstructedRepo.observeSyncState((meta) => {
+      syncObservations.push(meta);
+    });
+
+    try {
+      await waitUntil(
+        () => observations.some(
+          ({ ids, meta }) => ids.includes(event.id) && meta.hasPendingWrites
+        ),
+        'reconstructed repository never observed the locally queued ReviewEvent'
+      );
+
+      expect(appendSettled).toBe(false);
+
+      await enableNetwork(db as any);
+
+      const result = await appendResult;
+      expect(result.status).toBe('rejected');
+
+      await waitUntil(
+        () => observations.some(
+          ({ ids, meta }) => !ids.includes(event.id) && !meta.hasPendingWrites
+        ),
+        'reconstructed repository never observed rollback of the rejected ReviewEvent'
+      );
+
+      await waitUntil(
+        () => syncObservations.some(
+          (meta) => meta.rejectedEvents?.some(
+            (rejectedEvent) => rejectedEvent.id === event.id
+          )
+        ),
+        'reconstructed repository never surfaced the rejected ReviewEvent in sync metadata'
+      );
+
+      const rejectionMetadata = syncObservations.find(
+        (meta) => meta.rejectedEvents?.some(
+          (rejectedEvent) => rejectedEvent.id === event.id
+        )
+      );
+      const rejectedEvent = rejectionMetadata?.rejectedEvents?.find(
+        (candidate) => candidate.id === event.id
+      );
+
+      expect(rejectedEvent).toBeDefined();
+      expect(rejectedEvent?.id).toBe(event.id);
+      expect(rejectedEvent?.cardId).toBe(event.cardId);
+      expect(rejectedEvent?.knowledgeItemId).toBe(event.knowledgeItemId);
+      expect(rejectedEvent?.reviewTimestamp).toBe(event.reviewTimestamp);
+    } finally {
+      unsub();
+      unsubSync();
+      await enableNetwork(db as any);
+    }
+  });
+
   it('observeForCard reports cache-to-server metadata transition after reconnect', async () => {
     const db = testEnv.authenticatedContext(TEST_OWNER_UID).firestore();
     const observedRepo = new FirestoreReviewEventRepository(db as any, TEST_OWNER_UID);

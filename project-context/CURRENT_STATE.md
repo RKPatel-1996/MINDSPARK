@@ -314,19 +314,33 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - WORK-009: COMPLETE / PROMOTED
 - GAP-002: RESOLVED
 - GAP-003: RESOLVED
-- GAP-004: OPEN
+- GAP-004: OPEN - WORK-010 COMPLETE on task branch; canonical promotion pending
 - GAP-005: OPEN
-- Active bounded work item: WORK-010 - REGISTERED / NOT_STARTED
+- Active bounded work item: WORK-010 - COMPLETE; NOT YET PROMOTED
 
-## Next bounded work
+## Current bounded work
 
-WORK-010 is the active bounded work item and is REGISTERED / NOT_STARTED. It addresses GAP-004, the confirmed High review-submission persistence defect recorded in DISC-002.
+WORK-010 implementation and task-branch verification are complete on `task/work-010-durable-review-persistence-v1`, based on verified canonical commit `c604f96811e01e86c7549a2d49914358336f32e5`.
+
+The bounded correction addresses GAP-004 by retaining terminally rejected ReviewEvents, surfacing a recoverable retry path after provisional UI progression, retrying the exact immutable event without duplicate submission, and preserving Firestore offline queued-write responsiveness.
+
+Verification on the task branch:
+
+- Review submission safety UI: 7 / 7 PASS
+- Phase 3B1 / ReviewService regression: 16 / 16 PASS
+- Firestore ReviewEvent repository emulator suite: 9 / 9 PASS
+- exact reconstructed `rejectedEvents` metadata contract: PASS
+- ordinary release suite: 63 files / 458 tests PASS
+- production build: PASS
+- PWA artifact verification: 8 / 8 PASS
+- `npm run verify:web-release`: PASS
+- `git diff --check`: PASS
 
 Current durable-gap state:
 
 - `GAP-002` - RESOLVED by WORK-008
 - `GAP-003` - RESOLVED by WORK-009; five moderate `firebase-tools` development-tooling residuals remain explicitly characterized and are absent from the production audit
-- `GAP-004` - OPEN; Review submission can be lost after UI advancement
+- `GAP-004` - OPEN pending WORK-010 commit, canonical promotion, and canonical reverification
 - `GAP-005` - OPEN; immutable ReviewEvent Firestore rules are weaker than domain validation
 
-Next action: begin WORK-010 from the freshly verified canonical repository. GAP-005 remains queued for a separately registered bounded correction after WORK-010 closes. DISC-002 preserves the remaining confirmed, suspected, testing, architecture, accessibility, and documentation findings for later triage.
+Next action: perform final WORK-010 pre-commit review, commit the bounded task branch, then fast-forward promote it to canonical `main` and run canonical reverification. Only after that boundary passes should GAP-004 be marked RESOLVED. GAP-005 remains queued for a separately registered bounded correction. DISC-002 remains historical review evidence.

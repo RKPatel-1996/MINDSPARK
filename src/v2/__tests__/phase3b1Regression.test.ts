@@ -206,6 +206,102 @@ describe('MindSpark V2 Phase 3B1 Acceptance Gates Regression Test Suite', () => 
       expect(repoEvents[0].id).toBe(submitRes.event.id);
     });
 
+    it('retains terminally rejected ReviewEvent and retries the same immutable event exactly once', async () => {
+      const { item, cards } = await createTestItemWithCards(1);
+      const card = cards[0];
+
+      let rejectInitialAppend!: (reason?: unknown) => void;
+      const initialAppendGate = new Promise<void>((_resolve, reject) => {
+        rejectInitialAppend = reject;
+      });
+
+      let resolveRetryAppend!: () => void;
+      const retryAppendGate = new Promise<void>((resolve) => {
+        resolveRetryAppend = resolve;
+      });
+
+      const originalAppend = repos.reviewEvents.append.bind(repos.reviewEvents);
+      const appendedIds: string[] = [];
+      let appendAttempt = 0;
+
+      repos.reviewEvents.append = async (event) => {
+        appendAttempt++;
+        appendedIds.push(event.id);
+
+        if (appendAttempt === 1) {
+          await initialAppendGate;
+          return;
+        }
+
+        if (appendAttempt === 2) {
+          await retryAppendGate;
+        }
+
+        return originalAppend(event);
+      };
+
+      const service = new ReviewService(repos);
+      const queue = await service.getNextReview();
+      if (queue.status !== 'ready') throw new Error('Expected ready card');
+
+      const submitted = await service.submitReview({
+        card,
+        knowledgeItem: item,
+        currentState: queue.active.cardState,
+        rating: 'good',
+        objectiveCorrect: null,
+        guessedOrStruggled: false,
+      });
+
+      // Submission remains provisional while the repository write is unresolved.
+      expect(appendedIds).toEqual([submitted.event.id]);
+      expect(service.getPendingWritesCount()).toBe(1);
+
+      rejectInitialAppend(new Error('terminal persistence failure'));
+
+      for (
+        let attempt = 0;
+        attempt < 50 && service.getFailedReviewSubmissions().length === 0;
+        attempt++
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 5));
+      }
+
+      const failed = service.getFailedReviewSubmissions();
+      expect(failed).toHaveLength(1);
+      expect(failed[0].event.id).toBe(submitted.event.id);
+      expect(failed[0].error).toContain('terminal persistence failure');
+      expect(service.getPendingWritesCount()).toBe(0);
+      expect(service.getCurrentSyncState()).toBe('error');
+
+      // The rejected event remains authoritative provisional evidence.
+      const retainedEvents = await service.getEventsForCard(card.id);
+      expect(retainedEvents.map((event) => event.id)).toContain(submitted.event.id);
+
+      // Two rapid retry activations may produce only one repository append.
+      const retry1 = service.retryFailedReviewEvent(submitted.event.id);
+      const retry2 = service.retryFailedReviewEvent(submitted.event.id);
+
+      await retry2;
+      expect(appendedIds).toEqual([
+        submitted.event.id,
+        submitted.event.id,
+      ]);
+
+      resolveRetryAppend();
+      await retry1;
+
+      expect(service.getFailedReviewSubmissions()).toHaveLength(0);
+      expect(service.getPendingWritesCount()).toBe(0);
+
+      const finalEvents = await service.getEventsForCard(card.id);
+      expect(
+        finalEvents.filter((event) => event.id === submitted.event.id)
+      ).toHaveLength(1);
+
+      repos.reviewEvents.append = originalAppend;
+    });
+
     it('models pending cache reconstruction: event persists in local cache while remote ack is unresolved; reconstructed service reconciles event and reports pending_writes', async () => {
       // Create a deterministic fake persistent-cache repository model
       class FakePersistentCacheEventRepo implements ReviewEventRepository {
