@@ -2,6 +2,9 @@ import type {
   BackupRecoveryPoint,
   BackupRecoveryPointService,
 } from './backupRecoveryPointService';
+import {
+  selectBackupAssetsForDeletion,
+} from './offsiteBackupRetention';
 
 export interface OffsiteBackupUpload {
   fileName: string;
@@ -15,23 +18,30 @@ export interface OffsiteBackupAsset {
   name: string;
   size: number;
   digest: string | null;
+  createdAt?: string;
 }
 
 export interface OffsiteBackupTarget {
   uploadBackup(input: OffsiteBackupUpload): Promise<OffsiteBackupAsset>;
+  listBackupAssets(): Promise<OffsiteBackupAsset[]>;
+  deleteBackupAsset(assetId: number): Promise<void>;
 }
 
 export interface DirectOffsiteBackupResult {
   recoveryPoint: BackupRecoveryPoint;
   asset: OffsiteBackupAsset;
+  deletedAssetIds: number[];
 }
 
-export type DirectOffsiteBackupErrorCode = 'invalid_exported_at';
+export type DirectOffsiteBackupErrorCode =
+  | 'invalid_exported_at'
+  | 'retention_failed';
 
 export class DirectOffsiteBackupError extends Error {
   constructor(
     readonly code: DirectOffsiteBackupErrorCode,
     message: string,
+    readonly uploadedAsset?: OffsiteBackupAsset,
   ) {
     super(message);
     this.name = 'DirectOffsiteBackupError';
@@ -59,6 +69,10 @@ export function createOffsiteBackupFileName(exportedAt: string): string {
  * Creates one validated local recovery point and sends those exact bytes
  * to the configured off-site target.
  *
+ * Retention runs only after upload succeeds. If retention cannot complete,
+ * the successful uploaded recovery point is preserved and reported on the
+ * thrown error so callers can distinguish backup success from cleanup failure.
+ *
  * This service has no restore capability and no repository mutation capability.
  */
 export class DirectOffsiteBackupService {
@@ -83,9 +97,31 @@ export class DirectOffsiteBackupService {
       archiveSha256: recoveryPoint.archiveSha256,
     });
 
+    const deletedAssetIds: number[] = [];
+
+    try {
+      const assets = await this.target.listBackupAssets();
+      const deletions = selectBackupAssetsForDeletion(
+        assets,
+        asset.id,
+      );
+
+      for (const deletion of deletions) {
+        await this.target.deleteBackupAsset(deletion.id);
+        deletedAssetIds.push(deletion.id);
+      }
+    } catch {
+      throw new DirectOffsiteBackupError(
+        'retention_failed',
+        'Recovery point was uploaded successfully, but old backup cleanup failed.',
+        asset,
+      );
+    }
+
     return {
       recoveryPoint,
       asset,
+      deletedAssetIds,
     };
   }
 }
