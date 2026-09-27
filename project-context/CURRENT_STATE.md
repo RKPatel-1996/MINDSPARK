@@ -317,11 +317,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: OPEN
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-011 - REGISTERED / NOT_STARTED
+- Active bounded work item: WORK-011 - IN_PROGRESS
 
 ## Current bounded work
 
-WORK-011 - ReviewEvent Firestore Rule Parity - is the active bounded work item and is REGISTERED / NOT_STARTED.
+WORK-011 - ReviewEvent Firestore Rule Parity - is the active bounded work item and is IN_PROGRESS.
 
 It addresses GAP-005, the confirmed mismatch between the authoritative ReviewEvent domain contract and Firestore ReviewEvent create validation.
 

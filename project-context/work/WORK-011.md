@@ -1,8 +1,8 @@
 # WORK-011 - ReviewEvent Firestore Rule Parity
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
-Base: `5d3e108a9e6975e2b43724025fa9e19b2ab2a476`
+Base: `904d6a3d9cd2842af1c8a8638180538948f6f3ba`
 
 Planned branch: `task/work-011-review-event-rule-parity-v1`
 
