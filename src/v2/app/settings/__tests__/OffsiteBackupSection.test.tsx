@@ -20,7 +20,8 @@ import {
 } from '../../../application/directOffsiteBackupService';
 import {
   loadGitHubBackupConnectionConfig,
-  loadGitHubBackupSessionToken,
+  clearGitHubBackupMemoryToken,
+  loadGitHubBackupMemoryToken,
   saveGitHubBackupConnectionConfig,
 } from '../../../local/githubBackupConfig';
 import { createInMemoryRepositories } from '../../../persistence/memory/inMemoryRepositories';
@@ -88,6 +89,7 @@ describe('OffsiteBackupSection', () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    clearGitHubBackupMemoryToken();
   });
 
   it('starts with the editable MindSpark GitHub backup defaults and no PAT', async () => {
@@ -109,7 +111,7 @@ describe('OffsiteBackupSection', () => {
       (screen.getByLabelText('GitHub PAT') as HTMLInputElement).value,
     ).toBe('');
   });
-  it('saves non-secret connection values locally while keeping the PAT session-only', async () => {
+  it('saves non-secret connection values locally while keeping the PAT in app memory', async () => {
     const runner = vi.fn<OffsiteBackupRunner>();
 
     await renderSection(runner);
@@ -127,7 +129,7 @@ describe('OffsiteBackupSection', () => {
       releaseTag: 'mindspark-recovery-points-test',
     });
 
-    expect(loadGitHubBackupSessionToken())
+    expect(loadGitHubBackupMemoryToken())
       .toBe('github_pat_test_secret');
 
     expect(
@@ -141,11 +143,11 @@ describe('OffsiteBackupSection', () => {
     ).not.toContain('github_pat_test_secret');
 
     expect(
-      screen.getByText(/PAT is retained only for this browser session/),
+      screen.getByText(/PAT is retained only in app memory until the app is reloaded/),
     ).toBeTruthy();
   });
 
-  it('runs the composed off-site backup with normalized configuration and session PAT', async () => {
+  it('runs the composed off-site backup with normalized configuration and app-memory PAT', async () => {
     const runner = vi.fn<OffsiteBackupRunner>(
       async () => result(),
     );

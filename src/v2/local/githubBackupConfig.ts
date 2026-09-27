@@ -25,9 +25,20 @@ export class GitHubBackupConfigError extends Error {
   }
 }
 
-const CONNECTION_STORAGE_KEY = 'mindspark_github_backup_connection_v2';
-const LEGACY_CONNECTION_STORAGE_KEY = 'mindspark_github_backup_connection_v1';
-const TOKEN_SESSION_KEY = 'mindspark_github_backup_pat_v1';
+const CONNECTION_STORAGE_KEY =
+  'mindspark_github_backup_connection_v2';
+
+const LEGACY_CONNECTION_STORAGE_KEY =
+  'mindspark_github_backup_connection_v1';
+
+/**
+ * Deliberately process/app scoped only.
+ *
+ * The PAT is never written to localStorage, sessionStorage,
+ * IndexedDB, Firestore, URLs, or backup archives.
+ * Reloading the application clears this value naturally.
+ */
+let githubBackupMemoryToken: string | null = null;
 
 function validateConnectionConfig(
   value: GitHubBackupConnectionConfig,
@@ -53,20 +64,27 @@ function validateConnectionConfig(
 export function saveGitHubBackupConnectionConfig(
   config: GitHubBackupConnectionConfig,
 ): GitHubBackupConnectionConfig {
-  const normalized = validateConnectionConfig(config);
+  const normalized =
+    validateConnectionConfig(config);
 
   localStorage.setItem(
     CONNECTION_STORAGE_KEY,
     JSON.stringify(normalized),
   );
-  localStorage.removeItem(LEGACY_CONNECTION_STORAGE_KEY);
+
+  localStorage.removeItem(
+    LEGACY_CONNECTION_STORAGE_KEY,
+  );
 
   return normalized;
 }
 
 export function loadGitHubBackupConnectionConfig():
   GitHubBackupConnectionConfig | null {
-  const raw = localStorage.getItem(CONNECTION_STORAGE_KEY);
+  const raw =
+    localStorage.getItem(
+      CONNECTION_STORAGE_KEY,
+    );
 
   if (raw === null) {
     return null;
@@ -80,15 +98,22 @@ export function loadGitHubBackupConnectionConfig():
     return null;
   }
 
-  if (typeof parsed !== 'object' || parsed === null) {
+  if (
+    typeof parsed !== 'object' ||
+    parsed === null
+  ) {
     return null;
   }
 
-  const candidate = parsed as Partial<GitHubBackupConnectionConfig>;
+  const candidate =
+    parsed as Partial<GitHubBackupConnectionConfig>;
 
   try {
     return validateConnectionConfig({
-      owner: typeof candidate.owner === 'string' ? candidate.owner : '',
+      owner:
+        typeof candidate.owner === 'string'
+          ? candidate.owner
+          : '',
       repository:
         typeof candidate.repository === 'string'
           ? candidate.repository
@@ -103,12 +128,20 @@ export function loadGitHubBackupConnectionConfig():
   }
 }
 
-export function clearGitHubBackupConnectionConfig(): void {
-  localStorage.removeItem(CONNECTION_STORAGE_KEY);
-  localStorage.removeItem(LEGACY_CONNECTION_STORAGE_KEY);
+export function clearGitHubBackupConnectionConfig():
+  void {
+  localStorage.removeItem(
+    CONNECTION_STORAGE_KEY,
+  );
+
+  localStorage.removeItem(
+    LEGACY_CONNECTION_STORAGE_KEY,
+  );
 }
 
-export function saveGitHubBackupSessionToken(token: string): void {
+export function saveGitHubBackupMemoryToken(
+  token: string,
+): void {
   const normalized = token.trim();
 
   if (!normalized) {
@@ -118,17 +151,15 @@ export function saveGitHubBackupSessionToken(token: string): void {
     );
   }
 
-  sessionStorage.setItem(TOKEN_SESSION_KEY, normalized);
+  githubBackupMemoryToken = normalized;
 }
 
-export function loadGitHubBackupSessionToken(): string | null {
-  const value = sessionStorage.getItem(TOKEN_SESSION_KEY);
-
-  return value && value.trim()
-    ? value
-    : null;
+export function loadGitHubBackupMemoryToken():
+  string | null {
+  return githubBackupMemoryToken;
 }
 
-export function clearGitHubBackupSessionToken(): void {
-  sessionStorage.removeItem(TOKEN_SESSION_KEY);
+export function clearGitHubBackupMemoryToken():
+  void {
+  githubBackupMemoryToken = null;
 }

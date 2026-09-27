@@ -1,139 +1,191 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'vitest';
 import {
   DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
   GitHubBackupConfigError,
   clearGitHubBackupConnectionConfig,
-  clearGitHubBackupSessionToken,
+  clearGitHubBackupMemoryToken,
   loadGitHubBackupConnectionConfig,
-  loadGitHubBackupSessionToken,
+  loadGitHubBackupMemoryToken,
   saveGitHubBackupConnectionConfig,
-  saveGitHubBackupSessionToken,
+  saveGitHubBackupMemoryToken,
 } from '../githubBackupConfig';
 
-describe('GitHub backup device-local configuration', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  });
-
-  it('provides editable default connection values without a built-in PAT', () => {
-    expect(DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG).toEqual({
-      owner: 'RKPatel-1996',
-      repository: 'MINDSPARK_android_sync',
-      releaseTag: 'mindspark-recovery-points',
+describe(
+  'GitHub backup device-local configuration',
+  () => {
+    beforeEach(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+      clearGitHubBackupMemoryToken();
     });
 
-    expect(sessionStorage.length).toBe(0);
-    expect(localStorage.length).toBe(0);
-  });
+    it('provides editable default connection values without a built-in PAT', () => {
+      expect(
+        DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
+      ).toEqual({
+        owner: 'RKPatel-1996',
+        repository: 'MINDSPARK_android_sync',
+        releaseTag:
+          'mindspark-recovery-points',
+      });
 
-  it('persists only non-secret connection configuration in localStorage', () => {
-    const saved = saveGitHubBackupConnectionConfig({
-      owner: '  owner-name  ',
-      repository: '  mindspark-backups  ',
-      releaseTag: '  mindspark-recovery-points  ',
+      expect(localStorage.length).toBe(0);
+      expect(sessionStorage.length).toBe(0);
+      expect(
+        loadGitHubBackupMemoryToken(),
+      ).toBeNull();
     });
 
-    expect(saved).toEqual({
-      owner: 'owner-name',
-      repository: 'mindspark-backups',
-      releaseTag: 'mindspark-recovery-points',
+    it('persists only non-secret connection configuration in localStorage', () => {
+      const saved =
+        saveGitHubBackupConnectionConfig({
+          owner: '  owner-name  ',
+          repository:
+            '  mindspark-backups  ',
+          releaseTag:
+            '  mindspark-recovery-points  ',
+        });
+
+      expect(saved).toEqual({
+        owner: 'owner-name',
+        repository: 'mindspark-backups',
+        releaseTag:
+          'mindspark-recovery-points',
+      });
+
+      expect(
+        loadGitHubBackupConnectionConfig(),
+      ).toEqual(saved);
+
+      expect(localStorage.length).toBe(1);
+      expect(sessionStorage.length).toBe(0);
+
+      const stored =
+        localStorage.getItem(
+          'mindspark_github_backup_connection_v2',
+        );
+
+      expect(stored).toContain('owner-name');
+      expect(stored).toContain(
+        'mindspark-backups',
+      );
+      expect(stored).toContain(
+        'mindspark-recovery-points',
+      );
+
+      expect(stored).not.toMatch(
+        /token|pat|secret/i,
+      );
     });
 
-    expect(loadGitHubBackupConnectionConfig()).toEqual(saved);
-    expect(localStorage.length).toBe(1);
+    it('keeps the PAT only in app memory and never in browser storage', () => {
+      const token =
+        'github_pat_test_secret';
 
-    const stored = localStorage.getItem(
-      'mindspark_github_backup_connection_v2',
-    );
+      saveGitHubBackupMemoryToken(token);
 
-    expect(stored).toContain('owner-name');
-    expect(stored).toContain('mindspark-backups');
-    expect(stored).toContain('mindspark-recovery-points');
-    expect(stored).not.toMatch(/token|pat|secret/i);
-  });
+      expect(
+        loadGitHubBackupMemoryToken(),
+      ).toBe(token);
 
-  it('stores the PAT only in sessionStorage and never in localStorage', () => {
-    const token = 'github_pat_test_secret';
+      expect(localStorage.length).toBe(0);
+      expect(sessionStorage.length).toBe(0);
 
-    saveGitHubBackupSessionToken(token);
+      expect(
+        JSON.stringify(localStorage),
+      ).not.toContain(token);
 
-    expect(loadGitHubBackupSessionToken()).toBe(token);
-
-    const localValues = Array.from(
-      { length: localStorage.length },
-      (_, index) => localStorage.getItem(localStorage.key(index) ?? ''),
-    );
-
-    expect(localValues.join('\n')).not.toContain(token);
-
-    expect(
-      sessionStorage.getItem('mindspark_github_backup_pat_v1'),
-    ).toBe(token);
-  });
-
-  it('clears connection configuration and session credential independently', () => {
-    saveGitHubBackupConnectionConfig({
-      owner: 'owner',
-      repository: 'backups',
-      releaseTag: 'recovery',
+      expect(
+        JSON.stringify(sessionStorage),
+      ).not.toContain(token);
     });
-    saveGitHubBackupSessionToken('github_pat_test_secret');
 
-    clearGitHubBackupSessionToken();
-
-    expect(loadGitHubBackupSessionToken()).toBeNull();
-    expect(loadGitHubBackupConnectionConfig()).not.toBeNull();
-
-    clearGitHubBackupConnectionConfig();
-
-    expect(loadGitHubBackupConnectionConfig()).toBeNull();
-  });
-
-  it('rejects invalid persistent connection configuration', () => {
-    expect(() =>
+    it('clears connection configuration and runtime credential independently', () => {
       saveGitHubBackupConnectionConfig({
-        owner: '',
+        owner: 'owner',
         repository: 'backups',
         releaseTag: 'recovery',
-      }),
-    ).toThrowError(
-      expect.objectContaining({
-        code: 'invalid_connection_config',
-      }) as GitHubBackupConfigError,
-    );
+      });
 
-    expect(localStorage.length).toBe(0);
-  });
+      saveGitHubBackupMemoryToken(
+        'github_pat_test_secret',
+      );
 
-  it('treats malformed stored connection data as absent', () => {
-    localStorage.setItem(
-      'mindspark_github_backup_connection_v2',
-      '{"owner":"owner","repository":"backups","releaseTag":123}',
-    );
+      clearGitHubBackupMemoryToken();
 
-    expect(loadGitHubBackupConnectionConfig()).toBeNull();
-  });
+      expect(
+        loadGitHubBackupMemoryToken(),
+      ).toBeNull();
 
-  it('does not treat the old release-ID configuration as current configuration', () => {
-    localStorage.setItem(
-      'mindspark_github_backup_connection_v1',
-      '{"owner":"owner","repository":"backups","releaseId":123}',
-    );
+      expect(
+        loadGitHubBackupConnectionConfig(),
+      ).not.toBeNull();
 
-    expect(loadGitHubBackupConnectionConfig()).toBeNull();
-  });
+      clearGitHubBackupConnectionConfig();
 
-  it('rejects an empty session token without writing storage', () => {
-    expect(() =>
-      saveGitHubBackupSessionToken('   '),
-    ).toThrowError(
-      expect.objectContaining({
-        code: 'invalid_token',
-      }) as GitHubBackupConfigError,
-    );
+      expect(
+        loadGitHubBackupConnectionConfig(),
+      ).toBeNull();
+    });
 
-    expect(sessionStorage.length).toBe(0);
-    expect(localStorage.length).toBe(0);
-  });
-});
+    it('rejects invalid persistent connection configuration', () => {
+      expect(() =>
+        saveGitHubBackupConnectionConfig({
+          owner: '',
+          repository: 'backups',
+          releaseTag: 'recovery',
+        }),
+      ).toThrowError(
+        expect.objectContaining({
+          code: 'invalid_connection_config',
+        }) as GitHubBackupConfigError,
+      );
+
+      expect(localStorage.length).toBe(0);
+    });
+
+    it('treats malformed stored connection data as absent', () => {
+      localStorage.setItem(
+        'mindspark_github_backup_connection_v2',
+        '{"owner":"owner","repository":"backups","releaseTag":123}',
+      );
+
+      expect(
+        loadGitHubBackupConnectionConfig(),
+      ).toBeNull();
+    });
+
+    it('does not treat the old release-ID configuration as current configuration', () => {
+      localStorage.setItem(
+        'mindspark_github_backup_connection_v1',
+        '{"owner":"owner","repository":"backups","releaseId":123}',
+      );
+
+      expect(
+        loadGitHubBackupConnectionConfig(),
+      ).toBeNull();
+    });
+
+    it('rejects an empty runtime token without writing browser storage', () => {
+      expect(() =>
+        saveGitHubBackupMemoryToken('   '),
+      ).toThrowError(
+        expect.objectContaining({
+          code: 'invalid_token',
+        }) as GitHubBackupConfigError,
+      );
+
+      expect(
+        loadGitHubBackupMemoryToken(),
+      ).toBeNull();
+
+      expect(localStorage.length).toBe(0);
+      expect(sessionStorage.length).toBe(0);
+    });
+  },
+);

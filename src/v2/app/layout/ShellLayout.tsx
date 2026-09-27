@@ -4,6 +4,7 @@ import { BookOpen, Library, LineChart, Settings, AlertTriangle } from 'lucide-re
 import { useShortcut } from '../shortcuts/useShortcut';
 import { useApplication } from '../../application';
 import { PwaUpdatePrompt } from '../pwa/PwaUpdatePrompt';
+import { GlobalOffsiteBackupControl } from '../backup/GlobalOffsiteBackupControl';
 
 const navItems = [
   { path: '/review', label: 'Review', icon: BookOpen, action: 'navigation.review' as const },
@@ -142,6 +143,9 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
           </div>
         </nav>
       </div>
+
+      {/* Persistent manual off-site backup control */}
+      <GlobalOffsiteBackupControl />
 
       {/* PWA Update Lifecycle Prompt */}
       <PwaUpdatePrompt />

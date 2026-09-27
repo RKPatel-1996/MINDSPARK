@@ -27,7 +27,17 @@ vi.mock('../app/insights/InsightsView', () => ({
 }));
 
 vi.mock('../app/settings/SettingsView', () => ({
-  SettingsView: () => <div data-testid="route-settings">Settings route</div>,
+  SettingsView: ({ initialTab }: { initialTab?: string }) => (
+    <div
+      data-testid={
+        initialTab === 'backup'
+          ? 'route-settings-backup'
+          : 'route-settings'
+      }
+    >
+      Settings route
+    </div>
+  ),
 }));
 
 import App from '../../App';
@@ -43,6 +53,7 @@ describe('App lazy HashRouter composition', () => {
     ['#/library', 'route-library'],
     ['#/insights', 'route-insights'],
     ['#/settings', 'route-settings'],
+    ['#/settings/backup', 'route-settings-backup'],
   ])('loads direct route %s through its lazy surface', async (hash, testId) => {
     window.location.hash = hash;
 

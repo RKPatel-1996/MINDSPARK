@@ -41,6 +41,7 @@ const App: React.FC = () => {
               <Route path="/library" element={<LibraryView />} />
               <Route path="/insights" element={<InsightsView />} />
               <Route path="/settings" element={<SettingsView />} />
+              <Route path="/settings/backup" element={<SettingsView initialTab="backup" />} />
               <Route path="*" element={<Navigate to="/review" replace />} />
               </Routes>
             </React.Suspense>

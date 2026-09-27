@@ -8,26 +8,25 @@ import {
 import { useApplication } from '../../application';
 import {
   DirectOffsiteBackupError,
-  DirectOffsiteBackupService,
-  type DirectOffsiteBackupResult,
 } from '../../application/directOffsiteBackupService';
 import {
   DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
-  clearGitHubBackupSessionToken,
+  clearGitHubBackupMemoryToken,
   loadGitHubBackupConnectionConfig,
-  loadGitHubBackupSessionToken,
+  loadGitHubBackupMemoryToken,
   saveGitHubBackupConnectionConfig,
-  saveGitHubBackupSessionToken,
+  saveGitHubBackupMemoryToken,
   type GitHubBackupConnectionConfig,
 } from '../../local/githubBackupConfig';
-import { getFirebaseStorage } from '../../persistence/firebase/storageConfig';
-import { createFirebaseBackupRecoveryPointService } from '../../persistence/firebase/backupWorkflowFactory';
-import { GitHubReleaseBackupGateway } from '../../persistence/github/githubReleaseBackupGateway';
+import {
+  createGitHubOffsiteBackupRunner,
+  runTrackedOffsiteBackup,
+  type OffsiteBackupRunner,
+} from '../backup/offsiteBackupRuntime';
 
-export type OffsiteBackupRunner = (
-  config: GitHubBackupConnectionConfig,
-  token: string,
-) => Promise<DirectOffsiteBackupResult>;
+export type {
+  OffsiteBackupRunner,
+} from '../backup/offsiteBackupRuntime';
 
 export interface OffsiteBackupSectionProps {
   runner?: OffsiteBackupRunner;
@@ -72,7 +71,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
     initialConnection.releaseTag,
   );
   const [token, setToken] = useState(
-    () => loadGitHubBackupSessionToken() ?? '',
+    () => loadGitHubBackupMemoryToken() ?? '',
   );
   const [backingUp, setBackingUp] = useState(false);
   const [message, setMessage] = useState<StatusMessage | null>(null);
@@ -91,27 +90,10 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
       return null;
     }
 
-    return async (config, sessionToken) => {
-      const storage = getFirebaseStorage();
-
-      const recoveryPoints = createFirebaseBackupRecoveryPointService(
-        repos,
-        storage,
-        user.uid,
-      );
-
-      const target = new GitHubReleaseBackupGateway({
-        owner: config.owner,
-        repository: config.repository,
-        releaseTag: config.releaseTag,
-        token: sessionToken,
-      });
-
-      return new DirectOffsiteBackupService(
-        recoveryPoints,
-        target,
-      ).createOffsiteRecoveryPoint();
-    };
+    return createGitHubOffsiteBackupRunner(
+      repos,
+      user.uid,
+    );
   }, [
     suppliedRunner,
     repos,
@@ -140,7 +122,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
       setReleaseTag(saved.releaseTag);
 
       if (token.trim()) {
-        saveGitHubBackupSessionToken(token);
+        saveGitHubBackupMemoryToken(token);
         setToken(token.trim());
       }
 
@@ -148,7 +130,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
         kind: 'success',
         text:
           'GitHub backup connection saved on this device. ' +
-          'The PAT is retained only for this browser session.',
+          'The PAT is retained only in app memory until the app is reloaded.',
       });
     } catch (error) {
       setMessage({
@@ -159,11 +141,11 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
   };
 
   const handleClearToken = () => {
-    clearGitHubBackupSessionToken();
+    clearGitHubBackupMemoryToken();
     setToken('');
     setMessage({
       kind: 'success',
-      text: 'GitHub PAT cleared from this browser session.',
+      text: 'GitHub PAT cleared from app memory.',
     });
   };
 
@@ -180,9 +162,9 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
         connectionFromInputs(),
       );
 
-      saveGitHubBackupSessionToken(token);
+      saveGitHubBackupMemoryToken(token);
       const sessionToken =
-        loadGitHubBackupSessionToken();
+        loadGitHubBackupMemoryToken();
 
       if (!sessionToken) {
         throw new Error('GitHub backup token is unavailable.');
@@ -193,7 +175,8 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
       setReleaseTag(config.releaseTag);
       setToken(sessionToken);
 
-      const result = await liveRunner(
+      const result = await runTrackedOffsiteBackup(
+        liveRunner,
         config,
         sessionToken,
       );
@@ -279,7 +262,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
           <span className="block mb-1.5 font-medium">
             GitHub PAT
             <span className="ml-2 text-xs font-normal text-[var(--muted-color)]">
-              session only
+              app memory only
             </span>
           </span>
           <input
@@ -363,7 +346,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
             disabled={backingUp}
             className="px-4 py-2.5 text-sm text-[var(--muted-color)] underline font-ui disabled:opacity-50"
           >
-            Clear session PAT
+            Clear PAT from memory
           </button>
         )}
       </div>
