@@ -109,6 +109,8 @@ export const LibraryView: React.FC = () => {
     isEphemeralDev,
     isDev,
     isBootstrapped,
+    bootstrapError,
+    retryBootstrap,
   } = useApplication();
   const isReadOnly = isSignedOut || (isUnconfigured && !isEphemeralDev);
 
@@ -917,7 +919,25 @@ export const LibraryView: React.FC = () => {
 
       {/* Main List */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
-        {loading ? (
+        {bootstrapError ? (
+          <div
+            role="alert"
+            className="flex flex-col items-center justify-center p-12 text-center"
+          >
+            <AlertTriangle className="w-10 h-10 text-[var(--color-danger)] mb-4" aria-hidden="true" />
+            <h2 className="text-lg font-medium mb-2 font-ui">Library startup failed</h2>
+            <p className="text-sm text-[var(--muted-color)] font-content max-w-lg mb-5">
+              {bootstrapError}
+            </p>
+            <button
+              type="button"
+              onClick={retryBootstrap}
+              className="px-4 py-2 bg-[var(--color-action-primary-bg)] text-[var(--color-action-primary-text)] rounded-xl text-sm font-medium font-ui hover:opacity-90"
+            >
+              Retry library startup
+            </button>
+          </div>
+        ) : loading ? (
           <div className="flex items-center justify-center p-12 text-[var(--muted-color)]">
             <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)] mr-3" />
             <span className="text-sm font-ui">Loading library...</span>

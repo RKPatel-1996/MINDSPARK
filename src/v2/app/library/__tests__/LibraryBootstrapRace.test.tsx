@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { KnowledgeItemWithCards } from '../../../application/types';
 
@@ -48,6 +48,7 @@ const cloudItem: KnowledgeItemWithCards = {
 function contextFor(
   libraryService: { listKnowledgeItems: () => Promise<KnowledgeItemWithCards[]> },
   isBootstrapped: boolean,
+  bootstrapError: string | null = null,
 ) {
   return {
     repos: {
@@ -66,6 +67,8 @@ function contextFor(
     isEphemeralDev: false,
     isDev: true,
     isBootstrapped,
+    bootstrapError,
+    retryBootstrap: vi.fn(),
   };
 }
 
@@ -115,5 +118,21 @@ describe('Library bootstrap authority', () => {
 
     expect(screen.getByText('Fresh cloud item')).toBeDefined();
     expect(freshList).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows bootstrap failure explicitly and offers the provider retry operation', () => {
+    const listKnowledgeItems = vi.fn().mockResolvedValue([]);
+    const context = contextFor(
+      { listKnowledgeItems },
+      false,
+      'Repository bootstrap failed: Firestore offline',
+    );
+    applicationHarness.current = context;
+
+    render(<LibraryView />);
+    expect(screen.getByRole('alert').textContent).toContain('Firestore offline');
+    fireEvent.click(screen.getByRole('button', { name: 'Retry library startup' }));
+    expect(context.retryBootstrap).toHaveBeenCalledOnce();
+    expect(listKnowledgeItems).not.toHaveBeenCalled();
   });
 });

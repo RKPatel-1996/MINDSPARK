@@ -26,6 +26,8 @@ export interface ApplicationContextValue {
   authLoading: boolean;
   isFirebaseConfigured: boolean;
   isBootstrapped: boolean;
+  bootstrapError: string | null;
+  retryBootstrap: () => void;
   isSignedOut: boolean;
   isEphemeralDev: boolean;
   isUnconfigured: boolean;
@@ -56,6 +58,19 @@ export interface ApplicationProviderProps {
   isDev?: boolean;
 }
 
+type BootstrapStatus = 'idle' | 'pending' | 'success' | 'error';
+
+interface BootstrapState {
+  authority: Repositories | null;
+  status: BootstrapStatus;
+  error: string | null;
+}
+
+function bootstrapFailureMessage(error: unknown): string {
+  const detail = error instanceof Error && error.message.trim() ? `: ${error.message}` : '';
+  return `Repository bootstrap failed${detail}`;
+}
+
 export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
   children,
   customRepos,
@@ -65,7 +80,12 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
   const [user, setUser] = useState<User | null>(() => getCurrentUser());
   const [authLoading, setAuthLoading] = useState(true);
   const [refreshCount, setRefreshCount] = useState(0);
-  const [isBootstrapped, setIsBootstrapped] = useState(false);
+  const [bootstrapState, setBootstrapState] = useState<BootstrapState>({
+    authority: null,
+    status: 'idle',
+    error: null,
+  });
+  const [bootstrapAttempt, setBootstrapAttempt] = useState(0);
   
   const [syncState, setSyncState] = useState<SyncState>('synced');
   const [pendingWritesCount, setPendingWritesCount] = useState(0);
@@ -81,9 +101,6 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
   const setDevModeOptIn = useCallback((optIn: boolean) => {
     if (!isDev) return;
     setDevModeOptInState(optIn);
-    if (!optIn) {
-      setIsBootstrapped(false);
-    }
     setRefreshCount((prev) => prev + 1);
   }, [isDev]);
 
@@ -112,6 +129,17 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
     return createRepositoriesForUser(user, { isDev, devModeOptIn });
   }, [user, customRepos, isDev, devModeOptIn]);
 
+  const bootstrapIsCurrent = bootstrapState.authority === repos;
+  const isBootstrapped = bootstrapIsCurrent && bootstrapState.status === 'success';
+  const bootstrapError = bootstrapIsCurrent && bootstrapState.status === 'error'
+    ? bootstrapState.error
+    : null;
+
+  const retryBootstrap = useCallback(() => {
+    setBootstrapState({ authority: repos, status: 'pending', error: null });
+    setBootstrapAttempt((attempt) => attempt + 1);
+  }, [repos]);
+
   const reviewService = useMemo(() => new ReviewService(repos), [repos]);
   const libraryService = useMemo(() => new LibraryService(repos), [repos]);
   const insightsService = useMemo(() => new InsightsService(repos), [repos]);
@@ -138,26 +166,38 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
     // Do NOT bootstrap throwaway in-memory user data while Firebase auth resolution is still pending
     // or when Firebase is configured but the user is signed out!
     if (!customRepos && isFirebaseConfigured && (authLoading || !user)) {
-      setIsBootstrapped(false);
+      setBootstrapState({ authority: repos, status: 'idle', error: null });
       return;
     }
 
     // When Firebase is unconfigured, only bootstrap if explicitly opted into dev mode in development
     if (isUnconfigured && (!isDev || !devModeOptIn)) {
-      setIsBootstrapped(false);
+      setBootstrapState({ authority: repos, status: 'idle', error: null });
       return;
     }
 
-    bootstrapUserRepositories(repos).then(() => {
-      if (active) {
-        setIsBootstrapped(true);
-      }
-    });
+    setBootstrapState({ authority: repos, status: 'pending', error: null });
+    void bootstrapUserRepositories(repos).then(
+      () => {
+        if (active) {
+          setBootstrapState({ authority: repos, status: 'success', error: null });
+        }
+      },
+      (error: unknown) => {
+        if (active) {
+          setBootstrapState({
+            authority: repos,
+            status: 'error',
+            error: bootstrapFailureMessage(error),
+          });
+        }
+      },
+    );
 
     return () => {
       active = false;
     };
-  }, [repos, user, authLoading, customRepos, isUnconfigured, isDev, devModeOptIn]);
+  }, [repos, user, authLoading, customRepos, isUnconfigured, isDev, devModeOptIn, bootstrapAttempt]);
 
   const seedLibrary = useCallback(async (): Promise<SeedImportResult> => {
     if (isSignedOut) {
@@ -238,6 +278,8 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
       authLoading,
       isFirebaseConfigured,
       isBootstrapped,
+      bootstrapError,
+      retryBootstrap,
       isSignedOut,
       isEphemeralDev,
       isUnconfigured,
@@ -266,6 +308,8 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
       user,
       authLoading,
       isBootstrapped,
+      bootstrapError,
+      retryBootstrap,
       isSignedOut,
       isEphemeralDev,
       isUnconfigured,
