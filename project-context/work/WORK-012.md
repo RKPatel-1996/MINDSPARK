@@ -4,208 +4,267 @@ Status: IN_PROGRESS
 
 Base: `eb9074e760495c3a97257bb420dbfae6af7cfce2`
 
-Planned branch: `task/work-012-automated-offsite-recovery-points-v1`
+Branch: `task/work-012-automated-offsite-recovery-points-v1`
 
 Derived from: 2026-09-27 durability and disaster-recovery reconnaissance
 
 ## Aim
 
-Add direct, validated, off-site recovery points for MindSpark so the user can explicitly create an independent recovery archive in private GitHub storage instead of relying only on the live Firestore state, browser storage, or the current device installation.
+Add direct, validated, off-site recovery points for MindSpark so the user can explicitly create an independent recovery archive outside the live Firestore state, browser cache, and current device installation.
 
-Reuse the existing authoritative V1 `.mindspark-backup` export and manual restore contracts rather than creating a second backup representation.
+Reuse the existing authoritative V1 `.mindspark-backup` export and governed restore contracts rather than introducing a second backup representation.
 
-The intended recovery model is:
+The current recovery-point path is:
 
-`MindSpark authenticated application -> existing read-only backup source -> BackupSnapshotService -> BackupRecoveryPointService -> validated .mindspark-backup + SHA-256 -> private GitHub Release asset`
+`authenticated MindSpark application -> bounded read-only backup source -> BackupSnapshotService -> BackupRecoveryPointService -> validated .mindspark-backup + SHA-256 -> GitHub Contents API -> private MINDSPARK_BACKUPS/recovery-points repository folder`
 
-Recovery remains explicit and manual through the existing MindSpark Backup UI.
+Recovery remains explicit and manual.
 
-## Approved scope amendment - 2026-09-27
+## Approved architecture
 
-The user approved a simpler, no-cost, user-triggered design. This amendment supersedes conflicting unattended-automation requirements elsewhere in this WORK item.
+The user approved a simple, no-cost, user-triggered architecture.
 
-The approved recovery-point model is:
-
-`MindSpark authenticated application -> existing repositories -> BackupSnapshotService -> BackupRecoveryPointService -> validated .mindspark-backup + SHA-256 -> direct upload to dedicated private GitHub backup repository`
-
-The following previously considered architecture is abandoned for WORK-012:
+The following previously considered mechanisms are not part of WORK-012:
 
 - GitHub Actions scheduled backup execution;
-- Google service accounts for Firestore backup reads;
+- Google service accounts for backup reads;
 - Workload Identity Federation / GitHub OIDC;
-- a server-side `@google-cloud/firestore` or `firebase-admin` backup reader;
-- automatic daily execution while MindSpark is closed;
+- server-side `firebase-admin` or `@google-cloud/firestore` backup readers;
+- automatic execution while MindSpark is closed;
 - cloud scheduler infrastructure;
-- stale scheduled-job detection.
+- stale scheduled-job detection;
+- paid-required Firebase or Google Cloud backup infrastructure.
 
-The direct-upload design instead requires:
+The implemented design instead requires:
 
-- the user explicitly initiates backup/upload from MindSpark;
-- MindSpark uses its already-authenticated application repositories to read the user's data;
-- the normal V1 `.mindspark-backup` representation remains authoritative;
-- the archive SHA-256 remains part of the recovery-point integrity record;
-- GitHub authentication uses a fine-grained credential restricted to the dedicated private backup repository and only the minimum permissions required by the selected upload API;
-- the GitHub credential must never be written to Firestore, included in a backup archive, committed to Git, or emitted into application logs;
+- the user explicitly initiates backup from MindSpark;
+- MindSpark reads through the authenticated application's existing repositories;
+- the existing V1 `.mindspark-backup` representation remains authoritative;
+- the completed archive is validated and SHA-256 hashed before off-site persistence;
+- GitHub authentication uses a fine-grained PAT restricted to the dedicated private backup repository;
+- the PAT requires repository Contents read/write authority for repository-file backup operations;
 - no Firebase/Google Cloud billing activation or paid-required feature is introduced;
 - restore remains explicit and manual.
 
-The verified GitHub storage representation is one dedicated private repository with one long-lived MindSpark recovery-points Release. Each user-triggered backup uploads a uniquely named `.mindspark-backup` Release asset as raw binary data rather than committing the binary to Git history. The application will verify the uploaded asset against the locally computed SHA-256 when GitHub supplies its asset digest. Bounded retention uses a deliberately simple fixed-count policy: keep the newest 30 MindSpark `.mindspark-backup` Release assets and delete older MindSpark backup assets only after the newly requested recovery point has uploaded successfully. Retention must never select the just-uploaded asset for deletion. Unrelated Release assets are ignored. If listing or deletion fails, the successful new recovery point remains stored and the operation reports the retention failure rather than rolling back or deleting the newest known-good backup.
+## Authoritative off-site storage representation
 
-GitHub authentication will use a fine-grained PAT restricted to the dedicated backup repository with only the minimum repository permission required for Release asset operations. The application will target an already-created Release rather than requiring permission to create repository workflows or other automation.
+The live WORK-012 GitHub target is:
 
-GitHub off-site configuration is strictly device-local and must not use the Firestore-backed MindSpark Settings repository. Non-secret connection values (GitHub owner, repository name, and Release ID) may be persisted in browser `localStorage` for convenience. The PAT is session-only: it may be held in component memory and/or browser `sessionStorage`, must be cleared with the browser/PWA session, and must never be written to `localStorage`, IndexedDB, Firestore, backup archives, URLs, or application logs. Losing the session credential is acceptable; the user can paste the PAT again before the next off-site backup.
+- owner: `RKPatel-1996`;
+- private repository: `MINDSPARK_BACKUPS`;
+- active recovery directory: `recovery-points/`.
 
-Automatic background backup and unattended server execution are no longer acceptance requirements for WORK-012.
+Each successful backup creates a uniquely named ordinary repository file:
 
-## Verified starting condition
+`recovery-points/mindspark-<UTC timestamp>.mindspark-backup`
 
-Reconnaissance on canonical `main` at `eb9074e760495c3a97257bb420dbfae6af7cfce2` established:
+The file is committed through the GitHub Contents API on `api.github.com`.
 
-- Firestore is the live authoritative data store.
-- Firestore persistent IndexedDB caching is enabled with `CACHE_SIZE_UNLIMITED`, but browser/device storage quotas remain outside application control.
-- MindSpark already implements a versioned V1 `.mindspark-backup` export and restore workflow.
-- The existing backup exporter returns raw archive bytes and does not depend on browser download APIs.
-- `BackupUserWorkflowService` explicitly coordinates browser-independent backup operations.
-- `BackupSnapshotService` gathers all authoritative V1 data through repository reads:
-  - taxonomy;
-  - settings;
-  - scheduler parameter sets;
-  - knowledge items;
-  - review cards;
-  - review events.
-- Snapshot collection performs schema parsing, normalization, and source validation.
-- `BackupExportService` performs final envelope validation before archive serialization.
-- Existing Firestore repository implementations already expose all reads required for backup creation.
-- Existing interactive application repository construction depends on a Firebase client `User` and is therefore not suitable as the unattended GitHub Actions authentication boundary.
-- No automatic backup scheduler, rolling recovery-point mechanism, or missed-backup detector currently exists.
-- `firebase-admin` is not currently a project dependency.
-- No private GitHub backup repository has yet been created for this work.
+GitHub Release assets and `uploads.github.com` are not part of the active architecture. The Release-asset gateway was retired after live browser testing demonstrated that authenticated binary upload to `uploads.github.com` was blocked by browser CORS.
 
-## Scope
+After GitHub accepts a backup commit, MindSpark reads the committed file bytes back through the Contents API and verifies that:
 
-Implement the smallest direct off-site recovery path that reuses MindSpark's existing validated V1 backup contract and requires no unattended cloud execution, scheduler, service account, or paid-required infrastructure.
+- the remote byte length matches the generated archive;
+- the remote SHA-256 matches the locally generated archive SHA-256.
 
-### Recovery-point generation boundary
+The backup is not treated as successfully verified if those checks fail.
 
-The user-triggered application path must:
+## Backup source and archive contract
 
-- read the authenticated user's authoritative backup source through the existing repository interfaces;
-- expose only the read operations required by backup snapshot generation;
-- reuse `BackupSnapshotService`, `BackupExportService`, and the existing V1 backup contract rather than introducing a second backup representation;
-- emit the normal supported `.mindspark-backup` archive;
-- validate the backup before serialization;
-- compute a SHA-256 digest for the completed archive;
-- preserve text-only operation when Firebase Storage is not configured;
-- fail closed when required legacy image bytes cannot be read.
+The user-triggered path must:
 
-The off-site backup path must not perform restore operations or normal application-data writes.
+- read authoritative data through the bounded backup repository interface;
+- reuse `BackupSnapshotService`, `BackupExportService`, and the existing V1 backup contract;
+- include taxonomy;
+- include settings;
+- include scheduler parameter sets;
+- include knowledge items;
+- include review cards;
+- include review events;
+- include required legacy media when supported and available;
+- preserve text-only operation when Firebase Storage is not required;
+- fail closed when required legacy media bytes cannot be read;
+- validate before serialization;
+- compute SHA-256 for the completed archive.
 
-### GitHub authentication and device-local configuration
+The off-site backup path has no restore authority and must not perform normal application-data mutation.
 
-Use a fine-grained GitHub PAT restricted to the dedicated private backup repository and only the minimum repository permission required for Release asset operations.
+## GitHub authentication and device-local configuration
 
-Non-secret connection configuration may persist locally:
+Non-secret GitHub connection configuration is device-local:
 
 - GitHub owner;
-- repository name;
-- existing Release ID.
+- repository name.
 
-The PAT is session-only. It may exist in component memory and/or browser `sessionStorage`, but must never be written to:
+The current defaults are:
+
+- owner `RKPatel-1996`;
+- repository `MINDSPARK_BACKUPS`.
+
+Legacy V2 Release-tag connection configuration is migrated to the current V3 owner/repository-only schema.
+
+The raw GitHub PAT must never be written to:
 
 - `localStorage`;
-- IndexedDB;
+- `sessionStorage`;
 - Firestore;
 - a `.mindspark-backup` archive;
 - Git;
 - URLs;
 - application logs.
 
-The user may paste the PAT again after the browser/PWA session ends.
+For convenience, the PAT may be retained on the current device by the dedicated credential store:
 
-No Google Cloud service account, GitHub Actions identity, OIDC/WIF configuration, scheduler identity, or billing activation is required.
+- plaintext PAT remains only in the application-memory runtime cache;
+- persistent credential data is encrypted with AES-GCM through Web Crypto;
+- encrypted credential state and the non-extractable CryptoKey are stored in IndexedDB;
+- a fresh random IV is used for each credential save;
+- clearing the credential removes both the memory cache and IndexedDB credential;
+- persistence failure falls back to memory-only operation;
+- decryption failure makes the credential unavailable.
 
-### Off-site storage
+This is encrypted device-local convenience storage, not an OS keychain, TPM boundary, or protection against malicious same-origin script execution.
 
-Use a dedicated private GitHub repository as the off-site recovery location.
-
-Use one long-lived MindSpark recovery-points Release.
-
-Each successful user-triggered backup uploads a uniquely named `.mindspark-backup` file as a raw GitHub Release asset rather than committing backup binaries to normal Git history.
-
-When GitHub supplies a Release-asset digest, it must agree with the locally computed archive SHA-256.
-
-A failed upload must not overwrite or destroy an older known-good recovery point.
-
-### Retention
+## Retention
 
 Use one deliberately simple bounded policy:
 
-- retain the newest 30 MindSpark `.mindspark-backup` Release assets;
-- apply retention only after the newly requested recovery point uploads successfully;
-- never select the newly uploaded asset for deletion;
-- ignore unrelated Release assets;
-- delete selected older MindSpark assets from oldest to newest.
+- keep the newest 30 MindSpark recovery-point files active in `recovery-points/`;
+- run retention only after the newly requested recovery point has been committed and verified;
+- never select the newly committed recovery point for deletion;
+- ignore unrelated files;
+- remove selected older MindSpark recovery files from oldest to newest.
 
-If asset listing or deletion fails after upload, keep the newly uploaded recovery point and report the retention failure. Do not roll back the successful upload.
+The GitHub Contents API deletion uses the current repository-file Git SHA and creates a normal deletion commit.
 
-Automatic daily scheduling, daily/weekly/monthly tiering, and stale/missed-backup monitoring are not WORK-012 requirements.
+Because Git is versioned storage, removing an older backup from the current branch tree does not claim cryptographic or physical erasure of the historical Git blob. WORK-012 retention bounds the active recovery-point folder, not repository history.
 
-### Failure handling
+If listing or deletion fails after successful upload and verification:
 
-The user-triggered operation must surface failure of:
+- preserve the newly stored recovery point;
+- record the backup as successful;
+- report retention cleanup failure distinctly;
+- do not roll back the new recovery point.
+
+## Backup availability and user workflow
+
+MindSpark exposes:
+
+- a Settings backup section for GitHub owner/repository configuration and PAT management;
+- a global backup control;
+- a 24-hour device-local due indicator;
+- manual backup on demand.
+
+A successful backup updates the device-local last-success timestamp.
+
+A retention cleanup failure after successful storage still counts as a successful recovery-point creation.
+
+Failure before successful GitHub persistence must not update the last-success timestamp.
+
+## Failure handling
+
+The user-triggered operation surfaces failure of:
 
 - authoritative source reads;
 - backup validation;
 - archive generation;
 - required media reads;
-- SHA-256/integrity verification;
-- GitHub upload;
-- retention listing or deletion.
+- local SHA-256 generation;
+- GitHub repository-file creation;
+- committed-byte retrieval;
+- remote SHA-256 verification;
+- retention listing;
+- retention deletion.
 
-An upload failure must not be reported as success.
+A failed upload or failed committed-byte verification must not be reported as success.
 
-A post-upload retention failure must be distinguished from upload failure because the new recovery point is already safely stored.
-### Recovery
+A retention failure after successful upload/verification must be distinguished because the new recovery point is already preserved.
 
-Do not automate restore.
+## Recovery
+
+Restore is not automated.
 
 Recovery remains:
 
-1. choose a known-good recovery point;
-2. download the `.mindspark-backup` archive;
-3. use the existing MindSpark `Settings -> Backup` inspection workflow;
-4. review the restore plan;
-5. explicitly execute restore through the existing governed restore path.
+1. choose a known-good `.mindspark-backup` recovery file from the private GitHub repository;
+2. download the file;
+3. use the existing `Settings -> Backup` inspection workflow;
+4. inspect and review the restore plan;
+5. explicitly execute restore only through the existing governed restore path when authorized.
+
+## Live integration evidence
+
+On 2026-09-27, the browser-based WORK-012 path completed its first real end-to-end off-site recovery-point creation.
+
+Verified live result:
+
+`mindspark-2026-09-27T15-42-48-246Z.mindspark-backup`
+
+The application reported successful storage with no retention deletion required.
+
+This proves the live path through:
+
+`MindSpark -> Firebase-backed authoritative source -> validated recovery archive -> GitHub Contents API -> MINDSPARK_BACKUPS/recovery-points/`
+
+The earlier Release-asset architecture was superseded after live testing exposed browser CORS failure at `uploads.github.com`.
 
 ## Acceptance
 
 WORK-012 is complete only when:
 
-- the authenticated application can read the complete authoritative V1 backup source through the bounded read-only backup interface;
-- the recovery-point path does not expose normal application-data mutation or restore authority;
+- the authenticated application can read the complete authoritative V1 backup source through the bounded backup interface;
+- the recovery-point path exposes no restore or normal application-data mutation authority;
 - the existing `.mindspark-backup` representation is reused unchanged;
-- the generated archive passes the existing backup validator;
+- the generated archive passes the existing validator;
 - archive SHA-256 is generated;
-- GitHub-supplied asset SHA-256 is verified when GitHub provides the digest;
-- text-only production-compatible recovery points work without Firebase Storage;
-- legacy-media behavior remains fail-closed when required image bytes cannot be read;
-- a user-triggered operation can upload a uniquely named recovery point to the configured private GitHub Release;
-- failed upload cannot destroy or overwrite an older known-good recovery point;
-- fixed-count retention keeps the newest 30 MindSpark recovery assets;
-- unrelated Release assets are ignored by retention;
-- the just-uploaded asset cannot be selected for retention deletion;
-- retention failure after upload preserves the newly uploaded recovery point and is reported distinctly;
-- owner, repository, and Release ID are device-local rather than Firestore-backed settings;
-- the GitHub PAT is session-only and is absent from durable application storage, Firestore, backup archives, URLs, logs, and Git history;
+- text-only production-compatible recovery points work without requiring Firebase Storage;
+- required legacy-media behavior remains fail-closed;
+- a user-triggered backup can commit a uniquely named recovery point to `MINDSPARK_BACKUPS/recovery-points/`;
+- the committed GitHub bytes are read back and verified against the local SHA-256;
+- failed upload or failed remote verification cannot destroy or overwrite an older known-good recovery point;
+- retention keeps the newest 30 recovery files active in the recovery directory;
+- unrelated repository files are ignored by retention;
+- the just-created recovery point cannot be selected for retention deletion;
+- retention failure after successful storage preserves the new recovery point and is reported distinctly;
+- owner/repository configuration is device-local rather than Firestore-backed;
+- the raw PAT is absent from localStorage, sessionStorage, Firestore, backup archives, URLs, logs, and Git;
+- encrypted PAT persistence follows the dedicated device-local credential-store contract;
 - no Firebase/Google Cloud billing activation or paid-required service is necessary;
 - ordinary application backup/export/restore behavior remains unchanged;
-- recovery using a GitHub-produced archive is validated through the existing restore inspection path in a safe test or disposable environment;
+- one real live GitHub repository-file upload succeeds;
+- a GitHub-produced archive is validated through the existing restore inspection workflow without destructive production restore;
 - focused WORK-012 tests pass;
 - relevant backup/restore regression tests pass;
-- Firebase emulator/rules verification is performed if a change requires it;
-- `npm run verify:web-release` passes;
+- Firebase emulator/rules verification is performed only if a change requires it;
+- `npm run verify:web-release` passes on the final WORK-012 state;
 - `git diff --check` passes;
-- one live integration validation confirms the configured private GitHub repository, Release ID, fine-grained PAT, real Release-asset upload, and recovery inspection workflow.
+- governance documentation matches the implemented architecture.
+
+## Current completion state
+
+Completed:
+
+- bounded read-only backup source;
+- validated recovery-point composition;
+- SHA-256 generation;
+- direct off-site backup service;
+- newest-30 active-file retention policy;
+- GitHub Contents API gateway;
+- committed-byte SHA-256 verification;
+- device-local GitHub configuration;
+- encrypted device-local PAT persistence;
+- Settings backup UI;
+- global backup control and due indicator;
+- live GitHub repository-file recovery-point creation;
+- retirement of the superseded GitHub Release-asset gateway.
+
+Remaining before WORK-012 completion:
+
+1. validate the GitHub-produced `.mindspark-backup` through the existing restore inspection workflow without destructive production restore;
+2. run the final full `npm run verify:web-release` gate;
+3. perform final governance/status alignment;
+4. promote only after the bounded WORK-012 completion review accepts the result.
+
 ## Out of scope
 
 Do not expand WORK-012 into:
@@ -213,41 +272,27 @@ Do not expand WORK-012 into:
 - automatic restore;
 - destructive rollback of production Firestore;
 - redesign of the V1 backup format;
-- encryption or passphrase management;
+- an additional backup-archive encryption/passphrase layer;
 - Firestore PITR or managed-backup product adoption;
 - Firebase Storage enablement solely for WORK-012;
-- application UI redesign;
 - scheduler/FSRS changes;
 - ReviewEvent semantics changes;
 - general Firebase deployment redesign;
 - general Android/PWA longevity work;
 - billing changes;
-- unrelated GitHub repository automation.
-
-Android/PWA long-term compatibility remains a separate reliability track after automated recovery is established.
+- unrelated GitHub automation.
 
 ## Governance boundary
 
 Live repository state is authoritative.
 
-Registration of WORK-012 does not authorize:
+WORK-012 does not authorize unrelated:
 
-- creation of the private GitHub backup repository;
-- GitHub token or repository-permission changes;
+- GitHub repository administration;
+- GitHub token permission expansion beyond the dedicated backup requirement;
 - Google Cloud IAM changes;
-- Workload Identity Federation configuration;
 - Firebase rule deployment;
-- production data mutation;
+- destructive production data mutation;
 - billing changes.
 
-Those external configuration steps require an explicit reviewed boundary when implementation reaches them.
-
-Before implementation:
-
-1. create the bounded WORK-012 branch from the verified registration commit;
-2. re-read `AGENTS.md`;
-3. design a read-only headless persistence contract rather than reusing the full mutable `Repositories` interface blindly;
-4. prove headless archive creation locally against controlled data before accessing production Firestore;
-5. verify that the backup job possesses no production mutation capability;
-6. preserve the existing manual backup/restore workflow unchanged;
-7. introduce GitHub/cloud configuration only after the local headless path and tests are accepted.
+External mutations remain bounded to the explicitly approved WORK-012 backup operation and its configured private GitHub backup repository.
