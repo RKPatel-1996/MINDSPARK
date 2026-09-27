@@ -1,6 +1,6 @@
 # WORK-012 - Direct Off-site Recovery Points
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `eb9074e760495c3a97257bb420dbfae6af7cfce2`
 
@@ -266,9 +266,10 @@ Completion evidence:
 - final `npm run verify:web-release` passed with 73 test files / 514 tests plus 8 PWA artifact tests;
 - final `git diff --check` passed;
 - `.env.local` remained present while Vitest stayed isolated from developer Firebase configuration;
-- the final implementation worktree was clean at `15c1e87b7c4631a5a328e2b3ca9db3e3b0bd242b`.
+- the final implementation worktree was clean at `15c1e87b7c4631a5a328e2b3ca9db3e3b0bd242b`;
+- the verified WORK-012 branch was fast-forward promoted to canonical `main` at `f22dc0576cdeddbd48d3dc337039d7165854ac13`, and `main == origin/main == f22dc0576cdeddbd48d3dc337039d7165854ac13` was confirmed after push.
 
-WORK-012 is complete and awaits promotion to canonical `main`.
+WORK-012 is COMPLETE / PROMOTED.
 
 ## Out of scope
 

@@ -4,7 +4,7 @@ ACTIVE_WORK: WORK-012
 
 Title: Direct Off-site Recovery Points
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `eb9074e760495c3a97257bb420dbfae6af7cfce2`
 
@@ -12,7 +12,7 @@ Branch: `task/work-012-automated-offsite-recovery-points-v1`
 
 Derived from: 2026-09-27 durability and disaster-recovery reconnaissance
 
-Current phase: the direct off-site recovery architecture is implemented and live storage has been verified. MindSpark now generates the existing validated V1 `.mindspark-backup`, computes SHA-256, commits the recovery point through the GitHub Contents API into private `RKPatel-1996/MINDSPARK_BACKUPS/recovery-points/`, reads the committed bytes back for SHA-256 verification, and applies newest-30 active-file retention. The PAT is supported by encrypted device-local IndexedDB persistence with an application-memory plaintext cache and memory-only fallback.
+Current phase: WORK-012 is complete and promoted. The verified branch was fast-forward promoted to canonical `main` at `f22dc0576cdeddbd48d3dc337039d7165854ac13`, and canonical `main` / `origin/main` alignment was confirmed after push.
 
 Live integration checkpoint: `mindspark-2026-09-27T15-42-48-246Z.mindspark-backup` was successfully stored on 2026-09-27. The superseded GitHub Release-asset path was retired after browser CORS blocked `uploads.github.com`.
 
@@ -23,8 +23,9 @@ Completion checkpoint:
 - final `npm run verify:web-release`: PASS with 514 web tests plus 8 PWA artifact tests;
 - final worktree: CLEAN;
 - verified completion HEAD: `15c1e87b7c4631a5a328e2b3ca9db3e3b0bd242b`.
+- fast-forward promotion checkpoint: `f22dc0576cdeddbd48d3dc337039d7165854ac13`; canonical `main` and `origin/main` were aligned after push.
 
-WORK-012 is complete and awaiting promotion to canonical `main`.
+WORK-012 is COMPLETE / PROMOTED.
 
 Scope: reuse the existing validated V1 backup/restore contract and authenticated application repositories to create explicit off-site recovery points in the dedicated private GitHub backup repository.
 
