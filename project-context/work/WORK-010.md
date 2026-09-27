@@ -1,6 +1,6 @@
 # WORK-010 - Durable Review Submission Acknowledgement
 
-Status: COMPLETE
+Status: COMPLETE / PROMOTED
 
 Base: `c604f96811e01e86c7549a2d49914358336f32e5`
 
@@ -136,4 +136,27 @@ All WORK-010 implementation and task-branch verification conditions are satisfie
 
 WORK-010 is therefore COMPLETE on `task/work-010-durable-review-persistence-v1`.
 
-Canonical promotion and canonical reverification remain pending. `GAP-004` remains OPEN until that promotion boundary is completed.
+Canonical promotion and canonical reverification are complete.
+
+## Canonical promotion and reverification
+
+WORK-010 was fast-forward promoted to canonical local `main` at:
+
+`0d198d42cd0849388384a8b27c9b6bb273e43106`
+
+Canonical reverification passed:
+
+- Firestore ReviewEvent repository emulator suite: 9 / 9 PASS;
+- TypeScript: PASS;
+- ordinary Vitest suite: 63 files / 458 tests PASS;
+- production Vite build: PASS;
+- PWA build-artifact suite: 8 / 8 PASS;
+- `npm run verify:web-release`: PASS;
+- `git diff --check`: PASS;
+- canonical worktree remained clean.
+
+The expected emulator `PERMISSION_DENIED` output occurred only in the deliberate terminal-rejection characterization test and did not represent a failed gate.
+
+WORK-010 is COMPLETE / PROMOTED.
+
+`GAP-004` is canonically RESOLVED. Remote synchronization remains a separate Git step.

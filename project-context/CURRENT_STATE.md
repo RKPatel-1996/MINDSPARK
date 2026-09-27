@@ -314,33 +314,33 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - WORK-009: COMPLETE / PROMOTED
 - GAP-002: RESOLVED
 - GAP-003: RESOLVED
-- GAP-004: OPEN - WORK-010 COMPLETE on task branch; canonical promotion pending
+- GAP-004: RESOLVED
 - GAP-005: OPEN
-- Active bounded work item: WORK-010 - COMPLETE; NOT YET PROMOTED
+- Active bounded work item: NONE
+- WORK-010: COMPLETE / PROMOTED
 
 ## Current bounded work
 
-WORK-010 implementation and task-branch verification are complete on `task/work-010-durable-review-persistence-v1`, based on verified canonical commit `c604f96811e01e86c7549a2d49914358336f32e5`.
+No bounded WORK item is currently active.
 
-The bounded correction addresses GAP-004 by retaining terminally rejected ReviewEvents, surfacing a recoverable retry path after provisional UI progression, retrying the exact immutable event without duplicate submission, and preserving Firestore offline queued-write responsiveness.
+WORK-010 - Durable Review Submission Acknowledgement - was fast-forward promoted to canonical local `main` at `0d198d42cd0849388384a8b27c9b6bb273e43106` and canonically reverified.
 
-Verification on the task branch:
+WORK-010 canonical verification:
 
-- Review submission safety UI: 7 / 7 PASS
-- Phase 3B1 / ReviewService regression: 16 / 16 PASS
 - Firestore ReviewEvent repository emulator suite: 9 / 9 PASS
-- exact reconstructed `rejectedEvents` metadata contract: PASS
-- ordinary release suite: 63 files / 458 tests PASS
+- TypeScript: PASS
+- ordinary Vitest suite: 63 files / 458 tests PASS
 - production build: PASS
 - PWA artifact verification: 8 / 8 PASS
 - `npm run verify:web-release`: PASS
 - `git diff --check`: PASS
+- canonical worktree remained clean
 
 Current durable-gap state:
 
 - `GAP-002` - RESOLVED by WORK-008
 - `GAP-003` - RESOLVED by WORK-009; five moderate `firebase-tools` development-tooling residuals remain explicitly characterized and are absent from the production audit
-- `GAP-004` - OPEN pending WORK-010 commit, canonical promotion, and canonical reverification
+- `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - OPEN; immutable ReviewEvent Firestore rules are weaker than domain validation
 
-Next action: perform final WORK-010 pre-commit review, commit the bounded task branch, then fast-forward promote it to canonical `main` and run canonical reverification. Only after that boundary passes should GAP-004 be marked RESOLVED. GAP-005 remains queued for a separately registered bounded correction. DISC-002 remains historical review evidence.
+Next action: if work continues on the confirmed post-hardening findings, register a fresh bounded work item for GAP-005 before implementation. DISC-002 remains the historical post-hardening review record. Remote synchronization of the canonical WORK-010 closure remains a separate Git step.
