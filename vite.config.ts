@@ -8,6 +8,7 @@ import { configDefaults } from 'vitest/config';
 export default defineConfig(({ mode }) => {
     return {
       base: './',
+      envDir: mode === 'test' ? false : undefined,
       server: {
         port: 3000,
         host: '0.0.0.0',
