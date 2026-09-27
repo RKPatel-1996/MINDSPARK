@@ -144,7 +144,9 @@ export class GitHubReleaseBackupGateway {
       );
     }
 
-    this.fetchImpl = config.fetchImpl ?? globalThis.fetch;
+    this.fetchImpl =
+      config.fetchImpl ??
+      ((input, init) => globalThis.fetch(input, init));
 
     if (typeof this.fetchImpl !== 'function') {
       throw new GitHubReleaseBackupError(

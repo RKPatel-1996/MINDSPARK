@@ -30,6 +30,51 @@ function isReleaseLookup(url: string | URL | Request): boolean {
 }
 
 describe('GitHubReleaseBackupGateway', () => {
+  it('preserves the browser invocation context for the native fetch path', async () => {
+    const originalFetch = globalThis.fetch;
+
+    const browserFetch = vi.fn(
+      function (
+        this: typeof globalThis,
+        url: string | URL | Request,
+      ) {
+        if (this !== globalThis) {
+          throw new TypeError(
+            "Failed to execute 'fetch' on 'Window': Illegal invocation",
+          );
+        }
+
+        if (isReleaseLookup(url)) {
+          return Promise.resolve(
+            response(200, { id: 123 }),
+          );
+        }
+
+        return Promise.resolve(response(200, []));
+      },
+    ) as unknown as typeof fetch;
+
+    globalThis.fetch = browserFetch;
+
+    try {
+      const instance =
+        new GitHubReleaseBackupGateway({
+          owner: 'owner',
+          repository: 'mindspark-backups',
+          releaseTag: 'mindspark-recovery-points',
+          token: TOKEN,
+        });
+
+      await expect(
+        instance.listBackupAssets(),
+      ).resolves.toEqual([]);
+
+      expect(browserFetch).toHaveBeenCalledTimes(2);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it('resolves the Release tag, uploads raw bytes, and verifies the GitHub SHA-256 digest', async () => {
     const bytes = new Uint8Array([1, 2, 3, 4]);
 
