@@ -1,32 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: WORK-012
+ACTIVE_WORK: WORK-013
 
-Title: Direct Off-site Recovery Points
+Title: Application Runtime Resilience Hardening
 
-Status: COMPLETE / PROMOTED
+Status: REGISTERED / NOT_STARTED
 
-Base: `eb9074e760495c3a97257bb420dbfae6af7cfce2`
+Base: `30af8a220d249f1a958f2373f07aa7dae73e838c`
 
-Branch: `task/work-012-automated-offsite-recovery-points-v1`
+Planned branch: `task/work-013-application-runtime-resilience-v1`
 
-Derived from: 2026-09-27 durability and disaster-recovery reconnaissance
+Derived from: post-WORK-012 runtime-resilience reconnaissance and `DISC-002` findings MSR-05, MSR-06, and MSR-07
 
-Current phase: WORK-012 is complete and promoted. The verified branch was fast-forward promoted to canonical `main` at `f22dc0576cdeddbd48d3dc337039d7165854ac13`, and canonical `main` / `origin/main` alignment was confirmed after push.
+Current phase: MSR-05, MSR-06, and MSR-07 have been revalidated against current canonical source; WORK-013 is registered but implementation has not started.
 
-Live integration checkpoint: `mindspark-2026-09-27T15-42-48-246Z.mindspark-backup` was successfully stored on 2026-09-27. The superseded GitHub Release-asset path was retired after browser CORS blocked `uploads.github.com`.
+Scope: harden provider-owned ReviewService disposal, scheduler-parameter cache invalidation after successful restore, and bootstrap failure/retry behavior without changing persistence, FSRS, ReviewEvent, or backup semantics.
 
-Completion checkpoint:
-
-- live GitHub recovery-point creation: PASS;
-- GitHub-produced archive restore inspection: PASS / valid backup file;
-- final `npm run verify:web-release`: PASS with 514 web tests plus 8 PWA artifact tests;
-- final worktree: CLEAN;
-- verified completion HEAD: `15c1e87b7c4631a5a328e2b3ca9db3e3b0bd242b`.
-- fast-forward promotion checkpoint: `f22dc0576cdeddbd48d3dc337039d7165854ac13`; canonical `main` and `origin/main` were aligned after push.
-
-WORK-012 is COMPLETE / PROMOTED.
-
-Scope: reuse the existing validated V1 backup/restore contract and authenticated application repositories to create explicit off-site recovery points in the dedicated private GitHub backup repository.
-
-Safety: no automatic restore, production-data mutation, Firebase deployment, Storage enablement solely for WORK-012, billing activation/change, paid-required Firebase/Google Cloud feature, backup-format redesign, scheduler/FSRS changes, or unrelated GitHub automation.
+Safety: no Firebase deployment, production-data mutation, Storage enablement, billing change, dependency migration, general ApplicationContext redesign, MSR-03 import-uniqueness work, MSS-01 URL-protocol work, or unrelated resilience work.

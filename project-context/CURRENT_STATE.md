@@ -317,11 +317,15 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Most recently completed bounded work item: WORK-012 - COMPLETE / PROMOTED
+- Active bounded work item: WORK-013 - REGISTERED / NOT_STARTED
 
 ## Current bounded work
 
-WORK-012 - Direct Off-site Recovery Points - is COMPLETE / PROMOTED. Its verified branch was fast-forward promoted to canonical `main` at `f22dc0576cdeddbd48d3dc337039d7165854ac13`, and `main == origin/main == f22dc0576cdeddbd48d3dc337039d7165854ac13` was confirmed after push.
+WORK-013 - Application Runtime Resilience Hardening - is the active bounded work item and is REGISTERED / NOT_STARTED.
+
+It addresses three revalidated runtime-resilience findings from `DISC-002`: MSR-05 provider-owned ReviewService disposal, MSR-06 scheduler-parameter cache invalidation after successful restore, and MSR-07 explicit bootstrap failure/retry behavior.
+
+WORK-012 - Direct Off-site Recovery Points - is COMPLETE / PROMOTED. Its verified branch was fast-forward promoted to canonical `main` at `f22dc0576cdeddbd48d3dc337039d7165854ac13`, and final governance synchronization subsequently advanced canonical `main` to `30af8a220d249f1a958f2373f07aa7dae73e838c`.
 
 It addresses the absence of independent off-site recovery points by reusing the existing validated `.mindspark-backup` contract and allowing explicit user-triggered upload to a dedicated private GitHub backup repository.
 
@@ -349,4 +353,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: no bounded implementation work is currently registered after WORK-012. Register and verify the next WORK item before making further substantive repository changes. No Firebase deployment is authorized.
+Next action: review and commit the WORK-013 registration, then create its bounded task branch. Begin with focused lifecycle characterization/tests for MSR-05 before implementation. No Firebase deployment is authorized.
