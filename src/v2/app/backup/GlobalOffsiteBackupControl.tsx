@@ -19,8 +19,10 @@ import {
 import {
   DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
   loadGitHubBackupConnectionConfig,
-  loadGitHubBackupMemoryToken,
 } from '../../local/githubBackupConfig';
+import {
+  loadGitHubBackupCredential,
+} from '../../local/githubBackupCredentialStore';
 import {
   OFFSITE_BACKUP_DUE_AFTER_MS,
   OFFSITE_BACKUP_STATUS_EVENT,
@@ -185,7 +187,7 @@ export const GlobalOffsiteBackupControl:
       }
 
       const token =
-        loadGitHubBackupMemoryToken();
+        await loadGitHubBackupCredential();
 
       if (!token) {
         setMessage({

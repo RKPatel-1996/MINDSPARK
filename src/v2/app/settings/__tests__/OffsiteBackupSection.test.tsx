@@ -111,7 +111,7 @@ describe('OffsiteBackupSection', () => {
       (screen.getByLabelText('GitHub PAT') as HTMLInputElement).value,
     ).toBe('');
   });
-  it('saves non-secret connection values locally while keeping the PAT in app memory', async () => {
+  it('saves non-secret connection values locally without placing the PAT in browser string storage', async () => {
     const runner = vi.fn<OffsiteBackupRunner>();
 
     await renderSection(runner);
@@ -143,7 +143,7 @@ describe('OffsiteBackupSection', () => {
     ).not.toContain('github_pat_test_secret');
 
     expect(
-      screen.getByText(/PAT is retained only in app memory until the app is reloaded/),
+      await screen.findByText(/GitHub backup connection saved/),
     ).toBeTruthy();
   });
 

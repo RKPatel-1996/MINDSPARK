@@ -11,13 +11,16 @@ import {
 } from '../../application/directOffsiteBackupService';
 import {
   DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
-  clearGitHubBackupMemoryToken,
   loadGitHubBackupConnectionConfig,
   loadGitHubBackupMemoryToken,
   saveGitHubBackupConnectionConfig,
-  saveGitHubBackupMemoryToken,
   type GitHubBackupConnectionConfig,
 } from '../../local/githubBackupConfig';
+import {
+  clearGitHubBackupCredential,
+  loadGitHubBackupCredential,
+  saveGitHubBackupCredential,
+} from '../../local/githubBackupCredentialStore';
 import {
   createGitHubOffsiteBackupRunner,
   runTrackedOffsiteBackup,
@@ -76,6 +79,20 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
   const [backingUp, setBackingUp] = useState(false);
   const [message, setMessage] = useState<StatusMessage | null>(null);
 
+  React.useEffect(() => {
+    let cancelled = false;
+
+    void loadGitHubBackupCredential().then((storedToken) => {
+      if (!cancelled && storedToken) {
+        setToken((current) => current || storedToken);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const liveRunner = useMemo<OffsiteBackupRunner | null>(() => {
     if (suppliedRunner) {
       return suppliedRunner;
@@ -109,7 +126,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
     releaseTag,
   });
 
-  const handleSaveConnection = () => {
+  const handleSaveConnection = async () => {
     setMessage(null);
 
     try {
@@ -121,16 +138,27 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
       setRepository(saved.repository);
       setReleaseTag(saved.releaseTag);
 
+      let credentialState:
+        'persistent' | 'memory-only' | null = null;
+
       if (token.trim()) {
-        saveGitHubBackupMemoryToken(token);
+        credentialState =
+          await saveGitHubBackupCredential(token);
+
         setToken(token.trim());
       }
 
       setMessage({
-        kind: 'success',
+        kind:
+          credentialState === 'memory-only'
+            ? 'warning'
+            : 'success',
         text:
-          'GitHub backup connection saved on this device. ' +
-          'The PAT is retained only in app memory until the app is reloaded.',
+          credentialState === 'persistent'
+            ? 'GitHub backup connection saved. The PAT is encrypted and stored only on this device.'
+            : credentialState === 'memory-only'
+              ? 'GitHub backup connection saved, but encrypted local credential storage is unavailable. The PAT will remain only until the app is reloaded.'
+              : 'GitHub backup connection saved on this device. No PAT is currently stored.',
       });
     } catch (error) {
       setMessage({
@@ -140,13 +168,20 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
     }
   };
 
-  const handleClearToken = () => {
-    clearGitHubBackupMemoryToken();
-    setToken('');
-    setMessage({
-      kind: 'success',
-      text: 'GitHub PAT cleared from app memory.',
-    });
+  const handleClearToken = async () => {
+    try {
+      await clearGitHubBackupCredential();
+      setToken('');
+      setMessage({
+        kind: 'success',
+        text: 'GitHub PAT cleared from this device.',
+      });
+    } catch (error) {
+      setMessage({
+        kind: 'error',
+        text: errorMessage(error),
+      });
+    }
   };
 
   const handleBackup = async () => {
@@ -162,7 +197,8 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
         connectionFromInputs(),
       );
 
-      saveGitHubBackupMemoryToken(token);
+      await saveGitHubBackupCredential(token);
+
       const sessionToken =
         loadGitHubBackupMemoryToken();
 
@@ -262,7 +298,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
           <span className="block mb-1.5 font-medium">
             GitHub PAT
             <span className="ml-2 text-xs font-normal text-[var(--muted-color)]">
-              app memory only
+              encrypted on this device
             </span>
           </span>
           <input
@@ -311,8 +347,8 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
 
       <p className="mt-3 text-xs text-[var(--muted-color)] font-content">
         Repository, owner, and Release tag stay on this device. The PAT is
-        session-only and is not stored in MindSpark cloud settings or backup
-        archives.
+        encrypted in this device&apos;s local browser database and is never
+        stored in MindSpark cloud settings or backup archives.
       </p>
 
       <div className="mt-5 flex flex-wrap gap-3">
@@ -346,7 +382,7 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
             disabled={backingUp}
             className="px-4 py-2.5 text-sm text-[var(--muted-color)] underline font-ui disabled:opacity-50"
           >
-            Clear PAT from memory
+            Clear PAT from device
           </button>
         )}
       </div>

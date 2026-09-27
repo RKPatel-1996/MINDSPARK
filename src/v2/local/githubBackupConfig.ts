@@ -34,9 +34,12 @@ const LEGACY_CONNECTION_STORAGE_KEY =
 /**
  * Deliberately process/app scoped only.
  *
- * The PAT is never written to localStorage, sessionStorage,
- * IndexedDB, Firestore, URLs, or backup archives.
- * Reloading the application clears this value naturally.
+ * The raw PAT is never written to localStorage, sessionStorage,
+ * Firestore, URLs, or backup archives.
+ *
+ * Encrypted device persistence is owned by
+ * githubBackupCredentialStore.ts; this variable remains the
+ * plaintext runtime cache.
  */
 let githubBackupMemoryToken: string | null = null;
 
