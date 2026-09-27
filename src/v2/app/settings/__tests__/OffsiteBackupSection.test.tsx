@@ -61,11 +61,6 @@ function fillConnection(token = 'github_pat_test_secret') {
   );
 
   fireEvent.change(
-    screen.getByLabelText('Release tag'),
-    { target: { value: 'mindspark-recovery-points-test' } },
-  );
-
-  fireEvent.change(
     screen.getByLabelText('GitHub PAT'),
     { target: { value: token } },
   );
@@ -97,15 +92,11 @@ describe('OffsiteBackupSection', () => {
 
     expect(
       (screen.getByLabelText('Backup repository') as HTMLInputElement).value,
-    ).toBe('MINDSPARK_android_sync');
+    ).toBe('MINDSPARK_BACKUPS');
 
     expect(
       (screen.getByLabelText('GitHub owner') as HTMLInputElement).value,
     ).toBe('RKPatel-1996');
-
-    expect(
-      (screen.getByLabelText('Release tag') as HTMLInputElement).value,
-    ).toBe('mindspark-recovery-points');
 
     expect(
       (screen.getByLabelText('GitHub PAT') as HTMLInputElement).value,
@@ -126,7 +117,6 @@ describe('OffsiteBackupSection', () => {
     expect(loadGitHubBackupConnectionConfig()).toEqual({
       owner: 'RKPatel-1996',
       repository: 'mindspark-backups',
-      releaseTag: 'mindspark-recovery-points-test',
     });
 
     expect(loadGitHubBackupMemoryToken())
@@ -166,7 +156,6 @@ describe('OffsiteBackupSection', () => {
         {
           owner: 'RKPatel-1996',
           repository: 'mindspark-backups',
-          releaseTag: 'mindspark-recovery-points-test',
         },
         'github_pat_test_secret',
       ),
@@ -216,7 +205,6 @@ describe('OffsiteBackupSection', () => {
     saveGitHubBackupConnectionConfig({
       owner: 'saved-owner',
       repository: 'saved-repository',
-      releaseTag: 'saved-release',
     });
 
     await renderSection(vi.fn<OffsiteBackupRunner>());
@@ -228,10 +216,6 @@ describe('OffsiteBackupSection', () => {
     expect(
       (screen.getByLabelText('Backup repository') as HTMLInputElement).value,
     ).toBe('saved-repository');
-
-    expect(
-      (screen.getByLabelText('Release tag') as HTMLInputElement).value,
-    ).toBe('saved-release');
 
     expect(
       (screen.getByLabelText('GitHub PAT') as HTMLInputElement).value,

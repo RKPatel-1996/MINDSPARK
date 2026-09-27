@@ -138,9 +138,7 @@ describe(
           {
             owner: 'RKPatel-1996',
             repository:
-              'MINDSPARK_android_sync',
-            releaseTag:
-              'mindspark-recovery-points',
+              'MINDSPARK_BACKUPS',
           },
           'github_pat_test_secret',
         ),

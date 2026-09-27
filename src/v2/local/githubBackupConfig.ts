@@ -1,14 +1,12 @@
 export interface GitHubBackupConnectionConfig {
   owner: string;
   repository: string;
-  releaseTag: string;
 }
 
 export const DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG:
   GitHubBackupConnectionConfig = {
     owner: 'RKPatel-1996',
-    repository: 'MINDSPARK_android_sync',
-    releaseTag: 'mindspark-recovery-points',
+    repository: 'MINDSPARK_BACKUPS',
   };
 
 export type GitHubBackupConfigErrorCode =
@@ -26,9 +24,12 @@ export class GitHubBackupConfigError extends Error {
 }
 
 const CONNECTION_STORAGE_KEY =
+  'mindspark_github_backup_connection_v3';
+
+const LEGACY_CONNECTION_STORAGE_KEY_V2 =
   'mindspark_github_backup_connection_v2';
 
-const LEGACY_CONNECTION_STORAGE_KEY =
+const LEGACY_CONNECTION_STORAGE_KEY_V1 =
   'mindspark_github_backup_connection_v1';
 
 /**
@@ -48,9 +49,8 @@ function validateConnectionConfig(
 ): GitHubBackupConnectionConfig {
   const owner = value.owner.trim();
   const repository = value.repository.trim();
-  const releaseTag = value.releaseTag.trim();
 
-  if (!owner || !repository || !releaseTag) {
+  if (!owner || !repository) {
     throw new GitHubBackupConfigError(
       'invalid_connection_config',
       'GitHub backup connection configuration is invalid.',
@@ -60,39 +60,12 @@ function validateConnectionConfig(
   return {
     owner,
     repository,
-    releaseTag,
   };
 }
 
-export function saveGitHubBackupConnectionConfig(
-  config: GitHubBackupConnectionConfig,
-): GitHubBackupConnectionConfig {
-  const normalized =
-    validateConnectionConfig(config);
-
-  localStorage.setItem(
-    CONNECTION_STORAGE_KEY,
-    JSON.stringify(normalized),
-  );
-
-  localStorage.removeItem(
-    LEGACY_CONNECTION_STORAGE_KEY,
-  );
-
-  return normalized;
-}
-
-export function loadGitHubBackupConnectionConfig():
-  GitHubBackupConnectionConfig | null {
-  const raw =
-    localStorage.getItem(
-      CONNECTION_STORAGE_KEY,
-    );
-
-  if (raw === null) {
-    return null;
-  }
-
+function parseConnectionConfig(
+  raw: string,
+): GitHubBackupConnectionConfig | null {
   let parsed: unknown;
 
   try {
@@ -121,14 +94,64 @@ export function loadGitHubBackupConnectionConfig():
         typeof candidate.repository === 'string'
           ? candidate.repository
           : '',
-      releaseTag:
-        typeof candidate.releaseTag === 'string'
-          ? candidate.releaseTag
-          : '',
     });
   } catch {
     return null;
   }
+}
+
+export function saveGitHubBackupConnectionConfig(
+  config: GitHubBackupConnectionConfig,
+): GitHubBackupConnectionConfig {
+  const normalized =
+    validateConnectionConfig(config);
+
+  localStorage.setItem(
+    CONNECTION_STORAGE_KEY,
+    JSON.stringify(normalized),
+  );
+
+  localStorage.removeItem(
+    LEGACY_CONNECTION_STORAGE_KEY_V2,
+  );
+
+  localStorage.removeItem(
+    LEGACY_CONNECTION_STORAGE_KEY_V1,
+  );
+
+  return normalized;
+}
+
+export function loadGitHubBackupConnectionConfig():
+  GitHubBackupConnectionConfig | null {
+  const current =
+    localStorage.getItem(
+      CONNECTION_STORAGE_KEY,
+    );
+
+  if (current !== null) {
+    return parseConnectionConfig(current);
+  }
+
+  const legacyV2 =
+    localStorage.getItem(
+      LEGACY_CONNECTION_STORAGE_KEY_V2,
+    );
+
+  if (legacyV2 !== null) {
+    const migrated =
+      parseConnectionConfig(legacyV2);
+
+    if (migrated) {
+      saveGitHubBackupConnectionConfig(
+        migrated,
+      );
+    }
+
+    return migrated;
+  }
+
+  return null;
 }
 
 export function clearGitHubBackupConnectionConfig():
@@ -138,7 +161,11 @@ export function clearGitHubBackupConnectionConfig():
   );
 
   localStorage.removeItem(
-    LEGACY_CONNECTION_STORAGE_KEY,
+    LEGACY_CONNECTION_STORAGE_KEY_V2,
+  );
+
+  localStorage.removeItem(
+    LEGACY_CONNECTION_STORAGE_KEY_V1,
   );
 }
 

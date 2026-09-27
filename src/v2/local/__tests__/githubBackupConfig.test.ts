@@ -24,18 +24,17 @@ describe(
       clearGitHubBackupMemoryToken();
     });
 
-    it('provides editable default connection values without a built-in PAT', () => {
+    it('provides repository-file backup defaults without a built-in PAT', () => {
       expect(
         DEFAULT_GITHUB_BACKUP_CONNECTION_CONFIG,
       ).toEqual({
         owner: 'RKPatel-1996',
-        repository: 'MINDSPARK_android_sync',
-        releaseTag:
-          'mindspark-recovery-points',
+        repository: 'MINDSPARK_BACKUPS',
       });
 
       expect(localStorage.length).toBe(0);
       expect(sessionStorage.length).toBe(0);
+
       expect(
         loadGitHubBackupMemoryToken(),
       ).toBeNull();
@@ -47,15 +46,11 @@ describe(
           owner: '  owner-name  ',
           repository:
             '  mindspark-backups  ',
-          releaseTag:
-            '  mindspark-recovery-points  ',
         });
 
       expect(saved).toEqual({
         owner: 'owner-name',
         repository: 'mindspark-backups',
-        releaseTag:
-          'mindspark-recovery-points',
       });
 
       expect(
@@ -67,23 +62,55 @@ describe(
 
       const stored =
         localStorage.getItem(
-          'mindspark_github_backup_connection_v2',
+          'mindspark_github_backup_connection_v3',
         );
 
       expect(stored).toContain('owner-name');
       expect(stored).toContain(
         'mindspark-backups',
       );
-      expect(stored).toContain(
-        'mindspark-recovery-points',
-      );
 
       expect(stored).not.toMatch(
-        /token|pat|secret/i,
+        /token|pat|secret|releaseTag/i,
       );
     });
 
-    it('keeps the PAT only in app memory and never in browser storage', () => {
+    it('migrates the prior Release-tag connection without carrying the Release tag forward', () => {
+      localStorage.setItem(
+        'mindspark_github_backup_connection_v2',
+        JSON.stringify({
+          owner: 'saved-owner',
+          repository: 'saved-repository',
+          releaseTag: 'obsolete-release',
+        }),
+      );
+
+      expect(
+        loadGitHubBackupConnectionConfig(),
+      ).toEqual({
+        owner: 'saved-owner',
+        repository: 'saved-repository',
+      });
+
+      expect(
+        localStorage.getItem(
+          'mindspark_github_backup_connection_v2',
+        ),
+      ).toBeNull();
+
+      expect(
+        localStorage.getItem(
+          'mindspark_github_backup_connection_v3',
+        ),
+      ).toBe(
+        JSON.stringify({
+          owner: 'saved-owner',
+          repository: 'saved-repository',
+        }),
+      );
+    });
+
+    it('keeps the PAT only in app memory and never in browser string storage', () => {
       const token =
         'github_pat_test_secret';
 
@@ -109,7 +136,6 @@ describe(
       saveGitHubBackupConnectionConfig({
         owner: 'owner',
         repository: 'backups',
-        releaseTag: 'recovery',
       });
 
       saveGitHubBackupMemoryToken(
@@ -138,7 +164,6 @@ describe(
         saveGitHubBackupConnectionConfig({
           owner: '',
           repository: 'backups',
-          releaseTag: 'recovery',
         }),
       ).toThrowError(
         expect.objectContaining({
@@ -149,10 +174,10 @@ describe(
       expect(localStorage.length).toBe(0);
     });
 
-    it('treats malformed stored connection data as absent', () => {
+    it('treats malformed current connection data as absent', () => {
       localStorage.setItem(
-        'mindspark_github_backup_connection_v2',
-        '{"owner":"owner","repository":"backups","releaseTag":123}',
+        'mindspark_github_backup_connection_v3',
+        '{"owner":"owner","repository":123}',
       );
 
       expect(

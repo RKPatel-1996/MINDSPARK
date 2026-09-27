@@ -70,9 +70,6 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
   const [repository, setRepository] = useState(
     initialConnection.repository,
   );
-  const [releaseTag, setReleaseTag] = useState(
-    initialConnection.releaseTag,
-  );
   const [token, setToken] = useState(
     () => loadGitHubBackupMemoryToken() ?? '',
   );
@@ -123,7 +120,6 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
   const connectionFromInputs = (): GitHubBackupConnectionConfig => ({
     owner,
     repository,
-    releaseTag,
   });
 
   const handleSaveConnection = async () => {
@@ -136,7 +132,6 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
 
       setOwner(saved.owner);
       setRepository(saved.repository);
-      setReleaseTag(saved.releaseTag);
 
       let credentialState:
         'persistent' | 'memory-only' | null = null;
@@ -208,7 +203,6 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
 
       setOwner(config.owner);
       setRepository(config.repository);
-      setReleaseTag(config.releaseTag);
       setToken(sessionToken);
 
       const result = await runTrackedOffsiteBackup(
@@ -267,9 +261,9 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
             Off-site backup to GitHub
           </h2>
           <p className="text-sm text-[var(--muted-color)] font-content mt-1">
-            Create the same validated MindSpark recovery archive and upload it
-            to a dedicated private GitHub Release. The newest 30 recovery
-            points are retained.
+            Create the same validated MindSpark recovery archive and commit it
+            to the recovery-points folder of a private GitHub repository. The
+            newest 30 recovery points are retained in the active folder.
           </p>
         </div>
       </div>
@@ -330,24 +324,12 @@ export const OffsiteBackupSection: React.FC<OffsiteBackupSectionProps> = ({
               className="w-full p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono"
             />
           </label>
-
-          <label className="text-sm font-ui">
-            <span className="block mb-1.5 font-medium">Release tag</span>
-            <input
-              aria-label="Release tag"
-              type="text"
-              value={releaseTag}
-              onChange={(event) => setReleaseTag(event.target.value)}
-              disabled={backingUp}
-              className="w-full p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg text-sm font-mono"
-            />
-          </label>
         </div>
       </details>
 
       <p className="mt-3 text-xs text-[var(--muted-color)] font-content">
-        Repository, owner, and Release tag stay on this device. The PAT is
-        encrypted in this device&apos;s local browser database and is never
+        Repository and owner stay on this device. The PAT is encrypted in this
+        device&apos;s local browser database and is never
         stored in MindSpark cloud settings or backup archives.
       </p>
 
