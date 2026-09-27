@@ -1,6 +1,6 @@
 # WORK-013 - Application Runtime Resilience Hardening
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
 Base: `30af8a220d249f1a958f2373f07aa7dae73e838c`
 

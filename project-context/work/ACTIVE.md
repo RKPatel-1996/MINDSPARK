@@ -4,7 +4,7 @@ ACTIVE_WORK: WORK-013
 
 Title: Application Runtime Resilience Hardening
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
 Base: `30af8a220d249f1a958f2373f07aa7dae73e838c`
 
@@ -12,7 +12,7 @@ Planned branch: `task/work-013-application-runtime-resilience-v1`
 
 Derived from: post-WORK-012 runtime-resilience reconnaissance and `DISC-002` findings MSR-05, MSR-06, and MSR-07
 
-Current phase: MSR-05, MSR-06, and MSR-07 have been revalidated against current canonical source; WORK-013 is registered but implementation has not started.
+Current phase: WORK-013 implementation has started on its bounded task branch. The first implementation phase is focused ReviewService lifecycle characterization and provider-owned disposal for MSR-05.
 
 Scope: harden provider-owned ReviewService disposal, scheduler-parameter cache invalidation after successful restore, and bootstrap failure/retry behavior without changing persistence, FSRS, ReviewEvent, or backup semantics.
 
