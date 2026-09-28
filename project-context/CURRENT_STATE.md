@@ -318,11 +318,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-015 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-016 - IN_PROGRESS
+- Active bounded work item: WORK-016 - COMPLETE_PENDING_PROMOTION
 
 ## Current bounded work
 
-WORK-016 - Source URL Protocol Hardening - is IN_PROGRESS on `task/work-016-source-url-protocol-hardening-v1`. The active phase is focused read-only reconnaissance of structured source validation, rendering, persistence, import, backup/restore, and legacy-data compatibility before selecting the implementation contract.
+WORK-016 - Source URL Protocol Hardening - is COMPLETE_PENDING_PROMOTION on `task/work-016-source-url-protocol-hardening-v1`. Technical implementation is complete at `8fad43ac427d8be468874917ae906c6dcd65d6b3`; completed implementation review, expanded contract regressions, full web-release verification, production PWA build, and artifact verification passed. Independent completed-branch review remains required before promotion.
 
 It addresses `DISC-002` MSS-01: structured KnowledgeItem source URLs currently use generic URL validation and are rendered directly into Library and Review anchor `href` values without an explicit allowed-protocol contract.
 
@@ -367,4 +367,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: complete WORK-016 structured-source reconnaissance and select the explicit allowed-protocol and legacy-data compatibility contract before establishing RED tests or modifying production code. No Firebase deployment is authorized.
+Next action: perform an independent completed-branch review of WORK-016 from canonical base `e61c588e09d6fa7e1bb01adb36018b5c4c915eaa` through the COMPLETE_PENDING_PROMOTION checkpoint. Do not promote, push the task branch, deploy Firebase, or mutate production data until that review passes.

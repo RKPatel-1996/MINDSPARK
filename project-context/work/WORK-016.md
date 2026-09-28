@@ -1,6 +1,6 @@
 # WORK-016 - Source URL Protocol Hardening
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `cd31db21174f3a833873ea33e9fa0e21c192a7b8`
 
@@ -212,3 +212,80 @@ Before production implementation, permanent tests must demonstrate the current d
   - the portable backup contract continues to accept and preserve representative legacy non-web source URLs.
 
 The permanent RED phase must fail because import and structured-source rendering do not yet enforce this layered policy, not because of compile errors or unrelated fixture failures.
+
+## Completion verification
+
+Implementation candidate:
+
+`8fad43ac427d8be468874917ae906c6dcd65d6b3`
+
+Permanent RED checkpoint:
+
+`d7731d3fc91d1bae74c269a51c1421059a0d0810`
+
+Design-contract checkpoint:
+
+`611ef353cddf97789d0c9cbbd9711c0e8cfcad4e`
+
+### Implemented contract
+
+- Added one shared pure `isAllowedWebSourceUrl` policy.
+- The policy permits only parsed `http:` and `https:` structured source URLs.
+- New import drafts use that policy without tightening the legacy stored/domain `SourceReference` decoder.
+- Library renders allowed HTTP/HTTPS structured sources as anchors.
+- Library renders legacy non-web structured source URLs as inert visible text.
+- Review applies the same navigation contract after answer reveal.
+- The legacy `sourceReferenceSchema` remains unchanged.
+- Backup V1 validation and preservation remain unchanged.
+- Firestore DTO/domain decoding remains backward-compatible with legacy syntactically valid absolute non-web URLs.
+- Markdown link handling was not redesigned.
+- No Firestore rules, indexes, Storage configuration, Firebase configuration, production data, or cloud deployment were changed.
+
+### Verification evidence
+
+Focused implementation verification:
+
+- WORK-016 focused GREEN suite: 7 files / 69 tests PASS.
+- TypeScript typecheck PASS.
+
+Completed implementation review:
+
+- implementation topology PASS;
+- historical implementation diff check PASS;
+- compatibility boundary PASS;
+- shared protocol-policy authority PASS;
+- Library structured-source guard topology PASS;
+- Review structured-source guard topology PASS.
+
+Expanded WORK-016 contract regression:
+
+- 8 files / 80 tests PASS.
+
+Full web-release verification:
+
+- `npm run typecheck` PASS;
+- ordinary Vitest suite: 79 files / 558 tests PASS;
+- fresh production Vite build PASS;
+- PWA service-worker generation PASS;
+- PWA build-artifact suite: 1 file / 8 tests PASS;
+- `verify:web-release` PASS.
+
+Post-verification state:
+
+- task branch worktree CLEAN;
+- task branch remains local-only / NOT PUSHED;
+- canonical `main` remains `e61c588e09d6fa7e1bb01adb36018b5c4c915eaa`;
+- `origin/main` remains `e61c588e09d6fa7e1bb01adb36018b5c4c915eaa`;
+- no Firebase deployment occurred.
+
+Existing test/build stderr included jsdom IndexedDB availability messages, React `act(...)` warnings, and Rollup/Zod comment-annotation warnings. All associated tests and the production build passed; these were not introduced as WORK-016 correctness failures.
+
+### Completion boundary
+
+WORK-016 is technically complete but is not yet authorized for promotion.
+
+Status is `COMPLETE_PENDING_PROMOTION`.
+
+The next required boundary is an independent completed-branch review of the full WORK-016 change set and governance evidence. Promotion to canonical `main` must not occur until that review passes.
+
+No Firebase deployment, production-data migration, Storage enablement, billing change, or task-branch push is authorized by this checkpoint.
