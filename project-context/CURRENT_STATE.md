@@ -353,4 +353,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: establish focused ReviewService lifecycle characterization and implement provider-owned disposal for MSR-05 before continuing to MSR-06. No Firebase deployment is authorized.
+Next action: perform separate reviewed fast-forward promotion of verified WORK-013 to canonical `main`; after promotion, synchronize final governance to COMPLETE / PROMOTED. No Firebase deployment is authorized.
