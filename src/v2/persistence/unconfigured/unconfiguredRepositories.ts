@@ -70,6 +70,8 @@ export function createUnconfiguredRepositories(): Repositories {
     get: async () => null,
     list: async () => [],
     listForCard: async () => [],
+    listForCards: async (cardIds) =>
+      new Map(cardIds.map((cardId) => [cardId, []])),
     observeForCard: () => () => {},
     observeSyncState: (callback) => {
       callback({ state: 'synced', hasPendingWrites: false, fromCache: false });

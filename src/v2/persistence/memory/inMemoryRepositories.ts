@@ -369,6 +369,38 @@ export class InMemoryReviewEventRepository implements ReviewEventRepository {
       .map((e) => JSON.parse(JSON.stringify(e.event)));
   }
 
+  async listForCards(cardIds: readonly string[]): Promise<Map<string, ReviewEvent[]>> {
+    const uniqueCardIds = Array.from(new Set(cardIds));
+    const requested = new Set(uniqueCardIds);
+    const grouped = new Map<string, ReviewEvent[]>(
+      uniqueCardIds.map((cardId) => [cardId, []])
+    );
+
+    for (const entry of this.events) {
+      if (!requested.has(entry.event.cardId)) {
+        continue;
+      }
+
+      grouped
+        .get(entry.event.cardId)!
+        .push(JSON.parse(JSON.stringify(entry.event)));
+    }
+
+    for (const events of grouped.values()) {
+      events.sort((a, b) => {
+        const diff =
+          new Date(a.reviewTimestamp).getTime()
+          - new Date(b.reviewTimestamp).getTime();
+
+        return diff !== 0
+          ? diff
+          : a.id.localeCompare(b.id);
+      });
+    }
+
+    return grouped;
+  }
+
   observeForCard(cardId: string, callback: (events: ReviewEvent[], metadata: SyncMetadata) => void): () => void {
     if (!this.listeners.has(cardId)) {
       this.listeners.set(cardId, new Set());

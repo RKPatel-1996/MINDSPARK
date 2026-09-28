@@ -32,6 +32,7 @@ import type {
   UniqueKnowledgeBundleResult,
   KnowledgeFingerprintUpdateResult,
 } from '../../repository/interfaces';
+import { chunkReviewEventCardIds } from '../../reviewEventBatching';
 import type { KnowledgeItem, KnowledgeStatus } from '../../../domain/knowledge';
 import type { ReviewCard } from '../../../domain/card';
 import type { ReviewEvent } from '../../../domain/event';
@@ -594,6 +595,62 @@ export class FirestoreReviewEventRepository implements ReviewEventRepository {
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map((d) => mapDTOToReviewEvent(d.data()));
+  }
+
+  async listForCards(cardIds: readonly string[]): Promise<Map<string, ReviewEvent[]>> {
+    const chunks = chunkReviewEventCardIds(cardIds);
+    const uniqueCardIds = Array.from(new Set(cardIds));
+    const grouped = new Map<string, ReviewEvent[]>(
+      uniqueCardIds.map((cardId) => [cardId, []])
+    );
+
+    if (chunks.length === 0) {
+      return grouped;
+    }
+
+    const snapshots = await Promise.all(
+      chunks.map((chunk) => {
+        const q = query(
+          this.getCollection(),
+          where('cardId', 'in', chunk),
+          orderBy('reviewTimestamp', 'asc'),
+          orderBy('id', 'asc')
+        );
+
+        return getDocs(q);
+      })
+    );
+
+    for (const snapshot of snapshots) {
+      for (const eventDoc of snapshot.docs) {
+        const event = mapDTOToReviewEvent(eventDoc.data());
+        const cardEvents = grouped.get(event.cardId);
+
+        if (!cardEvents) {
+          throw new Error(
+            `ReviewEvent query returned unrequested card "${event.cardId}".`
+          );
+        }
+
+        cardEvents.push(event);
+      }
+    }
+
+    // Each card appears in exactly one query chunk. Sorting again here makes
+    // the per-card chronology contract explicit and independent of chunk order.
+    for (const events of grouped.values()) {
+      events.sort((a, b) => {
+        const diff =
+          new Date(a.reviewTimestamp).getTime()
+          - new Date(b.reviewTimestamp).getTime();
+
+        return diff !== 0
+          ? diff
+          : a.id.localeCompare(b.id);
+      });
+    }
+
+    return grouped;
   }
 
   observeForCard(cardId: string, callback: (events: ReviewEvent[], metadata: SyncMetadata) => void): () => void {

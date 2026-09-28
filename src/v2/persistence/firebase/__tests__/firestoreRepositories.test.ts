@@ -363,4 +363,87 @@ describe('FirestoreReviewEventRepository (Emulator)', () => {
       await enableNetwork(db as any);
     }
   });
+
+  it('listForCards deduplicates requested cards, spans bounded chunks, returns empty histories, and preserves per-card chronology', async () => {
+    const cardIds = Array.from(
+      { length: 11 },
+      () => generateId()
+    );
+
+    const firstCard = cardIds[0];
+    const lastCard = cardIds[10];
+
+    const idA = generateId();
+    const idB = generateId();
+
+    const firstId =
+      idA < idB ? idA : idB;
+
+    const secondId =
+      idA < idB ? idB : idA;
+
+    const sameTimestamp =
+      '2024-01-01T10:00:00.000Z';
+
+    await repo.append(
+      createTestEvent({
+        id: secondId,
+        cardId: firstCard,
+        reviewTimestamp: sameTimestamp,
+      })
+    );
+
+    await repo.append(
+      createTestEvent({
+        id: firstId,
+        cardId: firstCard,
+        reviewTimestamp: sameTimestamp,
+      })
+    );
+
+    const lastCardEvent =
+      createTestEvent({
+        cardId: lastCard,
+        reviewTimestamp:
+          '2024-01-01T11:00:00.000Z',
+      });
+
+    await repo.append(lastCardEvent);
+
+    const input = [
+      ...cardIds,
+      firstCard,
+    ];
+
+    const histories =
+      await repo.listForCards(input);
+
+    expect(histories.size)
+      .toBe(11);
+
+    expect(
+      Array.from(histories.keys())
+    ).toEqual(cardIds);
+
+    expect(
+      histories
+        .get(firstCard)!
+        .map((event) => event.id)
+    ).toEqual([
+      firstId,
+      secondId,
+    ]);
+
+    expect(
+      histories
+        .get(lastCard)!
+        .map((event) => event.id)
+    ).toEqual([
+      lastCardEvent.id,
+    ]);
+
+    expect(
+      histories.get(cardIds[5])
+    ).toEqual([]);
+  });
 });

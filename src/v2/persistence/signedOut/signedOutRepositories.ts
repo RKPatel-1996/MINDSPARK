@@ -69,6 +69,8 @@ export function createSignedOutRepositories(): Repositories {
     get: async () => null,
     list: async () => [],
     listForCard: async () => [],
+    listForCards: async (cardIds) =>
+      new Map(cardIds.map((cardId) => [cardId, []])),
     observeForCard: () => () => {},
     listReceivedAfter: async () => ({ events: [], nextWatermark: null }),
   };

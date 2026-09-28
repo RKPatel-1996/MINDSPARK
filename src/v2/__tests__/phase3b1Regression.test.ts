@@ -390,6 +390,16 @@ describe('MindSpark V2 Phase 3B1 Acceptance Gates Regression Test Suite', () => 
             .map((e) => JSON.parse(JSON.stringify(e)));
         }
 
+        async listForCards(cardIds: readonly string[]): Promise<Map<string, ReviewEvent[]>> {
+          const entries = await Promise.all(
+            Array.from(new Set(cardIds)).map(
+              async (cardId) =>
+                [cardId, await this.listForCard(cardId)] as const
+            )
+          );
+
+          return new Map(entries);
+        }
         async listReceivedAfter(): Promise<ReceivedEventPage> {
           return {
             events: this.localCache.map((e) => ({
