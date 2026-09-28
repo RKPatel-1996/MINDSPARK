@@ -1,0 +1,69 @@
+# WORK-018 - Library Keyboard and Inspector Accessibility
+
+Status: REGISTERED / NOT_STARTED
+
+Base: `a4aa2c3d1f344609db8c10c37e8705d2992de872`
+
+Planned branch: `task/work-018-library-keyboard-accessibility-v1`
+
+Derived from: `DISC-002` MSR-08
+
+## Problem
+
+The Library item-card and inspector interaction path does not currently provide an equivalent keyboard and screen-reader contract to its mouse interaction contract.
+
+Reconnaissance confirmed:
+
+- normal Library item cards are clickable `div` elements but outside Select mode expose no button role;
+- normal cards expose no keyboard tab stop and no Enter/Space activation handler;
+- Select mode adds partial button/selection semantics but does not establish one explicit keyboard activation contract shared with normal mode;
+- the item inspector is visually modal but does not expose the corresponding dialog semantics;
+- opening and closing the inspector has no explicit focus-entry/focus-restoration contract;
+- existing Library tests establish mouse activation and inspector visibility but do not permanently enforce the missing keyboard/focus behavior.
+
+## Objective
+
+Establish one explicit, tested accessibility contract for Library item activation and the item inspector without redesigning the Library UI.
+
+## Required behavior
+
+- every interactive Library item card is keyboard reachable;
+- normal-mode cards expose appropriate interactive semantics and an accessible name;
+- Enter and Space activate the same normal-mode item-opening behavior as pointer activation;
+- Select-mode keyboard activation toggles selection without opening the inspector and preserves the existing pending-operation safety boundary;
+- the item inspector exposes modal dialog semantics and an accessible label/title relationship;
+- opening the inspector moves focus into the inspector;
+- closing the inspector through its Close control or the existing Escape path restores focus to the originating Library card when that card remains available;
+- visible keyboard focus remains observable;
+- existing pointer behavior, selection behavior, lifecycle behavior, filters, and responsive layout remain unchanged.
+
+## Verification contract
+
+Permanent regression coverage must demonstrate:
+
+1. normal card keyboard focusability and semantics;
+2. Enter activation opens the inspector;
+3. Space activation opens the inspector without unintended page-style activation behavior;
+4. Select-mode Enter/Space toggles selection rather than opening the inspector;
+5. inspector dialog semantics;
+6. focus entry on inspector open;
+7. focus restoration to the originating card after close;
+8. Escape closure preserves the same focus-restoration contract;
+9. existing Select-mode and lifecycle regressions remain green;
+10. full `verify:web-release` passes.
+
+## Out of scope
+
+- MSS-02 backup/archive resource-exhaustion work;
+- broad Library visual redesign;
+- taxonomy keyboard redesign;
+- Import-dialog redesign;
+- application-wide dialog framework replacement;
+- unrelated WCAG remediation;
+- Firebase rules, Storage, deployment, billing, or production-data changes.
+
+## Current boundary
+
+Registration only. No production implementation has begun.
+
+Next: create the task branch, freeze the minimal interaction/focus design against current LibraryView structure, establish permanent RED tests, then implement the smallest production change.

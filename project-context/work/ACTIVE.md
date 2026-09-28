@@ -1,9 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: WORK-018
 
-Status: No bounded WORK item is currently active.
+Title: Library Keyboard and Inspector Accessibility
 
-Most recently completed: `WORK-017` - Viewport User-Scaling Accessibility.
+Status: REGISTERED / NOT_STARTED
 
-Closure: WORK-017 was independently reviewed and fast-forward promoted to canonical `main` at `574797e004d1e7f913e637ac486b64d67711142b`; focused viewport regression, TypeScript typecheck, full web-release verification, production build, and PWA-artifact verification passed after promotion. Final governance synchronization is recorded on canonical `main`. No Firebase deployment occurred.
+Base: `a4aa2c3d1f344609db8c10c37e8705d2992de872`
+
+Planned branch: `task/work-018-library-keyboard-accessibility-v1`
+
+Derived from: `DISC-002` MSR-08
+
+Current phase: WORK-018 is registered from confirmed MSR-08 reconnaissance. No implementation has begun; the next boundary is task-branch start, design freeze, and permanent RED establishment.
+
+Scope: keyboard-equivalent Library item activation plus item-inspector dialog/focus entry and restoration, with existing pointer, selection, lifecycle, and layout behavior preserved.
+
+Safety: MSS-02 remains separate; no Firebase deployment, cloud mutation, Storage enablement, billing change, persisted-data migration, or unrelated accessibility redesign.
