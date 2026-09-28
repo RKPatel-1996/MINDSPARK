@@ -335,4 +335,176 @@ describe('Library Select Mode UI (Task 5-1)', () => {
     const activeItems = items.filter((i) => i.status === 'active');
     expect(activeItems.length).toBe(2);
   });
+
+  it('WORK-018 RED 1: normal card exposes keyboard button semantics and Enter opens the inspector', async () => {
+    renderLibrary();
+
+    await waitFor(() => {
+      expect(screen.getByText('Process Synchronization')).toBeDefined();
+    });
+
+    const card = screen.getByTestId('knowledge-item-card-item-1');
+
+    expect(card.getAttribute('role')).toBe('button');
+    expect(card.getAttribute('tabindex')).toBe('0');
+    expect(card.getAttribute('aria-label')).toBe('Open Process Synchronization');
+    expect(card.className).toContain('focus-visible:');
+
+    card.focus();
+    expect(document.activeElement).toBe(card);
+
+    fireEvent.keyDown(card, {
+      key: 'Enter',
+      code: 'Enter',
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('dialog', {
+          name: 'Process Synchronization',
+        }),
+      ).toBeDefined();
+    });
+  });
+
+  it('WORK-018 RED 2: Space opens the normal card, focuses Close, and Close restores origin focus', async () => {
+    renderLibrary();
+
+    await waitFor(() => {
+      expect(screen.getByText('Process Synchronization')).toBeDefined();
+    });
+
+    const card = screen.getByTestId('knowledge-item-card-item-1');
+
+    card.focus();
+
+    const dispatched = fireEvent.keyDown(card, {
+      key: ' ',
+      code: 'Space',
+    });
+
+    expect(dispatched).toBe(false);
+
+    await waitFor(() => {
+      const dialog = screen.getByRole('dialog', {
+        name: 'Process Synchronization',
+      });
+
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+    });
+
+    const close =
+      screen.getByRole('button', {
+        name: /^Close$/i,
+      });
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(close);
+    });
+
+    fireEvent.click(close);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('dialog', {
+          name: 'Process Synchronization',
+        }),
+      ).toBeNull();
+
+      expect(document.activeElement).toBe(card);
+    });
+  });
+
+  it('WORK-018 RED 3: Escape closes the inspector and restores focus to the originating card', async () => {
+    renderLibrary();
+
+    await waitFor(() => {
+      expect(screen.getByText('Process Synchronization')).toBeDefined();
+    });
+
+    const card = screen.getByTestId('knowledge-item-card-item-1');
+
+    card.focus();
+
+    fireEvent.keyDown(card, {
+      key: 'Enter',
+      code: 'Enter',
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('dialog', {
+          name: 'Process Synchronization',
+        }),
+      ).toBeDefined();
+    });
+
+    fireEvent.keyDown(window, {
+      key: 'Escape',
+      code: 'Escape',
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('dialog', {
+          name: 'Process Synchronization',
+        }),
+      ).toBeNull();
+
+      expect(document.activeElement).toBe(card);
+    });
+  });
+
+  it('WORK-018 RED 4: Select mode keeps the native checkbox authoritative and removes duplicate card semantics', async () => {
+    renderLibrary();
+
+    await waitFor(() => {
+      expect(screen.getByText('Process Synchronization')).toBeDefined();
+    });
+
+    fireEvent.click(
+      screen.getByTestId('library-select-mode-btn'),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('selected-count'),
+      ).toBeDefined();
+    });
+
+    const card =
+      screen.getByTestId(
+        'knowledge-item-card-item-1',
+      );
+
+    const checkbox =
+      screen.getByTestId(
+        'select-item-checkbox-item-1',
+      ) as HTMLInputElement;
+
+    expect(card.getAttribute('role')).toBeNull();
+    expect(card.getAttribute('tabindex')).toBeNull();
+    expect(card.getAttribute('aria-selected')).toBeNull();
+
+    expect(checkbox.tagName).toBe('INPUT');
+    expect(checkbox.type).toBe('checkbox');
+    expect(checkbox.checked).toBe(false);
+    expect(checkbox.disabled).toBe(false);
+    expect(checkbox.tabIndex).toBe(0);
+    expect(
+      checkbox.getAttribute('aria-label'),
+    ).toBe('Select Process Synchronization');
+
+    fireEvent.click(card);
+
+    expect(
+      screen.getByTestId('selected-count').textContent,
+    ).toContain('1 selected');
+
+    expect(checkbox.checked).toBe(true);
+
+    expect(
+      screen.queryByTestId('item-inspector-modal'),
+    ).toBeNull();
+  });
 });
