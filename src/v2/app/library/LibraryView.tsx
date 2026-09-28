@@ -427,12 +427,31 @@ export const LibraryView: React.FC = () => {
     [registry, domainFilter, topicFilter, subtopicFilter]
   );
 
-  // Keyboard shortcuts
-  useShortcut('navigation.search', () => document.getElementById('library-search')?.focus());
-  useShortcut('overlay.close', () => {
+  const inspectorCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+  const inspectorOriginItemIdRef = useRef<string | null>(null);
+
+  const handleCloseDetail = useCallback(() => {
+    if (!selectedItem) return;
+
+    const originItemId = inspectorOriginItemIdRef.current;
+
     setSelectedItem(null);
     setIsEditing(false);
-  });
+
+    window.setTimeout(() => {
+      if (!originItemId) return;
+      document.getElementById(`knowledge-item-${originItemId}`)?.focus();
+    }, 0);
+  }, [selectedItem]);
+
+  useEffect(() => {
+    if (!selectedItem) return;
+    inspectorCloseButtonRef.current?.focus();
+  }, [selectedItem?.item.id]);
+
+  // Keyboard shortcuts
+  useShortcut('navigation.search', () => document.getElementById('library-search')?.focus());
+  useShortcut('overlay.close', handleCloseDetail);
 
   // Ctrl+I shortcut to open Import dialog
   useEffect(() => {
@@ -489,6 +508,7 @@ export const LibraryView: React.FC = () => {
   };
 
   const handleOpenDetail = (bundle: KnowledgeItemWithCards) => {
+    inspectorOriginItemIdRef.current = bundle.item.id;
     setSelectedItem(bundle);
     setIsEditing(false);
     setLifecycleError(null);
@@ -1017,11 +1037,18 @@ export const LibraryView: React.FC = () => {
                       handleOpenDetail(bundle);
                     }
                   }}
-                  role={isSelecting ? 'button' : undefined}
-                  aria-selected={isSelecting ? isSelected : undefined}
-                  aria-disabled={isSelecting && isBulkLifecyclePending ? true : undefined}
-                  aria-label={isSelecting ? `${isSelected ? 'Deselect' : 'Select'} ${item.title}` : undefined}
-                  className={`p-5 rounded-xl border transition-all cursor-pointer paper-shadow flex flex-col justify-between group ${
+                  onKeyDown={(event) => {
+                    if (isSelecting) return;
+
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleOpenDetail(bundle);
+                    }
+                  }}
+                  role={isSelecting ? undefined : 'button'}
+                  tabIndex={isSelecting ? undefined : 0}
+                  aria-label={isSelecting ? undefined : `Open ${item.title}`}
+                  className={`p-5 rounded-xl border transition-all cursor-pointer paper-shadow flex flex-col justify-between group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${
                     isSelected
                       ? 'border-[var(--color-primary)] bg-[var(--color-soft-primary)]'
                       : 'border-[var(--border-color)] bg-[var(--surface-color)] hover:border-[var(--color-primary)]'
@@ -1097,7 +1124,13 @@ export const LibraryView: React.FC = () => {
       {/* Item Detail / Inspector Overlay */}
       {selectedItem && (
         <div data-testid="item-inspector-overlay" className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div data-testid="item-inspector-modal" className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col paper-shadow overflow-hidden">
+          <div
+            data-testid="item-inspector-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`item-inspector-title-${selectedItem.item.id}`}
+            className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col paper-shadow overflow-hidden"
+          >
             <div className="p-4 md:p-6 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--elevated-color)]">
               <div>
                 <span className="text-xs text-[var(--muted-color)] uppercase tracking-wider font-ui">
@@ -1106,7 +1139,12 @@ export const LibraryView: React.FC = () => {
                     ? ` › ${getSubtopicName(selectedItem.item.taxonomy.subtopicId)}`
                     : ''}
                 </span>
-                <h3 className="text-lg font-semibold font-ui mt-0.5">{selectedItem.item.title}</h3>
+                <h3
+                  id={`item-inspector-title-${selectedItem.item.id}`}
+                  className="text-lg font-semibold font-ui mt-0.5"
+                >
+                  {selectedItem.item.title}
+                </h3>
               </div>
               <div className="flex items-center gap-2">
                 {!isReadOnly && (
@@ -1119,7 +1157,8 @@ export const LibraryView: React.FC = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => setSelectedItem(null)}
+                  ref={inspectorCloseButtonRef}
+                  onClick={handleCloseDetail}
                   className="p-2 text-[var(--muted-color)] hover:text-[var(--text-color)] rounded-lg hover:bg-[var(--surface-color)]"
                   aria-label="Close"
                 >
