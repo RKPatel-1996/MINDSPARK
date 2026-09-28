@@ -217,79 +217,287 @@ export class ReviewService {
    * Reconstructs current-local-day review context from authoritative ReviewEvents and the repository.
    * Derives both sibling-burial context and new-card introduction counts so they survive service reconstruction.
    */
-  async syncDayContext(now: Date = new Date()): Promise<{ buriedCardIds: Set<string>; newCardsIntroducedToday: number }> {
-    const todayStartMs = getLocalDayStart(now);
-    const allCards = await this.repos.reviewCards.list();
+  private compareReviewEvents(
+    left: ReviewEvent,
+    right: ReviewEvent
+  ): number {
+    const timestampDifference =
+      new Date(left.reviewTimestamp).getTime()
+      - new Date(right.reviewTimestamp).getTime();
 
-    const itemToCardIds = new Map<string, string[]>();
-    for (const card of allCards) {
-      const existing = itemToCardIds.get(card.knowledgeItemId) ?? [];
-      existing.push(card.id);
-      itemToCardIds.set(card.knowledgeItemId, existing);
-    }
-
-    let newCardsIntroducedToday = 0;
-    const reviewedTodayCardIds = new Set<string>();
-    const itemsWithReviewsToday = new Set<string>();
-
-    for (const card of allCards) {
-      const events = await this.getEventsForCard(card.id);
-      if (events.length > 0) {
-        // First-ever review event occurred today -> counts toward daily new card introduction limit
-        const firstEventTime = new Date(events[0].reviewTimestamp).getTime();
-        if (firstEventTime >= todayStartMs) {
-          newCardsIntroducedToday++;
-        }
-
-        // Check if this card was reviewed during the current local day
-        const lastEventTime = new Date(events[events.length - 1].reviewTimestamp).getTime();
-        if (lastEventTime >= todayStartMs) {
-          reviewedTodayCardIds.add(card.id);
-          itemsWithReviewsToday.add(card.knowledgeItemId);
-        }
-      }
-    }
-
-    // Derive sibling burial:
-    // A sibling should be buried only if:
-    // - it belongs to a KnowledgeItem with another card reviewed today
-    // AND
-    // - that sibling itself has NOT already been reviewed today.
-    const buried = new Set<string>(this.explicitBuriedCardIds);
-
-    for (const itemId of itemsWithReviewsToday) {
-      const siblings = itemToCardIds.get(itemId) ?? [];
-      for (const sibId of siblings) {
-        if (!reviewedTodayCardIds.has(sibId)) {
-          buried.add(sibId);
-        }
-      }
-    }
-
-    this.derivedBuriedCardIds = buried;
-    return { buriedCardIds: buried, newCardsIntroducedToday };
+    return timestampDifference !== 0
+      ? timestampDifference
+      : left.id.localeCompare(right.id);
   }
 
-  /**
-   * Fetches events for a card, merging repository events with the in-process
-   * pending overlay deduplicated by immutable event ID.
-   */
-  async getEventsForCard(cardId: string): Promise<ReviewEvent[]> {
-    const repoEvents = await this.repos.reviewEvents.listForCard(cardId);
-    const map = new Map<string, ReviewEvent>();
-    for (const ev of repoEvents) {
-      map.set(ev.id, ev);
+  private mergePendingEventsForCard(
+    cardId: string,
+    repoEvents: readonly ReviewEvent[]
+  ): ReviewEvent[] {
+    const merged =
+      new Map<string, ReviewEvent>();
+
+    for (const event of repoEvents) {
+      merged.set(event.id, event);
     }
-    for (const [id, ev] of this.pendingEvents) {
-      if (ev.cardId === cardId) {
-        map.set(id, ev);
+
+    for (const [eventId, event] of this.pendingEvents) {
+      if (event.cardId === cardId) {
+        merged.set(eventId, event);
       }
     }
-    return Array.from(map.values()).sort(
-      (a, b) => new Date(a.reviewTimestamp).getTime() - new Date(b.reviewTimestamp).getTime()
+
+    return Array.from(merged.values())
+      .sort(
+        (left, right) =>
+          this.compareReviewEvents(
+            left,
+            right
+          )
+      );
+  }
+
+  private async getEventsForCards(
+    cardIds: readonly string[]
+  ): Promise<Map<string, ReviewEvent[]>> {
+    const uniqueCardIds =
+      Array.from(new Set(cardIds));
+
+    const repoHistories =
+      await this.repos.reviewEvents.listForCards(
+        uniqueCardIds
+      );
+
+    const mergedByCardId =
+      new Map<
+        string,
+        Map<string, ReviewEvent>
+      >(
+        uniqueCardIds.map(
+          (cardId) => [
+            cardId,
+            new Map(
+              (
+                repoHistories.get(cardId)
+                ?? []
+              ).map(
+                (event) => [
+                  event.id,
+                  event,
+                ]
+              )
+            ),
+          ]
+        )
+      );
+
+    for (
+      const [
+        eventId,
+        event,
+      ] of this.pendingEvents
+    ) {
+      const cardEvents =
+        mergedByCardId.get(
+          event.cardId
+        );
+
+      if (cardEvents) {
+        cardEvents.set(
+          eventId,
+          event
+        );
+      }
+    }
+
+    return new Map(
+      Array.from(
+        mergedByCardId.entries()
+      ).map(
+        ([
+          cardId,
+          eventsById,
+        ]) => [
+          cardId,
+          Array.from(
+            eventsById.values()
+          ).sort(
+            (left, right) =>
+              this.compareReviewEvents(
+                left,
+                right
+              )
+          ),
+        ]
+      )
     );
   }
 
+  private deriveDayContext(
+    allCards: readonly ReviewCard[],
+    eventsByCardId: ReadonlyMap<
+      string,
+      ReviewEvent[]
+    >,
+    now: Date
+  ): {
+    buriedCardIds: Set<string>;
+    newCardsIntroducedToday: number;
+  } {
+    const todayStartMs =
+      getLocalDayStart(now);
+
+    const itemToCardIds =
+      new Map<string, string[]>();
+
+    for (const card of allCards) {
+      const existing =
+        itemToCardIds.get(
+          card.knowledgeItemId
+        ) ?? [];
+
+      existing.push(card.id);
+
+      itemToCardIds.set(
+        card.knowledgeItemId,
+        existing
+      );
+    }
+
+    let newCardsIntroducedToday = 0;
+
+    const reviewedTodayCardIds =
+      new Set<string>();
+
+    const itemsWithReviewsToday =
+      new Set<string>();
+
+    for (const card of allCards) {
+      const events =
+        eventsByCardId.get(
+          card.id
+        ) ?? [];
+
+      if (events.length === 0) {
+        continue;
+      }
+
+      // First-ever review event occurred today -> counts toward the
+      // daily new-card introduction limit.
+      const firstEventTime =
+        new Date(
+          events[0].reviewTimestamp
+        ).getTime();
+
+      if (
+        firstEventTime
+        >= todayStartMs
+      ) {
+        newCardsIntroducedToday++;
+      }
+
+      const lastEventTime =
+        new Date(
+          events[
+            events.length - 1
+          ].reviewTimestamp
+        ).getTime();
+
+      if (
+        lastEventTime
+        >= todayStartMs
+      ) {
+        reviewedTodayCardIds.add(
+          card.id
+        );
+
+        itemsWithReviewsToday.add(
+          card.knowledgeItemId
+        );
+      }
+    }
+
+    // Derive sibling burial exactly as before:
+    // a sibling is buried only when another card from its item was
+    // reviewed today and the sibling itself was not.
+    const buried =
+      new Set<string>(
+        this.explicitBuriedCardIds
+      );
+
+    for (
+      const itemId
+      of itemsWithReviewsToday
+    ) {
+      const siblings =
+        itemToCardIds.get(
+          itemId
+        ) ?? [];
+
+      for (
+        const siblingId
+        of siblings
+      ) {
+        if (
+          !reviewedTodayCardIds.has(
+            siblingId
+          )
+        ) {
+          buried.add(
+            siblingId
+          );
+        }
+      }
+    }
+
+    this.derivedBuriedCardIds =
+      buried;
+
+    return {
+      buriedCardIds: buried,
+      newCardsIntroducedToday,
+    };
+  }
+
+  async syncDayContext(
+    now: Date = new Date()
+  ): Promise<{
+    buriedCardIds: Set<string>;
+    newCardsIntroducedToday: number;
+  }> {
+    const allCards =
+      await this.repos.reviewCards.list();
+
+    const eventsByCardId =
+      await this.getEventsForCards(
+        allCards.map(
+          (card) => card.id
+        )
+      );
+
+    return this.deriveDayContext(
+      allCards,
+      eventsByCardId,
+      now
+    );
+  }
+
+  /**
+   * Fetches events for a true single-card workflow, merging repository
+   * evidence with the in-process pending overlay by immutable event ID.
+   */
+  async getEventsForCard(
+    cardId: string
+  ): Promise<ReviewEvent[]> {
+    const repoEvents =
+      await this.repos.reviewEvents
+        .listForCard(cardId);
+
+    return this.mergePendingEventsForCard(
+      cardId,
+      repoEvents
+    );
+  }
   private async getParameterSetsDict(): Promise<Record<string, SchedulerParameterSet>> {
     if (this.cachedParameterSets) {
       return this.cachedParameterSets;
@@ -339,7 +547,14 @@ export class ReviewService {
     }
 
     const now = new Date();
-    const { buriedCardIds, newCardsIntroducedToday } = await this.syncDayContext(now);
+    const eventsByCardId = await this.getEventsForCards(
+      allCards.map((card) => card.id)
+    );
+    const { buriedCardIds, newCardsIntroducedToday } = this.deriveDayContext(
+      allCards,
+      eventsByCardId,
+      now
+    );
     const candidateBundles: CandidateCardBundle[] = [];
 
     // Reconcile card states deterministically from events
@@ -347,7 +562,7 @@ export class ReviewService {
       const knowledgeItem = itemMap.get(card.knowledgeItemId);
       if (!knowledgeItem) continue;
 
-      const events = await this.getEventsForCard(card.id);
+      const events = eventsByCardId.get(card.id) ?? [];
 
       const reconciliation = reconcileCardHistory(card, events, parameterSets);
 

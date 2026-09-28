@@ -33,6 +33,9 @@ export class LibraryService {
 
     const paramSetsList = await this.repos.parameterSets.list();
     const paramSetsDict = Object.fromEntries(paramSetsList.map((p) => [p.id, p]));
+    const eventsByCardId = await this.repos.reviewEvents.listForCards(
+      cards.map((card) => card.id)
+    );
 
     const result: KnowledgeItemWithCards[] = [];
 
@@ -42,7 +45,7 @@ export class LibraryService {
       const reconciliationErrors: Record<string, string> = {};
 
       for (const card of itemCards) {
-        const events = await this.repos.reviewEvents.listForCard(card.id);
+        const events = eventsByCardId.get(card.id) ?? [];
         const reconciliation = reconcileCardHistory(card, events, paramSetsDict);
         if (reconciliation.ok) {
           cardStates[card.id] = reconciliation.state;
@@ -69,11 +72,14 @@ export class LibraryService {
     const cards = await this.repos.reviewCards.listForKnowledgeItem(id);
     const paramSetsList = await this.repos.parameterSets.list();
     const paramSetsDict = Object.fromEntries(paramSetsList.map((p) => [p.id, p]));
+    const eventsByCardId = await this.repos.reviewEvents.listForCards(
+      cards.map((card) => card.id)
+    );
 
     const cardStates: Record<string, CardState> = {};
     const reconciliationErrors: Record<string, string> = {};
     for (const card of cards) {
-      const events = await this.repos.reviewEvents.listForCard(card.id);
+      const events = eventsByCardId.get(card.id) ?? [];
       const reconciliation = reconcileCardHistory(card, events, paramSetsDict);
       if (reconciliation.ok) {
         cardStates[card.id] = reconciliation.state;

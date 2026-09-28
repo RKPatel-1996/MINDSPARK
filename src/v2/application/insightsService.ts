@@ -26,6 +26,9 @@ export class InsightsService {
 
     const paramSetsList = await this.repos.parameterSets.list();
     const paramSetsDict = Object.fromEntries(paramSetsList.map((p) => [p.id, p]));
+    const eventsByCardId = await this.repos.reviewEvents.listForCards(
+      activeCards.map((card) => card.id)
+    );
 
     const stageCounts = {
       new: 0,
@@ -45,7 +48,7 @@ export class InsightsService {
     const reconciliationErrors: Array<{ cardId: string; message: string }> = [];
 
     for (const card of activeCards) {
-      const events = await this.repos.reviewEvents.listForCard(card.id);
+      const events = eventsByCardId.get(card.id) ?? [];
       
       // Check events reviewed today
       for (const ev of events) {
