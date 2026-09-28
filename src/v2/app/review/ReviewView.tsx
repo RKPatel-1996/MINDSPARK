@@ -7,6 +7,7 @@ import { Flag, Info, CheckCircle2, RotateCcw, Sparkles, BookOpen, Loader2, Alert
 import type { ReviewQueueState, ReviewSubmissionInput } from '../../application/types';
 import type { ReviewRating } from '../../domain/event';
 import type { SourceReference } from '../../domain/knowledge';
+import { isAllowedWebSourceUrl } from '../../domain/sourceUrlPolicy';
 
 type ReviewState = 'question' | 'answered';
 
@@ -35,14 +36,20 @@ const SourcesSection: React.FC<{ sources: SourceReference[] | undefined }> = ({ 
               <p className="mt-1 text-[var(--muted-color)]">{source.citation}</p>
             )}
             {source.url && (
-              <a
-                href={source.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block break-all text-[var(--color-primary)] hover:underline"
-              >
-                {source.url}
-              </a>
+              isAllowedWebSourceUrl(source.url) ? (
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block break-all text-[var(--color-primary)] hover:underline"
+                >
+                  {source.url}
+                </a>
+              ) : (
+                <span className="mt-2 block break-all text-[var(--muted-color)]">
+                  {source.url}
+                </span>
+              )
             )}
           </div>
         ))}

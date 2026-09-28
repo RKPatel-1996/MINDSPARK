@@ -5,6 +5,7 @@ import { useShortcut } from '../shortcuts/useShortcut';
 import { ContentBlocks, MarkdownContent } from '../content/ContentRenderer';
 import type { KnowledgeItemWithCards } from '../../application/types';
 import type { KnowledgeItem, KnowledgeStatus, SourceReference } from '../../domain/knowledge';
+import { isAllowedWebSourceUrl } from '../../domain/sourceUrlPolicy';
 import type { ContentBlock } from '../../domain/contentBlock';
 import type { CardType } from '../../domain/card';
 import { validateTaxonomy, type TaxonomyRegistry, type TaxonomyReference } from '../../domain/taxonomy';
@@ -79,14 +80,20 @@ const SourcesSection: React.FC<{ sources: SourceReference[] | undefined }> = ({ 
               <p className="mt-1 text-[var(--muted-color)]">{source.citation}</p>
             )}
             {source.url && (
-              <a
-                href={source.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block break-all text-[var(--color-primary)] hover:underline"
-              >
-                {source.url}
-              </a>
+              isAllowedWebSourceUrl(source.url) ? (
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block break-all text-[var(--color-primary)] hover:underline"
+                >
+                  {source.url}
+                </a>
+              ) : (
+                <span className="mt-2 block break-all text-[var(--muted-color)]">
+                  {source.url}
+                </span>
+              )
             )}
           </div>
         ))}

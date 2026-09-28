@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { taxonomyReferenceSchema, controlledTagSchema } from '../domain/taxonomy';
 import { sourceReferenceSchema } from '../domain/knowledge';
+import { isAllowedWebSourceUrl } from '../domain/sourceUrlPolicy';
 import { contentBlocksSchema } from '../domain/contentBlock';
 
 /**
@@ -13,6 +14,20 @@ import { contentBlocksSchema } from '../domain/contentBlock';
  * - MCQ options are checked for uniqueness case-insensitively after trimming.
  */
 
+const importSourceReferenceSchema =
+  sourceReferenceSchema
+    .strict()
+    .refine(
+      (source) =>
+        source.url === undefined ||
+        isAllowedWebSourceUrl(source.url),
+      {
+        message:
+          'Source URL must use http or https',
+        path: ['url'],
+      },
+    );
+
 export const knowledgeItemDraftSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   content: z.string().trim().min(1, 'Core knowledge content is required'),
@@ -20,7 +35,7 @@ export const knowledgeItemDraftSchema = z.object({
   explanationMarkdown: z.string().trim().optional(),
   taxonomy: taxonomyReferenceSchema.strict(),
   tags: z.array(controlledTagSchema).optional(),
-  sources: z.array(sourceReferenceSchema.strict()).optional(),
+  sources: z.array(importSourceReferenceSchema).optional(),
 }).strict();
 
 export type KnowledgeItemDraft = z.infer<typeof knowledgeItemDraftSchema>;
