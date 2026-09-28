@@ -4,7 +4,7 @@ ACTIVE_WORK: WORK-017
 
 Title: Viewport User-Scaling Accessibility
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
 Base: `67dac991cab3c793dd952c4bacb49f1e07998944`
 
@@ -12,7 +12,7 @@ Planned branch: `task/work-017-viewport-scaling-v1`
 
 Derived from: `DISC-002` MSR-09
 
-Current phase: WORK-017 is registered but has not started. The next boundary is focused read-only reconnaissance of viewport metadata, PWA/mobile coupling, and existing test authority before establishing permanent RED evidence or modifying production code.
+Current phase: WORK-017 is IN_PROGRESS on `task/work-017-viewport-scaling-v1`. Focused read-only reconnaissance is active to establish viewport authority, PWA/mobile coupling, existing test coverage, and the exact permanent RED contract before production modification.
 
 Scope: restore user-controlled browser zoom by establishing an explicit accessibility-safe viewport metadata contract while preserving responsive device-width behavior and the existing PWA release contract.
 

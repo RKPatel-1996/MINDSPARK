@@ -318,11 +318,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-016 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-017 - REGISTERED / NOT_STARTED
+- Active bounded work item: WORK-017 - IN_PROGRESS
 
 ## Current bounded work
 
-WORK-017 - Viewport User-Scaling Accessibility - is REGISTERED / NOT_STARTED. It addresses `DISC-002` MSR-09: canonical `index.html` still disables user scaling with `maximum-scale=1.0` and `user-scalable=no`. The bounded next phase is read-only reconnaissance of viewport authority, PWA/mobile coupling, and test coverage before permanent RED characterization or production modification.
+WORK-017 - Viewport User-Scaling Accessibility - is IN_PROGRESS on `task/work-017-viewport-scaling-v1`. It addresses `DISC-002` MSR-09: canonical `index.html` still disables user scaling with `maximum-scale=1.0` and `user-scalable=no`. Focused read-only reconnaissance is active before permanent RED characterization or production viewport modification.
 
 WORK-016 - Source URL Protocol Hardening - is COMPLETE / PROMOTED. Its independently reviewed candidate was fast-forward promoted to canonical `main` at `6ef1aa2d8bd80e0267391037830ea1946ce88034`; focused source-URL contract regression, full web-release verification, production-build, and PWA-artifact verification all passed after promotion.
 
@@ -369,4 +369,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: start WORK-017 on `task/work-017-viewport-scaling-v1` and perform focused read-only reconnaissance of the authoritative viewport declaration, PWA/mobile coupling, and existing test surfaces. Do not modify production viewport behavior until permanent RED evidence is established. No Firebase deployment is authorized.
+Next action: complete WORK-017 viewport/PWA/test reconnaissance and freeze the permanent RED characterization contract before modifying production viewport behavior. No Firebase deployment is authorized.

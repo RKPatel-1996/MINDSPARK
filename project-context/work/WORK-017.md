@@ -1,6 +1,6 @@
 # WORK-017 - Viewport User-Scaling Accessibility
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
 Base: `67dac991cab3c793dd952c4bacb49f1e07998944`
 
@@ -102,3 +102,21 @@ No Firebase deployment, production-data mutation, billing change, Storage enable
 WORK-017 is registered but implementation has not started.
 
 The next boundary is to create `task/work-017-viewport-scaling-v1`, record the start checkpoint, and perform focused read-only reconnaissance before establishing permanent RED evidence.
+
+## Start checkpoint
+
+WORK-017 has started on `task/work-017-viewport-scaling-v1`.
+
+Current phase: RECONNAISSANCE.
+
+Before permanent RED characterization or production modification, the task will verify:
+
+- every authoritative viewport declaration;
+- whether PWA/mobile configuration duplicates or overrides viewport behavior;
+- existing viewport/build-artifact test authority;
+- the exact current zoom-blocking contract;
+- the smallest accessibility-safe replacement contract.
+
+No production viewport mutation is authorized at this checkpoint.
+
+No Firebase deployment, production-data mutation, Storage enablement, billing change, or task-branch push is authorized.
