@@ -318,11 +318,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-014 - COMPLETE / PROMOTED
-- Active bounded work item: NONE
+- Active bounded work item: WORK-015 - REGISTERED / NOT_STARTED
 
 ## Current bounded work
 
-WORK-014 - Atomic Import Uniqueness - is COMPLETE / PROMOTED on canonical `main`. Technical promotion landed at `2f97744a82daca4935fc91c3099749d05200b1aa`; post-promotion Firebase/rules and full web-release verification passed before `main` was pushed and synchronized with `origin/main`.
+WORK-015 - ReviewEvent History Query Scaling - is REGISTERED / NOT_STARTED on canonical `main`, derived from `DISC-002` MSR-04. It targets avoidable per-card ReviewEvent history query amplification in multi-card Review, Library, and Insights workflows while preserving existing chronology, offline behavior, and ReviewService pending/failed-event authority.
 
 It addresses `DISC-002` MSR-03: simultaneous equivalent normal imports can currently race because duplicate detection occurs before persistence while each import generates independent opaque entity IDs.
 
@@ -362,4 +362,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: no bounded work item is currently registered. Select and register the next work item before beginning implementation. No Firebase deployment is authorized.
+Next action: start WORK-015 on `task/work-015-reviewevent-query-scaling-v1` and perform read-only ReviewEvent query-contract reconnaissance before selecting or implementing a batching strategy. No Firebase deployment is authorized.

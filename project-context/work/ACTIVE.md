@@ -1,19 +1,19 @@
-# Active Work
+# ACTIVE WORK
 
-ACTIVE_WORK: WORK-014
+ACTIVE_WORK: WORK-015
 
-Title: Atomic Import Uniqueness
+Title: ReviewEvent History Query Scaling
 
-Status: COMPLETE / PROMOTED
+Status: REGISTERED / NOT_STARTED
 
-Base: `3f14ee572167a3357178cf7fd2b075e70e270f8d`
+Base: `b5279fc3a21ce6ff6d120180bb497994bee2f629`
 
-Planned branch: `task/work-014-atomic-import-uniqueness-v1`
+Planned branch: `task/work-015-reviewevent-query-scaling-v1`
 
-Derived from: `DISC-002` MSR-03 and post-WORK-013 revalidation
+Derived from: `DISC-002` MSR-04 and post-WORK-014 candidate reconnaissance
 
-Current phase: no bounded work item is active. WORK-014 is COMPLETE / PROMOTED on canonical `main`; no further WORK-014 implementation or promotion action remains.
+Current phase: WORK-015 is registered but not started. The next boundary is a governed task branch plus read-only ReviewEvent query-contract reconnaissance before any implementation design is frozen.
 
-Scope: establish owner-scoped persistence-level uniqueness for the existing normalized import fingerprint, preserve item/card atomicity, retain preview duplicate detection as UX only, and add true simultaneous-import regression coverage.
+Scope: remove avoidable per-card ReviewEvent history query amplification from multi-card Review, Library, and Insights workflows while preserving chronology, ReviewService pending/failed-event authority, offline behavior, and existing backup/restore semantics.
 
-Safety: no Firebase deployment, production-data mutation, Storage enablement, billing change, historical-data deduplication, restore redesign, fingerprint-rule migration, MSR-04/MSR-08/MSR-09 work, or unrelated persistence redesign.
+Safety: no Firebase deployment, production-data mutation, billing change, Storage enablement, ReviewEvent history rewrite, MSR-08/MSR-09/MSS-01/MSS-02 work, or unrelated persistence redesign.
