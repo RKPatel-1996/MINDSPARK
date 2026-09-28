@@ -318,11 +318,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-014 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-015 - REGISTERED / NOT_STARTED
+- Active bounded work item: WORK-015 - IN_PROGRESS
 
 ## Current bounded work
 
-WORK-015 - ReviewEvent History Query Scaling - is REGISTERED / NOT_STARTED on canonical `main`, derived from `DISC-002` MSR-04. It targets avoidable per-card ReviewEvent history query amplification in multi-card Review, Library, and Insights workflows while preserving existing chronology, offline behavior, and ReviewService pending/failed-event authority.
+WORK-015 - ReviewEvent History Query Scaling - is IN_PROGRESS on `task/work-015-reviewevent-query-scaling-v1`, derived from `DISC-002` MSR-04. The active phase is read-only characterization of ReviewEvent chronology, query amplification, ReviewService overlays, Firestore query/index constraints, and deterministic query-count observability before selecting an implementation strategy.
 
 It addresses `DISC-002` MSR-03: simultaneous equivalent normal imports can currently race because duplicate detection occurs before persistence while each import generates independent opaque entity IDs.
 
@@ -362,4 +362,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: start WORK-015 on `task/work-015-reviewevent-query-scaling-v1` and perform read-only ReviewEvent query-contract reconnaissance before selecting or implementing a batching strategy. No Firebase deployment is authorized.
+Next action: complete WORK-015 ReviewEvent query-contract reconnaissance and select a bounded retrieval design only after chronology, offline/cache behavior, pending/failed-event overlays, Firestore limits, indexes, and query-count testability are understood. No Firebase deployment is authorized.

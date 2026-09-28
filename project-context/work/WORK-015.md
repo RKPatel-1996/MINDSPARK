@@ -1,6 +1,6 @@
 # WORK-015 - ReviewEvent History Query Scaling
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
 Base: `b5279fc3a21ce6ff6d120180bb497994bee2f629`
 
@@ -105,3 +105,26 @@ Start the governed task branch and perform read-only reconnaissance of:
 - current query-count observability available in tests.
 
 Stop at the design boundary before implementation.
+
+## Start checkpoint
+
+WORK-015 started from canonical registration head:
+
+`772fd9eceb191ec62a8be54aa37385b2d1d2c246`
+
+Task branch:
+
+`task/work-015-reviewevent-query-scaling-v1`
+
+The first phase is read-only query-contract reconnaissance.
+
+No batching mechanism, new repository API, Firestore query shape, index change, cache architecture, or application implementation is selected by this checkpoint.
+
+The design boundary remains:
+
+1. establish exact current per-card chronology semantics;
+2. identify every multi-card workflow producing query amplification;
+3. understand ReviewService pending/failed-event overlays;
+4. characterize Firestore query/index/offline constraints;
+5. determine how query-count improvement can be measured deterministically;
+6. stop before implementation until the bounded replacement contract is selected.
