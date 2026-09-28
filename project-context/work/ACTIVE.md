@@ -1,9 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: WORK-017
 
-Status: No bounded WORK item is currently active.
+Title: Viewport User-Scaling Accessibility
 
-Most recently completed: `WORK-016` - Source URL Protocol Hardening.
+Status: REGISTERED / NOT_STARTED
 
-Closure: WORK-016 was independently reviewed and fast-forward promoted to canonical `main` at `6ef1aa2d8bd80e0267391037830ea1946ce88034`; focused source-URL contract regression, full web-release verification, production build, and PWA-artifact verification passed after promotion. Final governance synchronization is recorded on canonical `main`. No Firebase deployment occurred.
+Base: `67dac991cab3c793dd952c4bacb49f1e07998944`
+
+Planned branch: `task/work-017-viewport-scaling-v1`
+
+Derived from: `DISC-002` MSR-09
+
+Current phase: WORK-017 is registered but has not started. The next boundary is focused read-only reconnaissance of viewport metadata, PWA/mobile coupling, and existing test authority before establishing permanent RED evidence or modifying production code.
+
+Scope: restore user-controlled browser zoom by establishing an explicit accessibility-safe viewport metadata contract while preserving responsive device-width behavior and the existing PWA release contract.
+
+Safety: no Firebase deployment, production cloud mutation, persisted-data migration, MSR-08 work, MSS-02 work, broad responsive redesign, Storage enablement, billing change, or unrelated accessibility redesign.
