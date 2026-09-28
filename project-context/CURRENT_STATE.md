@@ -322,7 +322,7 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 
 ## Current bounded work
 
-WORK-017 - Viewport User-Scaling Accessibility - is IN_PROGRESS on `task/work-017-viewport-scaling-v1`. It addresses `DISC-002` MSR-09: canonical `index.html` still disables user scaling with `maximum-scale=1.0` and `user-scalable=no`. Focused read-only reconnaissance is active before permanent RED characterization or production viewport modification.
+WORK-017 - Viewport User-Scaling Accessibility - is IN_PROGRESS on `task/work-017-viewport-scaling-v1`. Reconnaissance is complete and the viewport contract is DESIGN_FROZEN: repository-root `index.html` is the sole browser viewport authority, and the required contract retains `width=device-width, initial-scale=1.0` while omitting `user-scalable` and `maximum-scale`. Permanent source and fresh-build RED evidence is required before production modification.
 
 WORK-016 - Source URL Protocol Hardening - is COMPLETE / PROMOTED. Its independently reviewed candidate was fast-forward promoted to canonical `main` at `6ef1aa2d8bd80e0267391037830ea1946ce88034`; focused source-URL contract regression, full web-release verification, production-build, and PWA-artifact verification all passed after promotion.
 
@@ -369,4 +369,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: complete WORK-017 viewport/PWA/test reconnaissance and freeze the permanent RED characterization contract before modifying production viewport behavior. No Firebase deployment is authorized.
+Next action: establish permanent WORK-017 source and fresh-build RED characterization against the frozen viewport contract. Do not modify `index.html` until both RED surfaces demonstrate the current zoom-blocking defect. No Firebase deployment is authorized.

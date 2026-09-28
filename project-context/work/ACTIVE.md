@@ -12,7 +12,7 @@ Planned branch: `task/work-017-viewport-scaling-v1`
 
 Derived from: `DISC-002` MSR-09
 
-Current phase: WORK-017 is IN_PROGRESS on `task/work-017-viewport-scaling-v1`. Focused read-only reconnaissance is active to establish viewport authority, PWA/mobile coupling, existing test coverage, and the exact permanent RED contract before production modification.
+Current phase: WORK-017 reconnaissance is complete and the viewport contract is DESIGN_FROZEN. The canonical authority is repository-root `index.html`; permanent source and fresh-build RED characterization is required before the one-line production viewport mutation.
 
 Scope: restore user-controlled browser zoom by establishing an explicit accessibility-safe viewport metadata contract while preserving responsive device-width behavior and the existing PWA release contract.
 

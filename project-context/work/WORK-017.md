@@ -120,3 +120,62 @@ Before permanent RED characterization or production modification, the task will 
 No production viewport mutation is authorized at this checkpoint.
 
 No Firebase deployment, production-data mutation, Storage enablement, billing change, or task-branch push is authorized.
+
+## Frozen viewport contract
+
+Focused reconnaissance established the following WORK-017 implementation contract.
+
+### Authority
+
+The canonical browser viewport declaration is the single `<meta name="viewport">` entry in repository-root `index.html`.
+
+The Android `viewportWidth` and `viewportHeight` values found under launcher vector-drawable resources are graphics coordinate-system attributes and are not browser viewport policy.
+
+No PWA manifest, Vite PWA configuration, React runtime surface, or other tracked browser source duplicates or overrides the HTML viewport declaration.
+
+### Required viewport behavior
+
+The canonical source viewport contract must:
+
+- contain exactly one browser viewport declaration;
+- retain `width=device-width`;
+- retain `initial-scale=1.0`;
+- omit the `user-scalable` directive;
+- omit the `maximum-scale` directive.
+
+The intended canonical content is therefore:
+
+`width=device-width, initial-scale=1.0`
+
+This removes the current browser zoom prohibition without redesigning responsive layout behavior.
+
+### Build contract
+
+The fresh production build must preserve the same accessibility-safe viewport semantics in generated `dist/index.html`.
+
+Existing PWA manifest, installability, service-worker, relative-base, and artifact contracts remain unchanged.
+
+### Permanent RED authority
+
+Permanent RED characterization will extend:
+
+- `src/v2/__tests__/pwaManifest.test.ts` for source `index.html`;
+- `src/v2/__tests__/pwaBuildArtifacts.test.ts` for fresh generated `dist/index.html`.
+
+Both contracts must prove:
+
+- exactly one viewport meta tag;
+- `width=device-width`;
+- `initial-scale=1.0`;
+- no `user-scalable` directive;
+- no `maximum-scale` directive.
+
+The source regression must fail against the current canonical declaration before production implementation.
+
+A fresh PWA build-artifact verification must independently fail against the same current declaration before production implementation.
+
+### Expected production boundary
+
+If permanent RED confirms the reconnaissance, the expected production mutation is limited to the viewport-content line in repository-root `index.html`.
+
+No manifest change, Vite configuration change, React change, Android-native change, Firebase change, responsive-layout redesign, or unrelated accessibility modification is authorized.
