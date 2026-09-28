@@ -71,6 +71,33 @@ service cloud.firestore {
         allow delete: if false; // Archive instead of delete
       }
 
+      match /knowledgeImportClaims/{claimId} {
+        allow read: if isOwnerPath(uid);
+        allow create: if isOwnerPath(uid)
+          && claimId.matches('^[0-9a-f]{64}$')
+          && request.resource.data.keys().hasAll([
+            'id',
+            'knowledgeItemId',
+            'schemaVersion'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'id',
+            'knowledgeItemId',
+            'schemaVersion'
+          ])
+          && request.resource.data.id == claimId
+          && isOpaqueUuid(request.resource.data.knowledgeItemId)
+          && request.resource.data.schemaVersion is int
+          && request.resource.data.schemaVersion == 1
+          && existsAfter(
+            /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(request.resource.data.knowledgeItemId)
+          )
+          && getAfter(
+            /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(request.resource.data.knowledgeItemId)
+          ).data.id == request.resource.data.knowledgeItemId;
+        allow update, delete: if false;
+      }
+
       match /reviewCards/{cardId} {
         allow read, create, update: if isOwnerPath(uid);
         allow delete: if false; // Archive instead of delete

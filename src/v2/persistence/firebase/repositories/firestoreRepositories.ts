@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocFromServer,
   getDocs,
   setDoc,
   updateDoc,
@@ -27,7 +28,8 @@ import type {
   SyncMetadata,
   SyncState,
   EventWatermark,
-  ReceivedEventPage
+  ReceivedEventPage,
+  UniqueKnowledgeBundleResult,
 } from '../../repository/interfaces';
 import type { KnowledgeItem, KnowledgeStatus } from '../../../domain/knowledge';
 import type { ReviewCard } from '../../../domain/card';
@@ -58,6 +60,11 @@ import {
   mapDTOToSettings,
   sanitizeFirestoreDto,
 } from '../mappers/domainMappers';
+import {
+  computeKnowledgeImportClaimId,
+  decodeKnowledgeImportClaim,
+  KNOWLEDGE_IMPORT_CLAIM_SCHEMA_VERSION,
+} from '../../importClaim';
 
 export class FirestoreKnowledgeRepository implements KnowledgeRepository {
   constructor(private db: Firestore, private uid: string) {}
@@ -93,6 +100,69 @@ export class FirestoreKnowledgeRepository implements KnowledgeRepository {
 
   async createKnowledgeBundle(item: KnowledgeItem, cards: ReviewCard[]): Promise<void> {
     return this.createBundle(item, cards);
+  }
+
+  async createUniqueKnowledgeBundle(
+    fingerprint: string,
+    item: KnowledgeItem,
+    cards: ReviewCard[]
+  ): Promise<UniqueKnowledgeBundleResult> {
+    const claimId = await computeKnowledgeImportClaimId(fingerprint);
+    const claimRef = doc(
+      this.db,
+      `users/${this.uid}/knowledgeImportClaims/${claimId}`
+    );
+
+    const batch = writeBatch(this.db);
+
+    batch.set(claimRef, {
+      id: claimId,
+      knowledgeItemId: item.id,
+      schemaVersion: KNOWLEDGE_IMPORT_CLAIM_SCHEMA_VERSION,
+    });
+
+    batch.set(
+      doc(this.getCollection(), item.id),
+      mapKnowledgeItemToDTO(item)
+    );
+
+    for (const card of cards) {
+      batch.set(
+        doc(this.db, `users/${this.uid}/reviewCards/${card.id}`),
+        mapReviewCardToDTO(card)
+      );
+    }
+
+    try {
+      await batch.commit();
+      return { status: 'created' };
+    } catch (error) {
+      // A competing immutable claim is surfaced by Firestore as a rejected
+      // batch. Read the server-authoritative claim before classifying the
+      // failure; unrelated persistence/rules failures must propagate.
+      try {
+        const claimSnapshot = await getDocFromServer(claimRef);
+
+        if (claimSnapshot.exists()) {
+          const claim = decodeKnowledgeImportClaim(
+            claimSnapshot.data(),
+            claimId
+          );
+
+          if (claim) {
+            return {
+              status: 'duplicate',
+              existingKnowledgeItemId: claim.knowledgeItemId,
+            };
+          }
+        }
+      } catch {
+        // Preserve the original batch failure when authoritative claim
+        // resolution itself is unavailable.
+      }
+
+      throw error;
+    }
   }
 
   async update(item: KnowledgeItem): Promise<void> {

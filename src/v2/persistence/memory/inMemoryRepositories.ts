@@ -22,6 +22,7 @@ import {
   normalizeBulkLifecycleItemIds,
   validateLifecycleTransition,
 } from '../../domain/lifecycle';
+import { computeKnowledgeImportClaimId } from '../importClaim';
 
 export class InMemoryKnowledgeRepository implements KnowledgeRepository {
   private items = new Map<string, KnowledgeItem>();
@@ -86,7 +87,8 @@ export class InMemoryKnowledgeRepository implements KnowledgeRepository {
     item: KnowledgeItem,
     cards: ReviewCard[]
   ): Promise<UniqueKnowledgeBundleResult> {
-    const existingKnowledgeItemId = this.importClaims.get(fingerprint);
+    const claimId = await computeKnowledgeImportClaimId(fingerprint);
+    const existingKnowledgeItemId = this.importClaims.get(claimId);
 
     if (existingKnowledgeItemId) {
       return {
@@ -95,18 +97,18 @@ export class InMemoryKnowledgeRepository implements KnowledgeRepository {
       };
     }
 
-    // Claim synchronously before the first asynchronous yield. JavaScript's
-    // run-to-completion semantics make this the in-memory atomicity boundary
-    // for competing callers sharing this repository instance.
-    this.importClaims.set(fingerprint, item.id);
+    // Promise continuations execute to completion before another continuation
+    // can mutate this repository instance. Claim acquisition therefore remains
+    // the in-memory atomicity boundary after deterministic SHA-256 derivation.
+    this.importClaims.set(claimId, item.id);
 
     try {
       await this.createBundle(item, cards);
       return { status: 'created' };
     } catch (error) {
       // A failed bundle must not strand uniqueness authority.
-      if (this.importClaims.get(fingerprint) === item.id) {
-        this.importClaims.delete(fingerprint);
+      if (this.importClaims.get(claimId) === item.id) {
+        this.importClaims.delete(claimId);
       }
       throw error;
     }
