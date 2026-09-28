@@ -323,4 +323,75 @@ describe('V2 Import DTO Transformation and Controlled Taxonomy Validation', () =
       cards: [{ ...baseDraft.cards[0], answer: '   ' }],
     }, sampleRegistry)).toThrow();
   });
+
+it('WORK-016 rejects non-web structured source protocols on new imports while accepting HTTP and HTTPS', () => {
+    const makeDraft = (url: string) => ({
+      item: {
+        title: 'Structured source protocol test',
+        content: 'Import protocol boundary.',
+        taxonomy: {
+          domainId: 'biology',
+          topicId: 'genetics',
+        },
+        sources: [{
+          title: 'Protocol source',
+          url,
+        }],
+      },
+      cards: [{
+        type: 'flashcard' as const,
+        front: 'Question',
+        back: 'Answer',
+      }],
+    });
+
+    for (const url of [
+      'http://example.com/reference',
+      'https://example.com/reference',
+    ]) {
+      expect(() =>
+        transformDraftToDomain(
+          makeDraft(url),
+          sampleRegistry,
+        )
+      ).not.toThrow();
+    }
+
+    for (const url of [
+      '//example.com/reference',
+      '/reference',
+      'not a URL',
+    ]) {
+      expect(() =>
+        transformDraftToDomain(
+          makeDraft(url),
+          sampleRegistry,
+        )
+      ).toThrow();
+    }
+
+    const disallowed = [
+      'javascript:alert(1)',
+      'data:text/html,<script>alert(1)</script>',
+      'file:///C:/private/reference.txt',
+      'mailto:reader@example.com',
+      'ftp://example.com/reference.txt',
+      'blob:https://example.com/11111111-1111-4111-8111-111111111111',
+    ];
+
+    const incorrectlyAccepted =
+      disallowed.filter((url) => {
+        try {
+          transformDraftToDomain(
+            makeDraft(url),
+            sampleRegistry,
+          );
+          return true;
+        } catch {
+          return false;
+        }
+      });
+
+    expect(incorrectlyAccepted).toEqual([]);
+  });
 });

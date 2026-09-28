@@ -122,4 +122,31 @@ describe('Library source presentation', () => {
     await waitFor(() => expect(screen.getByText('Edited source fixture')).toBeDefined());
     expect((await repos.knowledge.get(item.id))?.sources).toEqual(sources);
   });
+
+it('WORK-016 keeps a legacy non-web source URL visible but inert in Library', async () => {
+    const legacyUrl = 'javascript:alert(1)';
+
+    const { repos } = await createFixture([{
+      title: 'Legacy non-web source',
+      url: legacyUrl,
+    }]);
+
+    renderLibrary(repos);
+    await openInspector();
+
+    expect(
+      screen.getByText('Legacy non-web source')
+    ).toBeDefined();
+
+    expect(
+      screen.getByText(legacyUrl)
+    ).toBeDefined();
+
+    expect(
+      screen.queryByRole(
+        'link',
+        { name: legacyUrl },
+      )
+    ).toBeNull();
+  });
 });

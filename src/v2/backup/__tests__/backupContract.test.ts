@@ -305,4 +305,34 @@ describe('MindSpark backup V1 contract', () => {
       expect(result.issues.map((value) => value.code)).toContain('reconciliation_failed');
     }
   });
+
+it('WORK-016 accepts and preserves a legacy non-web structured source in Backup V1', () => {
+    const legacyUrl = 'javascript:alert(1)';
+    const input = makeValidBackup();
+
+    const source =
+      input.data.knowledgeItems[0].sources?.[0];
+
+    if (!source) {
+      throw new Error(
+        'Expected backup fixture source'
+      );
+    }
+
+    source.url = legacyUrl;
+
+    const result =
+      validateAndNormalizeBackup(input);
+
+    expect(result.valid).toBe(true);
+
+    if (result.valid) {
+      expect(
+        result.backup.data
+          .knowledgeItems
+          .find((item) => item.id === ITEM_A)
+          ?.sources?.[0].url
+      ).toBe(legacyUrl);
+    }
+  });
 });

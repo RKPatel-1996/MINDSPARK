@@ -327,4 +327,36 @@ describe('Firestore DTO Safety & Sanitation', () => {
     const settingsDto = mapSettingsToDTO(DEFAULT_SETTINGS);
     expect(containsUndefinedValues(settingsDto).found).toBe(false);
   });
+
+it('WORK-016 preserves a legacy non-web structured source through Firestore DTO mapping', () => {
+    const legacyUrl = 'javascript:alert(1)';
+
+    const item: KnowledgeItem = {
+      id: generateId(),
+      schemaVersion: 1,
+      title: 'Legacy Firestore source',
+      content: 'Legacy source metadata remains readable.',
+      taxonomy: {
+        domainId: 'computing',
+        topicId: 'linux',
+      },
+      status: 'active',
+      createdAt: '2026-09-28T00:00:00.000Z',
+      updatedAt: '2026-09-28T00:00:00.000Z',
+      sources: [{
+        title: 'Legacy source',
+        url: legacyUrl,
+      }],
+    };
+
+    const dto =
+      mapKnowledgeItemToDTO(item);
+
+    const restored =
+      mapDTOToKnowledgeItem(dto);
+
+    expect(
+      restored.sources?.[0].url
+    ).toBe(legacyUrl);
+  });
 });

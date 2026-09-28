@@ -109,4 +109,52 @@ describe('Review source presentation', () => {
     await waitFor(() => expect(screen.getByText('The recalled answer.')).toBeDefined());
     expect(screen.queryByText('Sources')).toBeNull();
   });
+
+it('WORK-016 keeps a revealed legacy non-web source URL visible but inert in Review', async () => {
+    const legacyUrl = 'javascript:alert(1)';
+
+    renderReview(
+      await createFixture(
+        'free_recall',
+        [{
+          title: 'Legacy review source',
+          url: legacyUrl,
+        }],
+      )
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('Recall this source answer')
+      ).toBeDefined()
+    );
+
+    expect(
+      screen.queryByText('Legacy review source')
+    ).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole(
+        'button',
+        { name: /Reveal answer/ },
+      )
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('Legacy review source')
+      ).toBeDefined()
+    );
+
+    expect(
+      screen.getByText(legacyUrl)
+    ).toBeDefined();
+
+    expect(
+      screen.queryByRole(
+        'link',
+        { name: legacyUrl },
+      )
+    ).toBeNull();
+  });
 });

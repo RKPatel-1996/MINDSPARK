@@ -470,4 +470,39 @@ describe('V2 Domain Schemas and ID Invariants', () => {
     delete (missingDevice as any).deviceId;
     expect(() => reviewEventSchema.parse(missingDevice)).toThrow();
   });
+
+it('WORK-016 keeps the stored SourceReference schema compatible with legacy absolute non-web URLs', () => {
+    const legacyUrls = [
+      'javascript:alert(1)',
+      'data:text/plain,legacy',
+      'file:///C:/legacy/reference.txt',
+      'mailto:reader@example.com',
+      'ftp://example.com/reference.txt',
+      'blob:https://example.com/11111111-1111-4111-8111-111111111111',
+    ];
+
+    for (const url of legacyUrls) {
+      const item: KnowledgeItem = {
+        id: generateId(),
+        schemaVersion: 1,
+        title: 'Legacy source compatibility',
+        content: 'Preserve readable legacy structured-source metadata.',
+        taxonomy: {
+          domainId: 'computing',
+          topicId: 'linux',
+        },
+        status: 'active',
+        createdAt: '2026-09-28T00:00:00.000Z',
+        updatedAt: '2026-09-28T00:00:00.000Z',
+        sources: [{
+          title: 'Legacy source',
+          url,
+        }],
+      };
+
+      expect(
+        knowledgeItemSchema.parse(item).sources?.[0].url
+      ).toBe(url);
+    }
+  });
 });
