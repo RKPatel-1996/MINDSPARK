@@ -317,11 +317,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-014 - REGISTERED / NOT_STARTED
+- Active bounded work item: WORK-014 - IN_PROGRESS
 
 ## Current bounded work
 
-WORK-014 - Atomic Import Uniqueness - is the active bounded work item and is REGISTERED / NOT_STARTED.
+WORK-014 - Atomic Import Uniqueness - is the active bounded work item and is IN_PROGRESS on `task/work-014-atomic-import-uniqueness-v1`.
 
 It addresses `DISC-002` MSR-03: simultaneous equivalent normal imports can currently race because duplicate detection occurs before persistence while each import generates independent opaque entity IDs.
 
@@ -361,4 +361,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: create the bounded WORK-014 task branch, establish a RED simultaneous-import characterization, and resolve the persistence/offline uniqueness design before implementation. No Firebase deployment is authorized.
+Next action: establish the RED simultaneous-identical-import characterization and resolve the persistence/offline uniqueness design before implementing the authoritative persistence contract. No Firebase deployment is authorized.
