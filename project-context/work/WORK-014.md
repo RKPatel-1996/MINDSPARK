@@ -1,6 +1,6 @@
 # WORK-014 - Atomic Import Uniqueness
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `3f14ee572167a3357178cf7fd2b075e70e270f8d`
 
@@ -416,3 +416,26 @@ Verification after the correction:
 No Firebase deployment, production-data mutation, billing change, Storage enablement, canonical-main mutation, or task-branch push occurred.
 
 WORK-014 is again COMPLETE_PENDING_PROMOTION and requires independent promotion review before canonical merge.
+
+## Promotion closure
+
+WORK-014 was technically promoted by guarded fast-forward to canonical `main`.
+
+Technical promotion head:
+
+`2f97744a82daca4935fc91c3099749d05200b1aa`
+
+Post-promotion verification:
+
+- `main` fast-forwarded exactly to the independently reviewed WORK-014 completion head;
+- complete branch diff check passed;
+- Firebase / Storage emulator and security-rules verification passed: 97 / 97 tests across 10 files;
+- full web-release verification passed: typecheck, 528 / 528 ordinary tests, production PWA build, and 8 / 8 PWA artifact tests;
+- post-verification worktree remained clean;
+- canonical `main` was pushed successfully;
+- local `main` and `origin/main` were verified equal at the technical promotion head;
+- no Firebase deployment or production cloud mutation occurred.
+
+The independent-review claim-lifecycle correction is included in the promoted history. Normal import uniqueness and fingerprint-changing Library edits now share persistence-level claim authority while backup/restore remains isolated.
+
+WORK-014 is COMPLETE / PROMOTED. No further WORK-014 implementation or promotion action remains.

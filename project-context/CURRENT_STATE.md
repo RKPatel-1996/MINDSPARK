@@ -317,11 +317,12 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-014 - COMPLETE_PENDING_PROMOTION
+- Most recently completed bounded work item: WORK-014 - COMPLETE / PROMOTED
+- Active bounded work item: NONE
 
 ## Current bounded work
 
-WORK-014 - Atomic Import Uniqueness - is COMPLETE_PENDING_PROMOTION on `task/work-014-atomic-import-uniqueness-v1`. The independent-review claim-lifecycle correction is implemented at `42603987003d9f3c67b1bb58eb32b94bbdf7561d`; focused, emulator/rules, typecheck, and full web-release verification passed.
+WORK-014 - Atomic Import Uniqueness - is COMPLETE / PROMOTED on canonical `main`. Technical promotion landed at `2f97744a82daca4935fc91c3099749d05200b1aa`; post-promotion Firebase/rules and full web-release verification passed before `main` was pushed and synchronized with `origin/main`.
 
 It addresses `DISC-002` MSR-03: simultaneous equivalent normal imports can currently race because duplicate detection occurs before persistence while each import generates independent opaque entity IDs.
 
@@ -361,4 +362,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: independently review the corrected WORK-014 branch and perform technical promotion only if branch topology, implementation semantics, emulator/rules evidence, full release verification, and clean-state checks remain valid. No Firebase deployment is authorized.
+Next action: no bounded work item is currently registered. Select and register the next work item before beginning implementation. No Firebase deployment is authorized.

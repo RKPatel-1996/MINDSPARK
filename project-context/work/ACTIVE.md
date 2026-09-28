@@ -4,7 +4,7 @@ ACTIVE_WORK: WORK-014
 
 Title: Atomic Import Uniqueness
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `3f14ee572167a3357178cf7fd2b075e70e270f8d`
 
@@ -12,7 +12,7 @@ Planned branch: `task/work-014-atomic-import-uniqueness-v1`
 
 Derived from: `DISC-002` MSR-03 and post-WORK-013 revalidation
 
-Current phase: WORK-014 is COMPLETE_PENDING_PROMOTION after the independent-review claim-lifecycle correction. Fingerprint-changing edits now migrate claim authority atomically, legacy no-claim items have a server-verified recovery path, emulator/rules verification passed, and the full web-release gate passed.
+Current phase: no bounded work item is active. WORK-014 is COMPLETE / PROMOTED on canonical `main`; no further WORK-014 implementation or promotion action remains.
 
 Scope: establish owner-scoped persistence-level uniqueness for the existing normalized import fingerprint, preserve item/card atomicity, retain preview duplicate detection as UX only, and add true simultaneous-import regression coverage.
 
