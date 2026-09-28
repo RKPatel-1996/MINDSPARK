@@ -104,3 +104,111 @@ Registration does not authorize implementation.
 The next bounded step is to create the planned task branch from the verified canonical base and perform focused read-only source-link reconnaissance. Production changes begin only after the protocol and legacy-data compatibility contract are understood.
 
 No Firebase deployment, cloud mutation, production-data rewrite, Storage enablement, or billing change is authorized.
+
+## Selected protocol contract
+
+Focused reconnaissance and runtime characterization establish a layered compatibility contract.
+
+### Characterized current behavior
+
+The current `sourceReferenceSchema` uses generic `z.string().url()` validation.
+
+Runtime characterization on the repository's installed Zod version confirmed that the stored/domain schema accepts:
+
+- `https:`
+- `http:`
+- `javascript:`
+- `data:`
+- `file:`
+- `mailto:`
+- `ftp:`
+- `blob:`
+
+Protocol-relative and relative-path values were rejected.
+
+The same domain KnowledgeItem schema is used when Firestore KnowledgeItems are decoded. The backup contract also derives its source shape from the same legacy-compatible source-reference schema.
+
+Therefore, changing the stored/domain schema itself to HTTP/HTTPS-only would risk making already-persisted or restored legacy KnowledgeItems unreadable.
+
+### Selected layered authority
+
+1. Stored/domain compatibility
+
+   `sourceReferenceSchema` remains capable of decoding legacy syntactically valid absolute URLs.
+
+   WORK-016 must not require migration or rewriting of existing persisted KnowledgeItems merely because an old structured source uses a non-web protocol.
+
+2. New import authority
+
+   New normal import drafts may use a structured source URL only when parsing yields exactly:
+
+   - `http:`
+   - `https:`
+
+   Other protocols are invalid for new imports.
+
+   This restriction belongs at the import boundary rather than the legacy stored-data decoder.
+
+3. Navigation authority
+
+   Library and Review may render a structured source as an active anchor only when its URL parses successfully and its protocol is exactly `http:` or `https:`.
+
+   A stored legacy source URL using another protocol must never become an active navigation target.
+
+4. Legacy display behavior
+
+   A syntactically stored legacy non-web URL remains preserved as source metadata.
+
+   Library and Review may display the original URL as inert text so information is not silently discarded, but must not create an anchor for it.
+
+5. Backup and restore
+
+   Backup export and restore remain capable of preserving legacy structured source URLs accepted by the existing stored-data contract.
+
+   A restored non-web legacy URL remains inert under the navigation rule.
+
+   WORK-016 does not redesign the backup format.
+
+6. Markdown separation
+
+   Markdown-content link handling remains a separate rendering path and is not redesigned by WORK-016.
+
+7. Cloud boundary
+
+   No Firestore security-rule change, Firestore-index change, Storage change, production-data migration, or Firebase deployment is required by the selected contract.
+
+### Required RED evidence
+
+Before production implementation, permanent tests must demonstrate the current defect at these boundaries:
+
+- protocol helper / navigation policy:
+  - accepts `http:`;
+  - accepts `https:`;
+  - rejects `javascript:`;
+  - rejects `data:`;
+  - rejects `file:`;
+  - rejects `mailto:`;
+  - rejects `ftp:`;
+  - rejects `blob:`;
+  - rejects malformed or relative values;
+
+- import:
+  - a new structured HTTPS source remains valid;
+  - representative disallowed non-web structured source URLs are rejected;
+
+- Library:
+  - valid HTTPS source renders as an anchor;
+  - legacy disallowed source URL remains visible but is not rendered as a link;
+
+- Review:
+  - valid HTTPS source renders as an anchor;
+  - legacy disallowed source URL remains visible but is not rendered as a link;
+
+- stored-data compatibility:
+  - the legacy/domain source schema continues to parse representative syntactically valid non-web URLs;
+  - Firestore/domain decoding compatibility is not tightened by the navigation/import policy;
+
+- backup compatibility:
+  - the portable backup contract continues to accept and preserve representative legacy non-web source URLs.
+
+The permanent RED phase must fail because import and structured-source rendering do not yet enforce this layered policy, not because of compile errors or unrelated fixture failures.
