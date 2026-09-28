@@ -318,11 +318,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-015 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-016 - REGISTERED / NOT_STARTED
+- Active bounded work item: WORK-016 - IN_PROGRESS
 
 ## Current bounded work
 
-WORK-016 - Source URL Protocol Hardening - is the active bounded work item and is REGISTERED / NOT_STARTED.
+WORK-016 - Source URL Protocol Hardening - is IN_PROGRESS on `task/work-016-source-url-protocol-hardening-v1`. The active phase is focused read-only reconnaissance of structured source validation, rendering, persistence, import, backup/restore, and legacy-data compatibility before selecting the implementation contract.
 
 It addresses `DISC-002` MSS-01: structured KnowledgeItem source URLs currently use generic URL validation and are rendered directly into Library and Review anchor `href` values without an explicit allowed-protocol contract.
 
@@ -367,4 +367,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: review and commit the WORK-016 registration, then create `task/work-016-source-url-protocol-hardening-v1` and perform focused read-only source-link reconnaissance. Establish the explicit protocol and legacy-data compatibility contract before implementation. No Firebase deployment is authorized.
+Next action: complete WORK-016 structured-source reconnaissance and select the explicit allowed-protocol and legacy-data compatibility contract before establishing RED tests or modifying production code. No Firebase deployment is authorized.
