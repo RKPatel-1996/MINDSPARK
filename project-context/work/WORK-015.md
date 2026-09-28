@@ -128,3 +128,140 @@ The design boundary remains:
 4. characterize Firestore query/index/offline constraints;
 5. determine how query-count improvement can be measured deterministically;
 6. stop before implementation until the bounded replacement contract is selected.
+
+## Selected multi-card retrieval design
+
+The read-only query-contract reconnaissance established the following current behavior:
+
+- `ReviewEventRepository.listForCard(cardId)` is the persistent single-card history primitive;
+- Firestore orders card history by `reviewTimestamp ASC`, then immutable ReviewEvent `id ASC`;
+- the in-memory repository implements the same ordering;
+- Library aggregate loading calls `listForCard()` once for each card;
+- Insights aggregate loading calls `listForCard()` once for each active card;
+- `ReviewService.syncDayContext()` calls card history once per card;
+- `ReviewService.getNextReview()` subsequently calls card history again for candidate reconciliation;
+- ReviewService overlays in-process pending ReviewEvents on repository history;
+- backup/snapshot/restore uses the separate owner-wide `list()` contract and must remain unchanged;
+- the existing Firestore composite index already covers `cardId`, `reviewTimestamp`, and `id`.
+
+### Repository contract
+
+Add a bounded multi-card history primitive:
+
+`listForCards(cardIds: readonly string[]): Promise<Map<string, ReviewEvent[]>>`
+
+Required semantics:
+
+1. duplicate input card IDs are deduplicated before persistence work;
+2. every requested card ID is represented in the returned map, including cards with zero events;
+3. each card history preserves exact repository chronology:
+   `reviewTimestamp ASC`, then event `id ASC`;
+4. the input array is never mutated;
+5. empty input performs zero persistence queries;
+6. `listForCard()` remains available for true single-card workflows and compatibility;
+7. `list()` remains unchanged for complete backup/snapshot workflows.
+
+### Firestore strategy
+
+The Firestore implementation will use bounded chunked `in` queries over `cardId`.
+
+Conservative query chunk size:
+
+`10` unique card IDs per Firestore query.
+
+For each chunk:
+
+- filter with `where('cardId', 'in', chunk)`;
+- order by `reviewTimestamp ASC`;
+- then order by immutable event `id ASC`;
+- group the returned globally ordered events by `cardId`.
+
+Because a given card ID appears in exactly one deduplicated chunk, all events for that card come from one query and preserve the existing per-card chronology directly.
+
+Physical persistent query count therefore scales as:
+
+`ceil(uniqueCardIds / 10)`
+
+with zero queries for empty input.
+
+The design deliberately does NOT replace per-card queries with an unbounded owner-wide ReviewEvent scan.
+
+### Index position
+
+The existing production index:
+
+- `cardId ASC`
+- `reviewTimestamp ASC`
+- `id ASC`
+
+matches the intended multi-card query shape.
+
+No index mutation is selected at this checkpoint.
+
+The emulator must characterize the actual multi-card query before implementation is accepted. If the current index/query assumption fails, implementation must stop and the design must be revised rather than silently changing deployment configuration.
+
+### Application routing
+
+Library:
+
+- `listKnowledgeItems()` performs one logical `listForCards()` request for its complete card set;
+- `getKnowledgeItem()` performs one logical `listForCards()` request for that item's card set;
+- reconciliation behavior and error reporting remain unchanged.
+
+Insights:
+
+- `getInsights()` performs one logical `listForCards()` request for active cards;
+- stage, retrievability, reviewed-today, and weak-area calculations remain unchanged.
+
+Review:
+
+- add a multi-card ReviewService history helper that obtains repository histories through `listForCards()`;
+- overlay the existing in-process `pendingEvents` by immutable event ID;
+- preserve current pending-write authority;
+- preserve failed-event handling;
+- preserve deterministic history ordering;
+- `getNextReview()` loads multi-card history once and reuses the same histories for both current-day context derivation and candidate reconciliation;
+- direct `syncDayContext()` performs one logical multi-card history load when invoked independently;
+- existing active-card live observation through `observeForCard()` remains unchanged;
+- true single-card `getEventsForCard()` remains available.
+
+This avoids the current duplicate history traversal inside `getNextReview()`.
+
+### Query-scaling verification
+
+Regression coverage must prove both logical and physical scaling properties.
+
+Application-level tests:
+
+- Library aggregate loading must call `listForCards()` once and must not call `listForCard()` per card;
+- Insights aggregate loading must call `listForCards()` once and must not call `listForCard()` per card;
+- `ReviewService.getNextReview()` must perform one logical multi-card history load for all candidate/day-context work;
+- direct `syncDayContext()` must perform one logical multi-card history load.
+
+Repository-level tests:
+
+- empty IDs -> zero chunks;
+- 1..10 unique IDs -> one chunk;
+- 11..20 unique IDs -> two chunks;
+- duplicates do not increase chunk count;
+- Firestore emulator proves multi-card retrieval and per-card chronology;
+- cards with no events are returned with empty histories;
+- in-memory implementation has equivalent grouped-history behavior.
+
+The chunking transformation will be isolated in deterministic code so its query-count scaling can be tested without relying on opaque emulator network counters.
+
+### Explicit non-goals
+
+This design does not authorize:
+
+- an owner-wide history read for normal Review/Library/Insights aggregation;
+- ReviewEvent schema changes;
+- historical event migration or compaction;
+- scheduling-policy or FSRS changes;
+- changes to `observeForCard()`;
+- backup/restore changes;
+- production Firestore deployment;
+- security-rule changes unless later evidence proves they are necessary;
+- unrelated Firestore index changes.
+
+The next boundary is RED characterization plus Firestore-emulator query-shape proof. Production implementation starts only after those characterizations support this design.
