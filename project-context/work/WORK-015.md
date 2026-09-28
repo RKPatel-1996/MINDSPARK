@@ -1,6 +1,6 @@
 # WORK-015 - ReviewEvent History Query Scaling
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `b5279fc3a21ce6ff6d120180bb497994bee2f629`
 
@@ -265,3 +265,52 @@ This design does not authorize:
 - unrelated Firestore index changes.
 
 The next boundary is RED characterization plus Firestore-emulator query-shape proof. Production implementation starts only after those characterizations support this design.
+
+## Completion checkpoint
+
+WORK-015 implementation and verification are complete on the governed task branch.
+
+Implementation checkpoints:
+
+- RED characterization: `e6c8a7e5580d74ca93e0ff32ea78a50e52e949a3`
+- bounded repository multi-card retrieval: `5349b09c4355f6657cfd86a9bce9687b90830fdf`
+- aggregate application routing: `89159f2c4734c66daa26cb77d4197825a29a0c94`
+
+Completed behavior:
+
+- `ReviewEventRepository` exposes bounded `listForCards()` retrieval;
+- Firestore deduplicates requested card IDs and uses conservative 10-card `in` query chunks;
+- per-card chronology remains `reviewTimestamp ASC`, then immutable event ID ASC;
+- requested cards with no events receive empty histories;
+- in-memory, signed-out, unconfigured, and test-double repository parity is maintained;
+- Library aggregate workflows use grouped multi-card history retrieval;
+- Insights uses grouped multi-card history retrieval for active cards;
+- direct `syncDayContext()` uses one logical multi-card history load;
+- `getNextReview()` loads aggregate histories once and reuses them for day-context derivation and candidate reconciliation;
+- ReviewService pending-event authority remains part of the aggregate-history path;
+- true single-card `getEventsForCard()` retains `listForCard()`;
+- active-card `observeForCard()` remains unchanged;
+- aggregate application workflows do not use owner-wide `reviewEvents.list()`;
+- backup/restore remains isolated from `listForCards()`.
+
+Characterization and verification:
+
+- original seeded amplification was characterized as 32 / 32 / 32 / 64 per-card reads;
+- the exact Firestore `cardId in [...] + reviewTimestamp ASC + id ASC` query shape passed local emulator proof;
+- current per-card-warmed cache evidence remained available through the replacement multi-card query offline;
+- partial offline cache returned only locally known evidence;
+- deterministic chunking and grouped-history repository tests pass;
+- committed WORK-015 RED regression is GREEN;
+- logical query-count contract tests pass;
+- final application authority census confirms four aggregate `listForCards()` call sites and one preserved true single-card `listForCard()` call site;
+- focused WORK-015 scaling gate passed 12/12 tests;
+- Firebase / Storage local emulator and rules gate passed 98/98 tests;
+- full ordinary web-release suite passed 78 files / 540 tests;
+- production PWA build completed successfully;
+- PWA artifact verification passed 8/8 tests;
+- full branch topology, file-boundary, diff, configuration-isolation, owner-wide-scan, and backup-isolation checks passed;
+- worktree remained clean after all verification gates.
+
+No Firebase deployment, production-data mutation, ReviewEvent rewrite, backup/restore redesign, security-rule change, Firestore-index change, billing change, Storage enablement, or task-branch push occurred.
+
+WORK-015 is COMPLETE_PENDING_PROMOTION and requires independent completed-branch review before technical promotion.

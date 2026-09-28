@@ -318,11 +318,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-014 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-015 - IN_PROGRESS
+- Active bounded work item: WORK-015 - COMPLETE_PENDING_PROMOTION
 
 ## Current bounded work
 
-WORK-015 - ReviewEvent History Query Scaling - is IN_PROGRESS on `task/work-015-reviewevent-query-scaling-v1`, derived from `DISC-002` MSR-04. Reconnaissance is complete and the selected design is a bounded multi-card ReviewEvent retrieval contract using conservative 10-card Firestore `in` chunks while preserving per-card chronology and ReviewService pending-event authority.
+WORK-015 - ReviewEvent History Query Scaling - is COMPLETE_PENDING_PROMOTION on `task/work-015-reviewevent-query-scaling-v1`. Bounded 10-card Firestore multi-card retrieval, application rerouting, offline/cache characterization, emulator/rules verification, and full web-release verification are complete.
 
 It addresses `DISC-002` MSR-03: simultaneous equivalent normal imports can currently race because duplicate detection occurs before persistence while each import generates independent opaque entity IDs.
 
@@ -362,4 +362,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: establish RED query-amplification regressions and a temporary Firestore-emulator proof for the selected bounded multi-card query shape before implementing the WORK-015 repository/application changes. No Firebase deployment is authorized.
+Next action: independently review the complete WORK-015 branch and perform technical promotion only if topology, bounded-query semantics, pending/offline authority, regression evidence, full release verification, and clean-state checks remain valid. No Firebase deployment is authorized.
