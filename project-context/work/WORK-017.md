@@ -1,6 +1,6 @@
 # WORK-017 - Viewport User-Scaling Accessibility
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `67dac991cab3c793dd952c4bacb49f1e07998944`
 
@@ -253,3 +253,26 @@ No Firebase deployment, production cloud mutation, persisted-data migration, Sto
 Status is `COMPLETE_PENDING_PROMOTION`.
 
 The next required boundary is an independent completed-branch review of the full WORK-017 change set and completion governance evidence before any promotion to canonical `main`.
+
+## Promotion closure
+
+WORK-017 was independently reviewed, technically promoted, post-promotion verified, and pushed to canonical `main`.
+
+Promoted technical candidate:
+
+`574797e004d1e7f913e637ac486b64d67711142b`
+
+Promotion evidence:
+
+- independently completed-branch review: PASS;
+- canonical promotion was a fast-forward from `5ab58e5639a54fb9b6420895910f4fad54c1c4ae` to `574797e004d1e7f913e637ac486b64d67711142b`;
+- post-promotion focused viewport regression: 1 file / 3 tests PASS;
+- post-promotion TypeScript typecheck: PASS;
+- post-promotion ordinary web-release suite: 79 files / 559 tests PASS;
+- post-promotion fresh PWA artifact suite: 1 file / 9 tests PASS;
+- full post-promotion `verify:web-release`: PASS;
+- canonical synchronization verified with `HEAD == main == origin/main == 574797e004d1e7f913e637ac486b64d67711142b` before this governance-only closure;
+- task branch remained unpushed;
+- no Firebase deployment, production cloud mutation, Storage enablement, billing change, or persisted-data migration occurred.
+
+Final status: `COMPLETE / PROMOTED`.

@@ -317,12 +317,12 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Most recently completed bounded work item: WORK-016 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-017 - COMPLETE_PENDING_PROMOTION
+- Most recently completed bounded work item: WORK-017 - COMPLETE / PROMOTED
+- Active bounded work item: NONE
 
 ## Current bounded work
 
-WORK-017 - Viewport User-Scaling Accessibility - is COMPLETE_PENDING_PROMOTION on `task/work-017-viewport-scaling-v1`. Technical implementation is complete at `0c8c79e39c6179e14d86e6722bb58d4348cf0e0d`: repository-root `index.html` now preserves `width=device-width, initial-scale=1.0` while omitting `user-scalable` and `maximum-scale`. Permanent source and fresh-build regressions, full web-release verification, and independent completed-implementation review all pass.
+WORK-017 - Viewport User-Scaling Accessibility - is COMPLETE / PROMOTED. Its independently reviewed candidate was fast-forward promoted to canonical `main` at `574797e004d1e7f913e637ac486b64d67711142b`; post-promotion focused viewport regression, TypeScript typecheck, the 79-file / 559-test ordinary suite, full web-release verification, production PWA build, and 9-test PWA artifact verification all passed. Canonical source now preserves `width=device-width, initial-scale=1.0` without `user-scalable` or `maximum-scale`. No Firebase deployment occurred.
 
 WORK-016 - Source URL Protocol Hardening - is COMPLETE / PROMOTED. Its independently reviewed candidate was fast-forward promoted to canonical `main` at `6ef1aa2d8bd80e0267391037830ea1946ce88034`; focused source-URL contract regression, full web-release verification, production-build, and PWA-artifact verification all passed after promotion.
 
@@ -369,4 +369,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: perform an independent completed-branch review of WORK-017 from canonical base `5ab58e5639a54fb9b6420895910f4fad54c1c4ae` through the COMPLETE_PENDING_PROMOTION checkpoint. Do not promote, push the task branch, deploy Firebase, or mutate production data until that review passes.
+Next action: select and register the next bounded work item from the remaining discovery backlog. MSR-08 and MSS-02 remain unconsumed; do not begin implementation until the next work item is explicitly registered.
