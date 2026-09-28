@@ -371,4 +371,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: establish permanent WORK-018 RED tests for the revised frozen accessibility contract before changing production source. Preserve the existing native Select-mode checkbox contract. MSS-02 remains unconsumed and separate.
+Next action: implement the smallest WORK-018 production change that makes the permanent accessibility RED contract green while preserving existing native Select-mode checkbox and bulk-action regressions. Then run focused Library verification and the full web-release gate. MSS-02 remains separate.

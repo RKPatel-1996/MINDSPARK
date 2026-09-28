@@ -131,3 +131,20 @@ The bounded production design is therefore frozen as follows.
 This WORK item does not introduce an application-wide dialog framework, generalized focus trap, Library redesign, taxonomy redesign, Import-dialog redesign, MSS-02 work, Firebase deployment, or unrelated accessibility remediation.
 
 Permanent RED must establish the missing normal-card keyboard semantics, Select-mode preservation boundary, inspector dialog semantics, focus entry, and Close/Escape focus restoration before production source changes.
+## Permanent RED checkpoint
+
+Permanent WORK-018 accessibility regressions were added after the revised interaction/focus design freeze and before any production-source modification.
+
+RED authority:
+
+- production `LibraryView.tsx` remained unchanged;
+- normal Library cards fail the required button/tab-stop/keyboard-open contract;
+- the item inspector fails the required labelled modal-dialog and focus-entry contract;
+- Close and Escape fail the required originating-card focus-restoration contract;
+- Select mode preserves its existing native checkbox requirement while the outer card currently exposes duplicate interactive semantics that the frozen contract removes;
+- the permanent targeted WORK-018 tests fail against the unchanged production baseline as expected;
+- the added RED tests typecheck successfully.
+
+Status: `IN_PROGRESS / RED ESTABLISHED`.
+
+Next: implement the smallest production change satisfying this frozen contract while preserving all existing Select-mode and bulk-action checkbox regressions.

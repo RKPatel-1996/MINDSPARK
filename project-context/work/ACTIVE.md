@@ -12,7 +12,7 @@ Planned branch: `task/work-018-library-keyboard-accessibility-v1`
 
 Derived from: `DISC-002` MSR-08
 
-Current phase: WORK-018 reconnaissance is complete and the revised accessibility design is frozen. Normal-mode cards gain keyboard button semantics; the existing native Select-mode checkbox remains authoritative; the inspector gains dialog semantics and bounded focus entry/restoration. Next is permanent RED before production implementation.
+Current phase: WORK-018 permanent RED is established against unchanged production source. The revised frozen contract preserves the native Select-mode checkbox while requiring normal-card keyboard activation, inspector dialog semantics, focus entry, and Close/Escape restoration. Next is the smallest production implementation.
 
 Scope: keyboard-equivalent Library item activation plus item-inspector dialog/focus entry and restoration, with existing pointer, selection, lifecycle, and layout behavior preserved.
 
