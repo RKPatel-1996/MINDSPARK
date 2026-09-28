@@ -96,6 +96,58 @@ describe('Duplicate Detection in Import', () => {
     }
   });
 
+  it('simultaneous identical imports cannot both become authoritative', async () => {
+    const packet = SEED_PACKETS[0];
+    const knowledgeRepo = repos.knowledge;
+    const originalList = knowledgeRepo.list.bind(knowledgeRepo);
+
+    let prewriteReads = 0;
+    let releaseBothReads!: () => void;
+
+    const bothReadsReached = new Promise<void>((resolve) => {
+      releaseBothReads = resolve;
+    });
+
+    knowledgeRepo.list = async () => {
+      const snapshot = await originalList();
+
+      prewriteReads += 1;
+      if (prewriteReads === 2) {
+        releaseBothReads();
+      }
+
+      await bothReadsReached;
+      return snapshot;
+    };
+
+    let results: Awaited<ReturnType<typeof importDraftPayload>>[];
+
+    try {
+      results = await Promise.all([
+        importDraftPayload(packet, repos, CANONICAL_TAXONOMY_REGISTRY),
+        importDraftPayload(packet, repos, CANONICAL_TAXONOMY_REGISTRY),
+      ]);
+    } finally {
+      knowledgeRepo.list = originalList;
+    }
+
+    const imported = results.filter(
+      (result) => result.ok && result.status === 'imported'
+    );
+
+    const duplicates = results.filter(
+      (result) => !result.ok && result.status === 'duplicate'
+    );
+
+    expect(imported).toHaveLength(1);
+    expect(duplicates).toHaveLength(1);
+
+    const items = await repos.knowledge.list();
+    const cards = await repos.reviewCards.list();
+
+    expect(items).toHaveLength(1);
+    expect(cards).toHaveLength(packet.cards.length);
+  });
   it('existing seed idempotency still passes', async () => {
     // First seed
     const res1 = await seedInitialLibrary(repos);
