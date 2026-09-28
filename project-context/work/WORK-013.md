@@ -1,6 +1,6 @@
 # WORK-013 - Application Runtime Resilience Hardening
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `30af8a220d249f1a958f2373f07aa7dae73e838c`
 
@@ -171,3 +171,28 @@ Before implementation:
 5. preserve current repository/auth authority semantics;
 6. run focused regression verification before combining the three corrections;
 7. run the full web-release gate before completion governance.
+
+## Promotion closure
+
+WORK-013 was independently reviewed and fast-forward promoted to canonical `main`.
+
+Promotion checkpoint:
+
+`81fc14be3f17764609b21dbf120a8589204f9800`
+
+The promoted history includes:
+
+- provider-owned `ReviewService` lifecycle disposal for MSR-05;
+- explicit scheduler-parameter cache invalidation after successful restore for MSR-06;
+- recoverable, authority-safe repository bootstrap failure/retry behavior for MSR-07;
+- focused regression coverage;
+- successful independent `npm run typecheck`;
+- successful independent `npm run verify:web-release` with 74 test files / 523 tests;
+- successful production/PWA build;
+- successful PWA artifact verification with 8 / 8 tests;
+- successful `git diff --check`;
+- clean worktree after verification and promotion.
+
+No Firebase deployment, production-data mutation, Firebase Storage enablement, billing change, or other cloud mutation was performed.
+
+WORK-013 is COMPLETE / PROMOTED.

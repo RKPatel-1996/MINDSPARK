@@ -4,13 +4,15 @@ ACTIVE_WORK: WORK-013
 
 Title: Application Runtime Resilience Hardening
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `30af8a220d249f1a958f2373f07aa7dae73e838c`
 
 Planned branch: `task/work-013-application-runtime-resilience-v1`
 
 Derived from: post-WORK-012 runtime-resilience reconnaissance and `DISC-002` findings MSR-05, MSR-06, and MSR-07
+
+Current phase: WORK-013 is complete and promoted. Its verified task-branch history was fast-forward promoted to canonical `main` at `81fc14be3f17764609b21dbf120a8589204f9800`, and `main` / `origin/main` alignment was confirmed after push.
 
 Completion checkpoint:
 

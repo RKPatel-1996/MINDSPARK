@@ -317,11 +317,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-013 - COMPLETE_PENDING_PROMOTION
+- Most recently completed bounded work item: WORK-013 - COMPLETE / PROMOTED
 
 ## Current bounded work
 
-WORK-013 - Application Runtime Resilience Hardening - is COMPLETE_PENDING_PROMOTION on `task/work-013-application-runtime-resilience-v1` at verified implementation HEAD `42e511467c47669228fc0ccb321480479c284ad5`.
+WORK-013 - Application Runtime Resilience Hardening - is COMPLETE / PROMOTED. Its verified task-branch history was fast-forward promoted to canonical `main` at `81fc14be3f17764609b21dbf120a8589204f9800`, and `main == origin/main == 81fc14be3f17764609b21dbf120a8589204f9800` was confirmed after push.
 
 It addresses three revalidated runtime-resilience findings from `DISC-002`: MSR-05 provider-owned ReviewService disposal, MSR-06 scheduler-parameter cache invalidation after successful restore, and MSR-07 explicit bootstrap failure/retry behavior.
 
@@ -353,4 +353,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: perform separate reviewed fast-forward promotion of verified WORK-013 to canonical `main`; after promotion, synchronize final governance to COMPLETE / PROMOTED. No Firebase deployment is authorized.
+Next action: no bounded implementation work is currently registered after WORK-013. Register and verify the next WORK item before making further substantive repository changes. No Firebase deployment is authorized.
