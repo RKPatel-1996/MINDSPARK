@@ -24,7 +24,7 @@ Completion checkpoint:
 - final `git diff --check`: PASS;
 - implementation worktree: CLEAN at `42e511467c47669228fc0ccb321480479c284ad5`.
 
-WORK-013 is complete and awaiting promotion to canonical `main`.
+Promotion state: WORK-013 is COMPLETE / PROMOTED on canonical `main`; no further WORK-013 implementation or promotion action remains.
 
 Scope: harden provider-owned ReviewService disposal, scheduler-parameter cache invalidation after successful restore, and bootstrap failure/retry behavior without changing persistence, FSRS, ReviewEvent, or backup semantics.
 
