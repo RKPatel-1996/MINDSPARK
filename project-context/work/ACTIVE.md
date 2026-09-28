@@ -1,31 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: WORK-013
+ACTIVE_WORK: WORK-014
 
-Title: Application Runtime Resilience Hardening
+Title: Atomic Import Uniqueness
 
-Status: COMPLETE / PROMOTED
+Status: REGISTERED / NOT_STARTED
 
-Base: `30af8a220d249f1a958f2373f07aa7dae73e838c`
+Base: `3f14ee572167a3357178cf7fd2b075e70e270f8d`
 
-Planned branch: `task/work-013-application-runtime-resilience-v1`
+Planned branch: `task/work-014-atomic-import-uniqueness-v1`
 
-Derived from: post-WORK-012 runtime-resilience reconnaissance and `DISC-002` findings MSR-05, MSR-06, and MSR-07
+Derived from: `DISC-002` MSR-03 and post-WORK-013 revalidation
 
-Current phase: WORK-013 is complete and promoted. Its verified task-branch history was fast-forward promoted to canonical `main` at `81fc14be3f17764609b21dbf120a8589204f9800`, and `main` / `origin/main` alignment was confirmed after push.
+Current phase: WORK-014 is registered but implementation has not started. The confirmed defect is the read-before-write duplicate race in normal import; persistence-level uniqueness design and offline characterization are required before implementation.
 
-Completion checkpoint:
+Scope: establish owner-scoped persistence-level uniqueness for the existing normalized import fingerprint, preserve item/card atomicity, retain preview duplicate detection as UX only, and add true simultaneous-import regression coverage.
 
-- MSR-05 provider-owned `ReviewService` lifecycle cleanup: PASS at `7db87c1af11d3059633bd83f4b2c0d06d342e00f`;
-- MSR-06 scheduler-parameter cache invalidation after successful restore: PASS at `0a5821bd9604127a0439eb9f531c3d69ad1fe180`;
-- MSR-07 explicit bootstrap failure/retry and stale-authority safety: PASS at `42e511467c47669228fc0ccb321480479c284ad5`;
-- unified focused and relevant regressions: PASS, 7 files / 48 tests;
-- final `npm run verify:web-release`: PASS, 74 ordinary test files / 523 tests plus 8 / 8 PWA artifact tests;
-- final `git diff --check`: PASS;
-- implementation worktree: CLEAN at `42e511467c47669228fc0ccb321480479c284ad5`.
-
-Promotion state: WORK-013 is COMPLETE / PROMOTED on canonical `main`; no further WORK-013 implementation or promotion action remains.
-
-Scope: harden provider-owned ReviewService disposal, scheduler-parameter cache invalidation after successful restore, and bootstrap failure/retry behavior without changing persistence, FSRS, ReviewEvent, or backup semantics.
-
-Safety: no Firebase deployment, production-data mutation, Storage enablement, billing change, dependency migration, general ApplicationContext redesign, MSR-03 import-uniqueness work, MSS-01 URL-protocol work, or unrelated resilience work.
+Safety: no Firebase deployment, production-data mutation, Storage enablement, billing change, historical-data deduplication, restore redesign, fingerprint-rule migration, MSR-04/MSR-08/MSR-09 work, or unrelated persistence redesign.

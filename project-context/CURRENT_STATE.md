@@ -317,9 +317,17 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Most recently completed bounded work item: WORK-013 - COMPLETE / PROMOTED
+- Active bounded work item: WORK-014 - REGISTERED / NOT_STARTED
 
 ## Current bounded work
+
+WORK-014 - Atomic Import Uniqueness - is the active bounded work item and is REGISTERED / NOT_STARTED.
+
+It addresses `DISC-002` MSR-03: simultaneous equivalent normal imports can currently race because duplicate detection occurs before persistence while each import generates independent opaque entity IDs.
+
+The bounded objective is to establish owner-scoped persistence-level uniqueness for the existing normalized import fingerprint while preserving KnowledgeItem/ReviewCard bundle atomicity, restore semantics, and the existing offline-first architecture.
+
+WORK-013 remains COMPLETE / PROMOTED.
 
 WORK-013 - Application Runtime Resilience Hardening - is COMPLETE / PROMOTED. Its verified task-branch history was fast-forward promoted to canonical `main` at `81fc14be3f17764609b21dbf120a8589204f9800`, and `main == origin/main == 81fc14be3f17764609b21dbf120a8589204f9800` was confirmed after push.
 
@@ -353,4 +361,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: no bounded implementation work is currently registered after WORK-013. Register and verify the next WORK item before making further substantive repository changes. No Firebase deployment is authorized.
+Next action: create the bounded WORK-014 task branch, establish a RED simultaneous-import characterization, and resolve the persistence/offline uniqueness design before implementation. No Firebase deployment is authorized.
