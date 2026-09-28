@@ -36,7 +36,7 @@ export interface KnowledgeRepository {
   create(item: KnowledgeItem): Promise<void>;
   createBundle(item: KnowledgeItem, cards: ReviewCard[]): Promise<void>;
   createKnowledgeBundle?(item: KnowledgeItem, cards: ReviewCard[]): Promise<void>;
-  createUniqueKnowledgeBundle?(
+  createUniqueKnowledgeBundle(
     fingerprint: string,
     item: KnowledgeItem,
     cards: ReviewCard[]

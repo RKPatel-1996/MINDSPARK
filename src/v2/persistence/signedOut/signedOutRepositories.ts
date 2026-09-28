@@ -30,6 +30,9 @@ export function createSignedOutRepositories(): Repositories {
     createKnowledgeBundle: async () => {
       throw new Error(AUTH_REQUIRED_MSG);
     },
+    createUniqueKnowledgeBundle: async () => {
+      throw new Error(AUTH_REQUIRED_MSG);
+    },
     update: async () => {
       throw new Error(AUTH_REQUIRED_MSG);
     },
