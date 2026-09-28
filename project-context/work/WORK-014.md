@@ -1,6 +1,6 @@
 # WORK-014 - Atomic Import Uniqueness
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `3f14ee572167a3357178cf7fd2b075e70e270f8d`
 
@@ -327,3 +327,34 @@ The temporary characterization file was removed after execution and the reposito
 8. verify preview/final-race behavior and application duplicate translation;
 9. verify restore behavior remains unchanged;
 10. run focused tests, emulator/rules tests, typecheck, full web-release verification, and `git diff --check`.
+
+## Completion checkpoint
+
+Implementation checkpoint:
+
+`bd91c863a6424fa3f75e6643c4144886adc9d28f`
+
+Verified completion state:
+
+- persistence-level normal-import uniqueness is mandatory across all repository adapters;
+- the prior non-unique normal-import fallback has been removed;
+- in-memory and Firestore implementations enforce the same created/duplicate contract;
+- Firestore uses an owner-scoped deterministic SHA-256 claim written atomically with the KnowledgeItem/Card bundle;
+- claim security rules are create-only, immutable, owner-scoped, shape-validated, and require the referenced KnowledgeItem in the atomic post-write state;
+- simultaneous equivalent imports resolve to exactly one authoritative bundle;
+- losing contenders return the authoritative existing KnowledgeItem identity;
+- losing Firestore bundles leave no item/card residue;
+- offline unique imports remain pending until reconnect and then complete;
+- offline conflicting imports remain pending until reconnect, then reject and roll back;
+- restore remains architecturally separate from normal-import claim semantics;
+- existing backup/restore emulator regressions remain covered by the Firebase verification gate;
+- focused import/adapter regressions passed;
+- TypeScript typecheck passed;
+- Firebase/Storage emulator and security-rules verification passed;
+- full `npm run verify:web-release` passed;
+- `git diff --check` passed;
+- implementation worktree was clean after verification.
+
+No Firebase deployment, production-data mutation, Storage enablement, billing change, or task-branch push occurred.
+
+WORK-014 is complete on the task branch and awaits independent review before promotion to canonical `main`.
