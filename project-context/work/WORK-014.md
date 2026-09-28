@@ -193,3 +193,137 @@ Before implementation:
 7. preserve restore semantics;
 8. run focused tests and applicable emulator/rules verification;
 9. run the full web-release gate before completion governance.
+## Selected uniqueness design
+
+The pre-implementation Firestore emulator characterization confirmed that WORK-014 can close MSR-03 without replacing normal import with an online-only Firestore transaction.
+
+### Authority
+
+Normal-import uniqueness will use an owner-scoped deterministic claim document:
+
+`users/{uid}/knowledgeImportClaims/{claimId}`
+
+where `claimId` is the lowercase hexadecimal SHA-256 digest of the already-normalized import fingerprint.
+
+The existing fingerprint definition remains unchanged:
+
+`domainId :: topicId :: subtopicId :: title`
+
+after the existing trim/lowercase normalization performed by `computeItemFingerprint()`.
+
+The claim document will contain only:
+
+- `id`;
+- `knowledgeItemId`;
+- `schemaVersion: 1`.
+
+The normalized title/fingerprint will not be duplicated as plaintext in the claim document.
+
+### Repository contract
+
+`KnowledgeRepository` will gain an explicit uniqueness-aware normal-import persistence operation.
+
+Conceptually:
+
+`createUniqueKnowledgeBundle(fingerprint, item, cards)`
+
+returns one of:
+
+- created;
+- duplicate with the authoritative existing `knowledgeItemId`.
+
+The existing `createBundle()` / `createKnowledgeBundle()` behavior remains available for workflows that are not governed by normal-import fingerprint uniqueness.
+
+Normal import will use the uniqueness-aware operation as its final correctness authority.
+
+The existing preview/list-based duplicate check remains an early UX optimization only.
+
+### Firestore implementation
+
+The Firestore repository will:
+
+1. derive the deterministic SHA-256 claim ID from the normalized fingerprint;
+2. prepare the claim document;
+3. atomically write the claim, KnowledgeItem, and all ReviewCards in one Firestore write batch;
+4. rely on create-only immutable security rules for the claim authority;
+5. on a rejected competing claim, read the existing authoritative claim;
+6. return a duplicate result only when the corresponding claim exists and identifies the authoritative KnowledgeItem;
+7. rethrow unrelated persistence/rules failures rather than misclassifying them as duplicates.
+
+A losing competing batch must leave no KnowledgeItem or ReviewCard residue.
+
+### Security rules
+
+`knowledgeImportClaims` will be owner-scoped.
+
+Rules will permit owner reads and valid creates only.
+
+Updates and deletes will be denied.
+
+Claim creation will validate:
+
+- the claim document ID and stored `id` agree;
+- the ID uses the selected SHA-256 claim format;
+- `knowledgeItemId` is an opaque UUID;
+- `schemaVersion == 1`;
+- only the expected fields are present.
+
+Where supported cleanly by the existing rules architecture, the rule should additionally require the referenced KnowledgeItem to exist in the atomic post-write state.
+
+### In-memory parity
+
+The in-memory repository will maintain equivalent claim authority and return the same created/duplicate result contract.
+
+Claim acquisition plus KnowledgeItem/Card insertion must behave atomically from the perspective of concurrent callers.
+
+Rollback behavior must preserve the existing bundle-atomicity guarantee.
+
+### Application behavior
+
+`importDraftPayload()` will preserve its current inspection/preflight behavior.
+
+After transformation it will call the uniqueness-aware persistence operation.
+
+A persistence-level duplicate will be translated into the existing `ImportDraftResult` duplicate shape, including the authoritative existing KnowledgeItem ID.
+
+`ApplicationContext` therefore keeps its existing `DuplicateImportError` behavior and does not refresh/report a successful import for the losing contender.
+
+### Offline contract
+
+Emulator characterization established:
+
+- a unique atomic claim/item/card batch submitted while offline remains unsettled until reconnect and then succeeds;
+- a conflicting claim batch submitted while offline remains unsettled until reconnect, then rejects;
+- the rejected losing bundle is rolled back atomically;
+- a normal import therefore must not report authoritative success while its uniqueness claim is still unresolved offline.
+
+This preserves the current practical awaited-write semantics rather than introducing an online-only transaction requirement.
+
+### Characterization evidence
+
+RED application-level checkpoint:
+
+`f57efe855b7bbf1495f3eb669445910ceacae620`
+
+The deterministic simultaneous-import regression produced two successful imports under the old implementation, confirming MSR-03.
+
+A temporary Firestore-emulator characterization then passed 3 / 3 tests covering:
+
+1. concurrent same create-only claim -> exactly one complete winning bundle;
+2. unique offline claim batch -> pending until reconnect, then complete;
+3. conflicting offline claim batch -> pending until reconnect, then rejected with complete losing-bundle rollback.
+
+The temporary characterization file was removed after execution and the repository returned to a clean state.
+
+### Implementation order
+
+1. add the deterministic import-claim ID utility;
+2. add the repository result/operation contract;
+3. implement in-memory uniqueness parity and turn the RED test GREEN;
+4. implement Firestore claim-batch persistence;
+5. add `knowledgeImportClaims` security rules;
+6. add focused Firestore/rules contention and owner-isolation tests;
+7. route normal import through the new persistence authority;
+8. verify preview/final-race behavior and application duplicate translation;
+9. verify restore behavior remains unchanged;
+10. run focused tests, emulator/rules tests, typecheck, full web-release verification, and `git diff --check`.

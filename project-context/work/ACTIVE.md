@@ -12,7 +12,7 @@ Planned branch: `task/work-014-atomic-import-uniqueness-v1`
 
 Derived from: `DISC-002` MSR-03 and post-WORK-013 revalidation
 
-Current phase: WORK-014 is IN_PROGRESS. Begin with a RED true-simultaneous-import characterization, then resolve the persistence-level uniqueness and offline behavior contract before implementation.
+Current phase: WORK-014 is IN_PROGRESS. The RED simultaneous-import race is confirmed and the Firestore claim-batch/offline characterization passed. The selected design is an owner-scoped deterministic SHA-256 import claim written atomically with the KnowledgeItem/Card bundle; implementation is the next boundary.
 
 Scope: establish owner-scoped persistence-level uniqueness for the existing normalized import fingerprint, preserve item/card atomicity, retain preview duplicate detection as UX only, and add true simultaneous-import regression coverage.
 
