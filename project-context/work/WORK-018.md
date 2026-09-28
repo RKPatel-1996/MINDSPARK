@@ -1,6 +1,6 @@
 # WORK-018 - Library Keyboard and Inspector Accessibility
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `a4aa2c3d1f344609db8c10c37e8705d2992de872`
 
@@ -148,3 +148,39 @@ RED authority:
 Status: `IN_PROGRESS / RED ESTABLISHED`.
 
 Next: implement the smallest production change satisfying this frozen contract while preserving all existing Select-mode and bulk-action checkbox regressions.
+## Completion checkpoint
+
+Implementation is complete and independently reviewed.
+
+Technical implementation commit:
+
+`6ffb274b71a6ea2626318dfb814b4d80fdcf5411`
+
+Verified behavior:
+
+- normal Library cards are keyboard reachable and expose button semantics;
+- Enter and Space open the item inspector;
+- Space suppresses its page-scroll default;
+- Select mode preserves the existing native checkbox as the authoritative keyboard and screen-reader selection control;
+- duplicate outer-card interactive semantics are removed in Select mode;
+- the item inspector exposes labelled modal-dialog semantics;
+- opening the inspector focuses Close;
+- explicit Close and Escape restore focus to the originating card when it remains rendered;
+- existing Library selection, bulk lifecycle, lifecycle, and Import accessibility behavior remains green.
+
+Independent completed-implementation review passed:
+
+- whole-branch scope: PASS;
+- implementation production boundary: PASS;
+- four permanent WORK-018 regressions: PASS;
+- focused Library regressions: 35 / 35 PASS;
+- TypeScript typecheck: PASS;
+- full web-release verification: PASS;
+- ordinary web suite: 79 files / 563 tests PASS;
+- PWA build-artifact verification: 9 / 9 PASS.
+
+Status: `COMPLETE_PENDING_PROMOTION`.
+
+No task-branch push, Firebase deployment, cloud mutation, or production-data change occurred.
+
+Next boundary: independent completed-branch review, followed by explicit promotion authorization before canonical main is changed.

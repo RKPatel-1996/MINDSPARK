@@ -318,7 +318,7 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-017 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-018 - IN_PROGRESS
+- Active bounded work item: WORK-018 - COMPLETE_PENDING_PROMOTION
 
 WORK-018 - Library Keyboard and Inspector Accessibility - is REGISTERED / NOT_STARTED from `DISC-002` MSR-08. Reconnaissance confirmed click-only normal Library cards without a complete keyboard semantic contract and an item inspector without explicit dialog/focus-entry/focus-restoration behavior. MSS-02 remains a separate future bounded work item.
 
@@ -371,4 +371,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: implement the smallest WORK-018 production change that makes the permanent accessibility RED contract green while preserving existing native Select-mode checkbox and bulk-action regressions. Then run focused Library verification and the full web-release gate. MSS-02 remains separate.
+Next action: complete the independent completed-branch review for WORK-018. If that review passes, stop for explicit authorization before fast-forward promotion to canonical main. MSS-02 remains separate and unconsumed.
