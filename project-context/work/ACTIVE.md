@@ -4,7 +4,7 @@ ACTIVE_WORK: WORK-014
 
 Title: Atomic Import Uniqueness
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `3f14ee572167a3357178cf7fd2b075e70e270f8d`
 
@@ -12,7 +12,7 @@ Planned branch: `task/work-014-atomic-import-uniqueness-v1`
 
 Derived from: `DISC-002` MSR-03 and post-WORK-013 revalidation
 
-Current phase: WORK-014 is IN_PROGRESS after independent review identified a claim-lifecycle correction: title/taxonomy edits can change the normalized import fingerprint, so claim authority must migrate atomically instead of permanently reserving the import-time fingerprint.
+Current phase: WORK-014 is COMPLETE_PENDING_PROMOTION after the independent-review claim-lifecycle correction. Fingerprint-changing edits now migrate claim authority atomically, legacy no-claim items have a server-verified recovery path, emulator/rules verification passed, and the full web-release gate passed.
 
 Scope: establish owner-scoped persistence-level uniqueness for the existing normalized import fingerprint, preserve item/card atomicity, retain preview duplicate detection as UX only, and add true simultaneous-import regression coverage.
 

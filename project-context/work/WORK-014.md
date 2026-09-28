@@ -1,6 +1,6 @@
 # WORK-014 - Atomic Import Uniqueness
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `3f14ee572167a3357178cf7fd2b075e70e270f8d`
 
@@ -381,3 +381,38 @@ Required correction:
 8. re-run emulator/rules and full release verification before returning to COMPLETE_PENDING_PROMOTION.
 
 No canonical-main promotion occurred before this finding.
+
+## Claim lifecycle correction completion
+
+Independent-review correction implementation:
+
+`42603987003d9f3c67b1bb58eb32b94bbdf7561d`
+
+The promotion-blocking stale-claim behavior has been corrected.
+
+Final semantics:
+
+- normal-import uniqueness remains owner-scoped and persistence-authoritative;
+- title/taxonomy edits preserve current-state fingerprint semantics;
+- fingerprint-changing edits atomically migrate claim authority from the previous fingerprint to the new fingerprint;
+- a destination fingerprint already owned by another KnowledgeItem rejects the edit without changing either item;
+- concurrent stale fingerprint-changing edits permit only one authoritative winner;
+- the losing stale edit cannot create a second surviving claim;
+- pre-WORK-014 KnowledgeItems without an old claim are recovered only after server-authoritative state verification and transactional claim acquisition;
+- content-only edits preserve the existing ordinary update behavior;
+- claimed offline fingerprint migration remains pending until reconnect and then resolves through the atomic batch;
+- restore remains separate from normal-import fingerprint authority.
+
+Verification after the correction:
+
+- focused application regressions: PASS, 28 / 28;
+- TypeScript typecheck: PASS;
+- Firebase/Storage emulator and security-rules gate: PASS, 97 / 97 across 10 test files;
+- focused fingerprint regression after emulator verification: PASS, 8 / 8;
+- complete branch `git diff --check`: PASS;
+- full `npm run verify:web-release`: PASS;
+- verification left the task branch clean.
+
+No Firebase deployment, production-data mutation, billing change, Storage enablement, canonical-main mutation, or task-branch push occurred.
+
+WORK-014 is again COMPLETE_PENDING_PROMOTION and requires independent promotion review before canonical merge.
