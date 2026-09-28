@@ -79,4 +79,38 @@ describe('MindSpark PWA Source Manifest and Install Metadata', () => {
     expect(html).toContain('name="mobile-web-app-capable"');
     expect(html).toContain('name="apple-mobile-web-app-capable"');
   });
+
+
+it('keeps browser viewport user scaling accessible', () => {
+    const indexPath = path.join(rootDir, 'index.html');
+    const html = fs.readFileSync(indexPath, 'utf-8');
+
+    const viewportTags =
+      html.match(/<meta\s+[^>]*name=["']viewport["'][^>]*>/gi) ?? [];
+
+    expect(viewportTags).toHaveLength(1);
+
+    const contentMatch =
+      viewportTags[0].match(/content=["']([^"']*)["']/i);
+
+    expect(contentMatch).not.toBeNull();
+
+    const directives =
+      contentMatch![1]
+        .split(',')
+        .map((part) => part.trim().toLowerCase());
+
+    expect(directives).toContain('width=device-width');
+    expect(directives).toContain('initial-scale=1.0');
+    expect(
+      directives.some((directive) =>
+        directive.startsWith('user-scalable='),
+      ),
+    ).toBe(false);
+    expect(
+      directives.some((directive) =>
+        directive.startsWith('maximum-scale='),
+      ),
+    ).toBe(false);
+  });
 });

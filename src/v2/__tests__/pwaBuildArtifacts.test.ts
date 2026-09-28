@@ -148,4 +148,39 @@ describe('MindSpark PWA Fresh Build Artifact Verification', () => {
     expect(distIndexContent).toContain('href="./icon.svg"');
     expect(distIndexContent).not.toContain('registerSW.js');
   });
+
+
+it('9. preserves user-scalable viewport metadata in production index', () => {
+    expect(fs.existsSync(distIndexPath), 'dist/index.html should exist').toBe(true);
+
+    const html = fs.readFileSync(distIndexPath, 'utf-8');
+
+    const viewportTags =
+      html.match(/<meta\s+[^>]*name=["']viewport["'][^>]*>/gi) ?? [];
+
+    expect(viewportTags).toHaveLength(1);
+
+    const contentMatch =
+      viewportTags[0].match(/content=["']([^"']*)["']/i);
+
+    expect(contentMatch).not.toBeNull();
+
+    const directives =
+      contentMatch![1]
+        .split(',')
+        .map((part) => part.trim().toLowerCase());
+
+    expect(directives).toContain('width=device-width');
+    expect(directives).toContain('initial-scale=1.0');
+    expect(
+      directives.some((directive) =>
+        directive.startsWith('user-scalable='),
+      ),
+    ).toBe(false);
+    expect(
+      directives.some((directive) =>
+        directive.startsWith('maximum-scale='),
+      ),
+    ).toBe(false);
+  });
 });
