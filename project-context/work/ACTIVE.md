@@ -1,19 +1,9 @@
-# ACTIVE WORK
+# Active Work
 
-ACTIVE_WORK: WORK-015
+ACTIVE_WORK: NONE
 
-Title: ReviewEvent History Query Scaling
+Status: No bounded WORK item is currently active.
 
-Status: COMPLETE_PENDING_PROMOTION
+Most recently completed: `WORK-015` - ReviewEvent History Query Scaling.
 
-Base: `b5279fc3a21ce6ff6d120180bb497994bee2f629`
-
-Planned branch: `task/work-015-reviewevent-query-scaling-v1`
-
-Derived from: `DISC-002` MSR-04 and post-WORK-014 candidate reconnaissance
-
-Current phase: WORK-015 is COMPLETE_PENDING_PROMOTION on `task/work-015-reviewevent-query-scaling-v1`. Bounded multi-card repository retrieval and Library/Insights/Review routing are implemented; focused scaling, local emulator/rules, and full web-release verification pass. Independent completed-branch review is the next boundary.
-
-Scope: remove avoidable per-card ReviewEvent history query amplification from multi-card Review, Library, and Insights workflows while preserving chronology, ReviewService pending/failed-event authority, offline behavior, and existing backup/restore semantics.
-
-Safety: no Firebase deployment, production-data mutation, billing change, Storage enablement, ReviewEvent history rewrite, MSR-08/MSR-09/MSS-01/MSS-02 work, or unrelated persistence redesign.
+Closure: WORK-015 was technically promoted to canonical `main` at `5191de25644384e0a654595d445e0fa1ef8391e8`; focused scaling, local Firebase/Storage emulator/rules, full web-release, production-build, and PWA-artifact verification passed after promotion. Final governance synchronization is recorded on canonical `main`. No Firebase deployment occurred.

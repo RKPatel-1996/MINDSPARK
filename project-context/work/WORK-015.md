@@ -1,6 +1,6 @@
 # WORK-015 - ReviewEvent History Query Scaling
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `b5279fc3a21ce6ff6d120180bb497994bee2f629`
 
@@ -313,4 +313,33 @@ Characterization and verification:
 
 No Firebase deployment, production-data mutation, ReviewEvent rewrite, backup/restore redesign, security-rule change, Firestore-index change, billing change, Storage enablement, or task-branch push occurred.
 
-WORK-015 is COMPLETE_PENDING_PROMOTION and requires independent completed-branch review before technical promotion.
+At this checkpoint, WORK-015 was COMPLETE_PENDING_PROMOTION and required independent completed-branch review before technical promotion. That review and promotion are recorded below.
+
+## Promotion closure
+
+WORK-015 independent review and canonical technical promotion are complete.
+
+Independent review:
+
+- reviewed the complete bounded branch after `COMPLETE_PENDING_PROMOTION`;
+- confirmed bounded multi-card query semantics, chronology, pending-event authority, offline/cache behavior, application routing, backup isolation, and deployment-configuration isolation;
+- identified one stale WORK-014/MSR-03 paragraph in `CURRENT_STATE.md`;
+- corrected that governance-only finding before promotion;
+- no technical implementation defect remained open.
+
+Canonical technical promotion:
+
+- reviewed promotion candidate: `5191de25644384e0a654595d445e0fa1ef8391e8`;
+- candidate was fast-forward promoted to canonical `main`;
+- focused WORK-015 post-promotion gate: 12 / 12 PASS;
+- Firebase / Storage local emulator and rules gate: 98 / 98 PASS;
+- ordinary web-release suite: 78 files / 540 tests PASS;
+- production PWA build: PASS;
+- PWA artifact verification: 8 / 8 PASS;
+- complete web-release verification: PASS;
+- post-gate worktree: CLEAN;
+- technical promotion was pushed and `main == origin/main == 5191de25644384e0a654595d445e0fa1ef8391e8` was verified before this governance closure.
+
+No Firebase deployment, production cloud mutation, security-rule deployment, Firestore-index deployment, Storage enablement, billing change, backup/restore redesign, ReviewEvent migration, or task-branch push occurred.
+
+WORK-015 is COMPLETE / PROMOTED.

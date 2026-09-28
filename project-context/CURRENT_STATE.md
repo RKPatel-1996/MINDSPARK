@@ -317,12 +317,13 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Most recently completed bounded work item: WORK-014 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-015 - COMPLETE_PENDING_PROMOTION
+- Most recently completed bounded work item: WORK-015 - COMPLETE / PROMOTED
+- Active bounded work item: NONE
 
 ## Current bounded work
 
-WORK-015 - ReviewEvent History Query Scaling - is COMPLETE_PENDING_PROMOTION on `task/work-015-reviewevent-query-scaling-v1`. Bounded 10-card Firestore multi-card retrieval, application rerouting, offline/cache characterization, emulator/rules verification, and full web-release verification are complete.
+No bounded WORK item is currently active.
+WORK-015 - ReviewEvent History Query Scaling - is COMPLETE / PROMOTED. Its independently reviewed candidate was fast-forward promoted to canonical `main` at `5191de25644384e0a654595d445e0fa1ef8391e8`; focused scaling, local emulator/rules, full web-release, production-build, and PWA-artifact verification all passed after promotion.
 
 It addresses `DISC-002` MSR-04: Review, Library, and Insights aggregate workflows repeatedly retrieved ReviewEvent history one card at a time, causing avoidable persistent-query amplification as the card set grows.
 
@@ -362,4 +363,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: independently review the complete WORK-015 branch and perform technical promotion only if topology, bounded-query semantics, pending/offline authority, regression evidence, full release verification, and clean-state checks remain valid. No Firebase deployment is authorized.
+Next action: no bounded implementation work is currently registered after WORK-015. Revalidate the remaining DISC-002 candidates and register the next bounded WORK item before substantive implementation. No Firebase deployment is authorized.
