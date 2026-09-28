@@ -324,9 +324,9 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 
 WORK-016 - Source URL Protocol Hardening - is COMPLETE_PENDING_PROMOTION on `task/work-016-source-url-protocol-hardening-v1`. Technical implementation is complete at `8fad43ac427d8be468874917ae906c6dcd65d6b3`; completed implementation review, expanded contract regressions, full web-release verification, production PWA build, and artifact verification passed. Independent completed-branch review remains required before promotion.
 
-It addresses `DISC-002` MSS-01: structured KnowledgeItem source URLs currently use generic URL validation and are rendered directly into Library and Review anchor `href` values without an explicit allowed-protocol contract.
+It addresses `DISC-002` MSS-01. At registration, structured KnowledgeItem source URLs used generic URL validation and were rendered directly into Library and Review anchor `href` values without an explicit allowed-protocol contract. The completed branch now applies the shared HTTP/HTTPS policy at new-import and navigation boundaries while preserving legacy stored-data compatibility.
 
-The bounded objective is to establish explicit safe web-protocol handling for structured source URLs while preserving valid source links, characterizing legacy persisted-data behavior, and retaining existing import and backup/restore semantics.
+The completed bounded implementation preserves valid HTTP/HTTPS source links, renders legacy non-web source URLs as inert text, rejects non-web protocols on new imports, and retains the existing legacy domain and Backup V1 compatibility contracts.
 WORK-015 - ReviewEvent History Query Scaling - is COMPLETE / PROMOTED. Its independently reviewed candidate was fast-forward promoted to canonical `main` at `5191de25644384e0a654595d445e0fa1ef8391e8`; focused scaling, local emulator/rules, full web-release, production-build, and PWA-artifact verification all passed after promotion.
 
 It addresses `DISC-002` MSR-04: Review, Library, and Insights aggregate workflows repeatedly retrieved ReviewEvent history one card at a time, causing avoidable persistent-query amplification as the card set grows.
