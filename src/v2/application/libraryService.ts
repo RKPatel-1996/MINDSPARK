@@ -1,3 +1,4 @@
+import { computeItemFingerprint } from './importService';
 import type { Repositories, KnowledgeItemWithCards } from './types';
 import type { KnowledgeItem, KnowledgeStatus } from '../domain/knowledge';
 import type { ReviewCard } from '../domain/card';
@@ -118,7 +119,41 @@ export class LibraryService {
     };
 
     const validated = knowledgeItemSchema.parse(candidate);
-    await this.repos.knowledge.update(validated);
+
+    const previousFingerprint = computeItemFingerprint(
+      existing.taxonomy.domainId,
+      existing.taxonomy.topicId,
+      existing.taxonomy.subtopicId,
+      existing.title
+    );
+
+    const nextFingerprint = computeItemFingerprint(
+      validated.taxonomy.domainId,
+      validated.taxonomy.topicId,
+      validated.taxonomy.subtopicId,
+      validated.title
+    );
+
+    const persistenceResult =
+      await this.repos.knowledge.updateWithFingerprintAuthority(
+        existing,
+        validated,
+        previousFingerprint,
+        nextFingerprint
+      );
+
+    if (persistenceResult.status === 'duplicate') {
+      throw new Error(
+        `A KnowledgeItem with the edited title/taxonomy fingerprint already exists (${persistenceResult.existingKnowledgeItemId}).`
+      );
+    }
+
+    if (persistenceResult.status === 'stale') {
+      throw new Error(
+        'This KnowledgeItem changed before the edit could be saved. Reload it and retry.'
+      );
+    }
+
     return validated;
   }
 

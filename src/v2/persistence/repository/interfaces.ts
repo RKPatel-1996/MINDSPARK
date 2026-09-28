@@ -30,6 +30,18 @@ export type UniqueKnowledgeBundleResult =
       existingKnowledgeItemId: string;
     };
 
+export type KnowledgeFingerprintUpdateResult =
+  | {
+      status: 'updated';
+    }
+  | {
+      status: 'duplicate';
+      existingKnowledgeItemId: string;
+    }
+  | {
+      status: 'stale';
+    };
+
 export interface KnowledgeRepository {
   get(id: string): Promise<KnowledgeItem | null>;
   list(): Promise<KnowledgeItem[]>;
@@ -41,6 +53,12 @@ export interface KnowledgeRepository {
     item: KnowledgeItem,
     cards: ReviewCard[]
   ): Promise<UniqueKnowledgeBundleResult>;
+  updateWithFingerprintAuthority(
+    expectedItem: KnowledgeItem,
+    nextItem: KnowledgeItem,
+    previousFingerprint: string,
+    nextFingerprint: string
+  ): Promise<KnowledgeFingerprintUpdateResult>;
   update(item: KnowledgeItem): Promise<void>;
   archive(id: string): Promise<void>;
   updateStatus(id: string, status: KnowledgeStatus, updatedAt: string): Promise<void>;

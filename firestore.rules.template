@@ -95,7 +95,38 @@ service cloud.firestore {
           && getAfter(
             /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(request.resource.data.knowledgeItemId)
           ).data.id == request.resource.data.knowledgeItemId;
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if isOwnerPath(uid)
+          && resource.data.knowledgeItemId is string
+          && exists(
+            /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(resource.data.knowledgeItemId)
+          )
+          && existsAfter(
+            /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(resource.data.knowledgeItemId)
+          )
+          && get(
+            /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(resource.data.knowledgeItemId)
+          ).data.id == resource.data.knowledgeItemId
+          && getAfter(
+            /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(resource.data.knowledgeItemId)
+          ).data.id == resource.data.knowledgeItemId
+          && (
+            get(
+              /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(resource.data.knowledgeItemId)
+            ).data.title
+              !=
+            getAfter(
+              /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(resource.data.knowledgeItemId)
+            ).data.title
+            ||
+            get(
+              /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(resource.data.knowledgeItemId)
+            ).data.taxonomy
+              !=
+            getAfter(
+              /databases/$(database)/documents/users/$(uid)/knowledgeItems/$(resource.data.knowledgeItemId)
+            ).data.taxonomy
+          );
       }
 
       match /reviewCards/{cardId} {

@@ -11,6 +11,7 @@ import type {
   ReceivedReviewEvent,
   Settings,
   UniqueKnowledgeBundleResult,
+  KnowledgeFingerprintUpdateResult,
 } from '../repository/interfaces';
 import type { KnowledgeItem, KnowledgeStatus } from '../../domain/knowledge';
 import type { ReviewCard } from '../../domain/card';
@@ -112,6 +113,76 @@ export class InMemoryKnowledgeRepository implements KnowledgeRepository {
       }
       throw error;
     }
+  }
+
+  async updateWithFingerprintAuthority(
+    expectedItem: KnowledgeItem,
+    nextItem: KnowledgeItem,
+    previousFingerprint: string,
+    nextFingerprint: string
+  ): Promise<KnowledgeFingerprintUpdateResult> {
+    if (previousFingerprint === nextFingerprint) {
+      await this.update(nextItem);
+      return { status: 'updated' };
+    }
+
+    const [oldClaimId, newClaimId] = await Promise.all([
+      computeKnowledgeImportClaimId(previousFingerprint),
+      computeKnowledgeImportClaimId(nextFingerprint),
+    ]);
+
+    const current = this.items.get(expectedItem.id);
+
+    if (!current) {
+      return { status: 'stale' };
+    }
+
+    const stillExpected =
+      current.updatedAt === expectedItem.updatedAt &&
+      current.title === expectedItem.title &&
+      current.taxonomy.domainId === expectedItem.taxonomy.domainId &&
+      current.taxonomy.topicId === expectedItem.taxonomy.topicId &&
+      current.taxonomy.subtopicId === expectedItem.taxonomy.subtopicId;
+
+    if (!stillExpected) {
+      return { status: 'stale' };
+    }
+
+    const destinationOwner = this.importClaims.get(newClaimId);
+
+    if (
+      destinationOwner !== undefined &&
+      destinationOwner !== expectedItem.id
+    ) {
+      return {
+        status: 'duplicate',
+        existingKnowledgeItemId: destinationOwner,
+      };
+    }
+
+    const sourceOwner = this.importClaims.get(oldClaimId);
+
+    if (
+      sourceOwner !== undefined &&
+      sourceOwner !== expectedItem.id
+    ) {
+      return { status: 'stale' };
+    }
+
+    if (sourceOwner === expectedItem.id) {
+      this.importClaims.delete(oldClaimId);
+    }
+
+    if (destinationOwner === undefined) {
+      this.importClaims.set(newClaimId, expectedItem.id);
+    }
+
+    this.items.set(
+      nextItem.id,
+      JSON.parse(JSON.stringify(nextItem))
+    );
+
+    return { status: 'updated' };
   }
 
   async update(item: KnowledgeItem): Promise<void> {

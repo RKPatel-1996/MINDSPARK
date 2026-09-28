@@ -33,6 +33,9 @@ export function createSignedOutRepositories(): Repositories {
     createUniqueKnowledgeBundle: async () => {
       throw new Error(AUTH_REQUIRED_MSG);
     },
+    updateWithFingerprintAuthority: async () => {
+      throw new Error(AUTH_REQUIRED_MSG);
+    },
     update: async () => {
       throw new Error(AUTH_REQUIRED_MSG);
     },

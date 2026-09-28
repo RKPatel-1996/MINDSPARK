@@ -25,6 +25,7 @@ const OTHER = 'not_the_owner';
 const PROJECT_ID = 'mindspark-work014-claim-rules';
 
 const CLAIM_ID = 'a'.repeat(64);
+const CLAIM_ID_B = 'b'.repeat(64);
 const ITEM_ID = '11111111-1111-4111-8111-111111111111';
 
 function writeClaimAndItem(
@@ -38,6 +39,11 @@ function writeClaimAndItem(
     doc(db, `users/${OWNER}/knowledgeItems/${itemId}`),
     {
       id: itemId,
+      title: 'Fingerprint A',
+      taxonomy: {
+        domainId: 'domain',
+        topicId: 'topic',
+      },
     }
   );
 
@@ -133,6 +139,46 @@ describe('knowledgeImportClaims Firestore rules', () => {
     await assertFails(batch.commit());
   });
 
+  it('allows an owner to migrate a claim only with the same-batch fingerprint-changing KnowledgeItem update', async () => {
+    const db =
+      env.authenticatedContext(OWNER).firestore() as unknown as Firestore;
+
+    await assertSucceeds(
+      writeClaimAndItem(db)
+    );
+
+    const batch = writeBatch(db);
+
+    batch.update(
+      doc(db, `users/${OWNER}/knowledgeItems/${ITEM_ID}`),
+      {
+        title: 'Fingerprint B',
+      }
+    );
+
+    batch.set(
+      doc(
+        db,
+        `users/${OWNER}/knowledgeImportClaims/${CLAIM_ID_B}`
+      ),
+      {
+        id: CLAIM_ID_B,
+        knowledgeItemId: ITEM_ID,
+        schemaVersion: 1,
+      }
+    );
+
+    batch.delete(
+      doc(
+        db,
+        `users/${OWNER}/knowledgeImportClaims/${CLAIM_ID}`
+      )
+    );
+
+    await assertSucceeds(
+      batch.commit()
+    );
+  });
   it('rejects claim update and delete after creation', async () => {
     const db =
       env.authenticatedContext(OWNER).firestore() as unknown as Firestore;

@@ -5,6 +5,7 @@ import { seedInitialLibrary, importDraftPayload, computeItemFingerprint } from '
 import { CANONICAL_TAXONOMY_REGISTRY } from '../application/canonicalTaxonomy';
 import { SEED_PACKETS } from '../application/seedData';
 import type { Repositories } from '../application/types';
+import { LibraryService } from '../application/libraryService';
 
 describe('Duplicate Detection in Import', () => {
   let repos: Repositories;
@@ -147,6 +148,111 @@ describe('Duplicate Detection in Import', () => {
 
     expect(items).toHaveLength(1);
     expect(cards).toHaveLength(packet.cards.length);
+  });
+  it('editing an imported fingerprint releases the old fingerprint and reserves the new fingerprint', async () => {
+    const packet = SEED_PACKETS[0];
+
+    const imported = await importDraftPayload(
+      packet,
+      repos,
+      CANONICAL_TAXONOMY_REGISTRY
+    );
+
+    expect(imported.ok).toBe(true);
+
+    if (!imported.ok) {
+      throw new Error('Expected initial import to succeed');
+    }
+
+    const originalItem = imported.result.knowledgeItem;
+    const editedTitle = `${originalItem.title} edited`;
+
+    const libraryService = new LibraryService(repos);
+
+    const edited = await libraryService.updateKnowledgeItem({
+      ...originalItem,
+      title: editedTitle,
+    });
+
+    expect(edited.title).toBe(editedTitle);
+
+    const oldFingerprintImport = await importDraftPayload(
+      packet,
+      repos,
+      CANONICAL_TAXONOMY_REGISTRY
+    );
+
+    expect(oldFingerprintImport.ok).toBe(true);
+
+    const editedPacket = JSON.parse(JSON.stringify(packet));
+    editedPacket.item.title = editedTitle;
+
+    const editedFingerprintImport = await importDraftPayload(
+      editedPacket,
+      repos,
+      CANONICAL_TAXONOMY_REGISTRY
+    );
+
+    expect(editedFingerprintImport.ok).toBe(false);
+
+    if (
+      !editedFingerprintImport.ok &&
+      editedFingerprintImport.status === 'duplicate'
+    ) {
+      expect(
+        editedFingerprintImport.existingKnowledgeItemId
+      ).toBe(originalItem.id);
+    }
+  });
+
+  it('rejects an edit into another item fingerprint and preserves both authoritative items', async () => {
+    const packetA = SEED_PACKETS[0];
+    const packetB = SEED_PACKETS[1];
+
+    const importedA = await importDraftPayload(
+      packetA,
+      repos,
+      CANONICAL_TAXONOMY_REGISTRY
+    );
+
+    const importedB = await importDraftPayload(
+      packetB,
+      repos,
+      CANONICAL_TAXONOMY_REGISTRY
+    );
+
+    expect(importedA.ok).toBe(true);
+    expect(importedB.ok).toBe(true);
+
+    if (!importedA.ok || !importedB.ok) {
+      throw new Error('Expected both initial imports to succeed');
+    }
+
+    const itemA = importedA.result.knowledgeItem;
+    const itemB = importedB.result.knowledgeItem;
+    const libraryService = new LibraryService(repos);
+
+    await expect(
+      libraryService.updateKnowledgeItem({
+        ...itemA,
+        title: itemB.title,
+        taxonomy: {
+          ...itemB.taxonomy,
+        },
+      })
+    ).rejects.toThrow(/already exists/i);
+
+    expect(await repos.knowledge.get(itemA.id)).toMatchObject({
+      id: itemA.id,
+      title: itemA.title,
+      taxonomy: itemA.taxonomy,
+    });
+
+    expect(await repos.knowledge.get(itemB.id)).toMatchObject({
+      id: itemB.id,
+      title: itemB.title,
+      taxonomy: itemB.taxonomy,
+    });
   });
   it('existing seed idempotency still passes', async () => {
     // First seed

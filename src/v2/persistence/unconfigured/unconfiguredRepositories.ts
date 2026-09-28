@@ -34,6 +34,9 @@ export function createUnconfiguredRepositories(): Repositories {
     createUniqueKnowledgeBundle: async () => {
       throw new Error(CONFIG_REQUIRED_MSG);
     },
+    updateWithFingerprintAuthority: async () => {
+      throw new Error(CONFIG_REQUIRED_MSG);
+    },
     update: async () => {
       throw new Error(CONFIG_REQUIRED_MSG);
     },

@@ -30,6 +30,7 @@ import type {
   EventWatermark,
   ReceivedEventPage,
   UniqueKnowledgeBundleResult,
+  KnowledgeFingerprintUpdateResult,
 } from '../../repository/interfaces';
 import type { KnowledgeItem, KnowledgeStatus } from '../../../domain/knowledge';
 import type { ReviewCard } from '../../../domain/card';
@@ -162,6 +163,251 @@ export class FirestoreKnowledgeRepository implements KnowledgeRepository {
       }
 
       throw error;
+    }
+  }
+
+  async updateWithFingerprintAuthority(
+    expectedItem: KnowledgeItem,
+    nextItem: KnowledgeItem,
+    previousFingerprint: string,
+    nextFingerprint: string
+  ): Promise<KnowledgeFingerprintUpdateResult> {
+    if (previousFingerprint === nextFingerprint) {
+      await this.update(nextItem);
+      return { status: 'updated' };
+    }
+
+    const [oldClaimId, newClaimId] = await Promise.all([
+      computeKnowledgeImportClaimId(previousFingerprint),
+      computeKnowledgeImportClaimId(nextFingerprint),
+    ]);
+
+    const itemRef = doc(this.getCollection(), expectedItem.id);
+    const oldClaimRef = doc(
+      this.db,
+      `users/${this.uid}/knowledgeImportClaims/${oldClaimId}`
+    );
+    const newClaimRef = doc(
+      this.db,
+      `users/${this.uid}/knowledgeImportClaims/${newClaimId}`
+    );
+
+    const newClaim = {
+      id: newClaimId,
+      knowledgeItemId: expectedItem.id,
+      schemaVersion: KNOWLEDGE_IMPORT_CLAIM_SCHEMA_VERSION,
+    };
+
+    const stillExpected = (current: KnowledgeItem): boolean =>
+      current.id === expectedItem.id &&
+      current.updatedAt === expectedItem.updatedAt &&
+      current.title === expectedItem.title &&
+      current.taxonomy.domainId === expectedItem.taxonomy.domainId &&
+      current.taxonomy.topicId === expectedItem.taxonomy.topicId &&
+      current.taxonomy.subtopicId === expectedItem.taxonomy.subtopicId;
+
+    const batch = writeBatch(this.db);
+
+    batch.update(
+      itemRef,
+      mapKnowledgeItemToDTO(nextItem)
+    );
+    batch.set(
+      newClaimRef,
+      newClaim
+    );
+    batch.delete(oldClaimRef);
+
+    try {
+      await batch.commit();
+      return { status: 'updated' };
+    } catch (batchError) {
+      let destinationSnapshot;
+      let sourceSnapshot;
+      let currentSnapshot;
+
+      try {
+        [
+          destinationSnapshot,
+          sourceSnapshot,
+          currentSnapshot,
+        ] = await Promise.all([
+          getDocFromServer(newClaimRef),
+          getDocFromServer(oldClaimRef),
+          getDocFromServer(itemRef),
+        ]);
+      } catch {
+        throw batchError;
+      }
+
+      if (destinationSnapshot.exists()) {
+        const destinationClaim = decodeKnowledgeImportClaim(
+          destinationSnapshot.data(),
+          newClaimId
+        );
+
+        if (!destinationClaim) {
+          throw batchError;
+        }
+
+        if (
+          destinationClaim.knowledgeItemId !== expectedItem.id
+        ) {
+          return {
+            status: 'duplicate',
+            existingKnowledgeItemId:
+              destinationClaim.knowledgeItemId,
+          };
+        }
+      }
+
+      if (!currentSnapshot.exists()) {
+        return { status: 'stale' };
+      }
+
+      const currentItem =
+        mapDTOToKnowledgeItem(currentSnapshot.data());
+
+      if (!stillExpected(currentItem)) {
+        return { status: 'stale' };
+      }
+
+      if (sourceSnapshot.exists()) {
+        const sourceClaim = decodeKnowledgeImportClaim(
+          sourceSnapshot.data(),
+          oldClaimId
+        );
+
+        if (
+          !sourceClaim ||
+          sourceClaim.knowledgeItemId !== expectedItem.id
+        ) {
+          return { status: 'stale' };
+        }
+
+        // The ordinary claimed migration should have succeeded if the
+        // source claim is still authoritative and the destination is free.
+        // Do not reinterpret unrelated rules/network failures as legacy.
+        if (!destinationSnapshot.exists()) {
+          throw batchError;
+        }
+      }
+
+      // Missing old claim can mean a pre-WORK-014 legacy item. Recover only
+      // after server authority has verified that the item is still exactly
+      // the state on which this edit was based. The transaction then closes
+      // the race between that verification and claim creation.
+      try {
+        return await runTransaction<KnowledgeFingerprintUpdateResult>(
+          this.db,
+          async (transaction) => {
+            const [
+              transactionalItem,
+              transactionalOldClaim,
+              transactionalNewClaim,
+            ] = await Promise.all([
+              transaction.get(itemRef),
+              transaction.get(oldClaimRef),
+              transaction.get(newClaimRef),
+            ]);
+
+            if (!transactionalItem.exists()) {
+              return { status: 'stale' };
+            }
+
+            const current =
+              mapDTOToKnowledgeItem(transactionalItem.data());
+
+            if (!stillExpected(current)) {
+              return { status: 'stale' };
+            }
+
+            if (transactionalNewClaim.exists()) {
+              const destinationClaim =
+                decodeKnowledgeImportClaim(
+                  transactionalNewClaim.data(),
+                  newClaimId
+                );
+
+              if (!destinationClaim) {
+                throw batchError;
+              }
+
+              if (
+                destinationClaim.knowledgeItemId !==
+                expectedItem.id
+              ) {
+                return {
+                  status: 'duplicate',
+                  existingKnowledgeItemId:
+                    destinationClaim.knowledgeItemId,
+                };
+              }
+            }
+
+            if (transactionalOldClaim.exists()) {
+              const sourceClaim =
+                decodeKnowledgeImportClaim(
+                  transactionalOldClaim.data(),
+                  oldClaimId
+                );
+
+              if (
+                !sourceClaim ||
+                sourceClaim.knowledgeItemId !==
+                expectedItem.id
+              ) {
+                return { status: 'stale' };
+              }
+
+              transaction.delete(oldClaimRef);
+            }
+
+            if (!transactionalNewClaim.exists()) {
+              transaction.set(
+                newClaimRef,
+                newClaim
+              );
+            }
+
+            transaction.update(
+              itemRef,
+              mapKnowledgeItemToDTO(nextItem)
+            );
+
+            return { status: 'updated' };
+          }
+        );
+      } catch (recoveryError) {
+        try {
+          const latestDestination =
+            await getDocFromServer(newClaimRef);
+
+          if (latestDestination.exists()) {
+            const destinationClaim =
+              decodeKnowledgeImportClaim(
+                latestDestination.data(),
+                newClaimId
+              );
+
+            if (
+              destinationClaim &&
+              destinationClaim.knowledgeItemId !==
+              expectedItem.id
+            ) {
+              return {
+                status: 'duplicate',
+                existingKnowledgeItemId:
+                  destinationClaim.knowledgeItemId,
+              };
+            }
+          }
+        } catch {
+          // Preserve the transaction failure.
+        }
+
+        throw recoveryError;
+      }
     }
   }
 
