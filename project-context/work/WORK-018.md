@@ -1,6 +1,6 @@
 # WORK-018 - Library Keyboard and Inspector Accessibility
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `a4aa2c3d1f344609db8c10c37e8705d2992de872`
 
@@ -184,3 +184,38 @@ Status: `COMPLETE_PENDING_PROMOTION`.
 No task-branch push, Firebase deployment, cloud mutation, or production-data change occurred.
 
 Next boundary: independent completed-branch review, followed by explicit promotion authorization before canonical main is changed.
+## Promotion closure
+
+WORK-018 independent review and canonical technical promotion are complete.
+
+Independent review:
+
+- reviewed the complete bounded branch through the `COMPLETE_PENDING_PROMOTION` checkpoint;
+- confirmed whole-branch scope and production-file boundaries;
+- confirmed the existing native Select-mode checkbox remains authoritative;
+- confirmed normal-card keyboard semantics and Enter/Space activation;
+- confirmed labelled modal-dialog semantics;
+- confirmed focus entry and Close/Escape restoration;
+- permanent WORK-018 regression authority passed;
+- focused Library regression authority passed;
+- independent TypeScript typecheck and full web-release verification passed;
+- no technical implementation defect remained open.
+
+Canonical technical promotion:
+
+- implementation commit: `6ffb274b71a6ea2626318dfb814b4d80fdcf5411`;
+- reviewed promotion candidate: `b9be3d371c53f433e8efe5ad48f4ef6b233e24e4`;
+- candidate was fast-forward promoted to canonical `main`;
+- permanent WORK-018 accessibility regression gate passed after promotion;
+- focused Library regression gate passed after promotion;
+- TypeScript typecheck passed after promotion;
+- full `verify:web-release` passed after promotion;
+- fresh production PWA build and artifact verification passed after promotion;
+- post-verification worktree remained clean;
+- technical promotion was pushed and canonical `main == origin/main == b9be3d371c53f433e8efe5ad48f4ef6b233e24e4` was verified before this governance closure.
+
+WORK-018 closes the confirmed `DISC-002` MSR-08 Library keyboard/modal/focus accessibility defect within the frozen bounded scope.
+
+No Firebase deployment, production cloud mutation, persisted-data migration, Storage enablement, billing change, backup-format change, or task-branch push occurred.
+
+WORK-018 is COMPLETE / PROMOTED.

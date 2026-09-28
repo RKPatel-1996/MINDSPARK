@@ -317,10 +317,10 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Most recently completed bounded work item: WORK-017 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-018 - COMPLETE_PENDING_PROMOTION
+- Most recently completed bounded work item: WORK-018 - COMPLETE / PROMOTED
+- Active bounded work item: NONE
 
-WORK-018 - Library Keyboard and Inspector Accessibility - is REGISTERED / NOT_STARTED from `DISC-002` MSR-08. Reconnaissance confirmed click-only normal Library cards without a complete keyboard semantic contract and an item inspector without explicit dialog/focus-entry/focus-restoration behavior. MSS-02 remains a separate future bounded work item.
+WORK-018 - Library Keyboard and Inspector Accessibility - is COMPLETE / PROMOTED. Its independently reviewed branch was fast-forward promoted to canonical `main` at `b9be3d371c53f433e8efe5ad48f4ef6b233e24e4`. It closes the confirmed `DISC-002` MSR-08 defect through keyboard-equivalent normal-card activation, preservation of native Select-mode checkbox authority, labelled modal-dialog semantics, focus entry, and Close/Escape focus restoration. MSS-02 remains separate and unconsumed.
 
 ## Current bounded work
 
@@ -371,4 +371,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: complete the independent completed-branch review for WORK-018. If that review passes, stop for explicit authorization before fast-forward promotion to canonical main. MSS-02 remains separate and unconsumed.
+Next action: register `DISC-002` MSS-02 browser backup resource exhaustion as the next bounded work item before substantive implementation. WORK-018 is COMPLETE / PROMOTED. No Firebase deployment is authorized.
