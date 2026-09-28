@@ -87,3 +87,47 @@ The registered MSR-08 boundary remains unchanged. Before permanent RED is commit
 No production implementation is authorized by this checkpoint.
 
 MSS-02 remains separate and unconsumed.
+## Frozen interaction and focus design
+
+Reconnaissance completed against the unchanged WORK-018 baseline.
+
+A proposed replacement of the existing Select-mode native checkbox was rejected during pre-freeze compatibility checking because existing Select-mode and bulk-action regressions explicitly depend on that element's native `HTMLInputElement`, `checked`, and `disabled` behavior.
+
+The bounded production design is therefore frozen as follows.
+
+### Normal-mode Library card
+
+- the visual card container exposes `role="button"`;
+- it exposes `tabIndex={0}`;
+- its accessible name is `Open <item title>`;
+- Enter performs the same open action as pointer activation;
+- Space performs the same open action and prevents page-scroll default behavior;
+- an explicit `focus-visible` treatment uses existing theme tokens.
+
+### Select-mode Library card
+
+- the existing native `input type="checkbox"` remains authoritative for keyboard and screen-reader selection;
+- its existing test ID, checked state, disabled state, label, click behavior, and bulk-action contract are preserved;
+- the outer card remains a pointer convenience for toggling selection;
+- the outer card is not independently placed in the keyboard tab order;
+- the outer card does not claim button or checkbox semantics that duplicate the native control;
+- pending bulk operations continue to prevent selection mutation.
+
+### Item inspector
+
+- the inspector exposes `role="dialog"`;
+- it exposes `aria-modal="true"`;
+- the visible item title receives a stable ID;
+- the dialog is named through `aria-labelledby`;
+- opening an item moves focus to the always-present Close button.
+
+### Closure and focus restoration
+
+- the originating item ID is retained when an inspector is opened;
+- explicit Close and the existing Escape / `overlay.close` path use one inspector-close operation;
+- after closure, focus returns to the originating Library card when that card is still rendered;
+- if lifecycle or query state means the originating card is no longer rendered, restoration safely performs no focus action.
+
+This WORK item does not introduce an application-wide dialog framework, generalized focus trap, Library redesign, taxonomy redesign, Import-dialog redesign, MSS-02 work, Firebase deployment, or unrelated accessibility remediation.
+
+Permanent RED must establish the missing normal-card keyboard semantics, Select-mode preservation boundary, inspector dialog semantics, focus entry, and Close/Escape focus restoration before production source changes.
