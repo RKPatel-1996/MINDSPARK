@@ -1,6 +1,6 @@
 # WORK-014 - Atomic Import Uniqueness
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: IN_PROGRESS
 
 Base: `3f14ee572167a3357178cf7fd2b075e70e270f8d`
 
@@ -358,3 +358,26 @@ Verified completion state:
 No Firebase deployment, production-data mutation, Storage enablement, billing change, or task-branch push occurred.
 
 WORK-014 is complete on the task branch and awaits independent review before promotion to canonical `main`.
+
+## Independent review correction
+
+Independent semantic review after the initial completion checkpoint found a promotion blocker.
+
+Normal Library editing permits changes to the same title and taxonomy fields used by `computeItemFingerprint()`. The initial WORK-014 implementation created an immutable fingerprint claim at import time but did not migrate that claim when those fields were edited.
+
+That would change the pre-WORK-014 duplicate semantics from current-state identity to permanent historical reservation: after editing fingerprint A to fingerprint B, A would remain reserved indefinitely.
+
+WORK-014 is therefore reopened before promotion.
+
+Required correction:
+
+1. preserve current-state fingerprint semantics;
+2. migrate fingerprint authority atomically when title/taxonomy changes;
+3. reject edits whose destination fingerprint is already authoritative for another KnowledgeItem;
+4. ensure concurrent stale fingerprint-changing edits cannot leave multiple claims for one item;
+5. handle pre-WORK-014 KnowledgeItems that have no existing claim without introducing silent stale-claim behavior;
+6. preserve ordinary content-only edit behavior;
+7. characterize and preserve appropriate offline behavior;
+8. re-run emulator/rules and full release verification before returning to COMPLETE_PENDING_PROMOTION.
+
+No canonical-main promotion occurred before this finding.

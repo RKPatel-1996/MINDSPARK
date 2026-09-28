@@ -317,11 +317,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Active bounded work item: WORK-014 - COMPLETE_PENDING_PROMOTION
+- Active bounded work item: WORK-014 - IN_PROGRESS
 
 ## Current bounded work
 
-WORK-014 - Atomic Import Uniqueness - is COMPLETE_PENDING_PROMOTION on `task/work-014-atomic-import-uniqueness-v1` at verified implementation checkpoint `bd91c863a6424fa3f75e6643c4144886adc9d28f`.
+WORK-014 - Atomic Import Uniqueness - is IN_PROGRESS on `task/work-014-atomic-import-uniqueness-v1`. Independent review found that mutable title/taxonomy fields require atomic claim migration before the implementation is promotable.
 
 It addresses `DISC-002` MSR-03: simultaneous equivalent normal imports can currently race because duplicate detection occurs before persistence while each import generates independent opaque entity IDs.
 
@@ -361,4 +361,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: independently review the completed WORK-014 task branch, re-run promotion verification, and promote only if the branch remains clean and all required gates pass. No Firebase deployment is authorized.
+Next action: characterize fingerprint-claim migration for title/taxonomy edits, implement the bounded correction, then repeat emulator/rules and full release verification. No Firebase deployment is authorized.
