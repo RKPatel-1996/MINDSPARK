@@ -1,6 +1,6 @@
 # WORK-017 - Viewport User-Scaling Accessibility
 
-Status: IN_PROGRESS
+Status: COMPLETE_PENDING_PROMOTION
 
 Base: `67dac991cab3c793dd952c4bacb49f1e07998944`
 
@@ -206,3 +206,50 @@ The required target content is:
 `width=device-width, initial-scale=1.0`
 
 The next boundary is the minimal production implementation followed by targeted GREEN, fresh-build artifact GREEN, and full web-release verification.
+
+## Completion checkpoint
+
+WORK-017 implementation is technically complete.
+
+Implementation commit:
+
+`0c8c79e39c6179e14d86e6722bb58d4348cf0e0d`
+
+Completed behavior:
+
+- repository-root `index.html` remains the sole browser viewport authority;
+- viewport content is now `width=device-width, initial-scale=1.0`;
+- `user-scalable` is absent;
+- `maximum-scale` is absent;
+- no PWA manifest, Vite configuration, React runtime, Android-native, Firebase, responsive-layout, or unrelated accessibility behavior was changed.
+
+Permanent contract evidence:
+
+- source `pwaManifest.test.ts` verifies exactly one viewport declaration, preserves `width=device-width` and `initial-scale=1.0`, and rejects `user-scalable` and `maximum-scale`;
+- fresh-build `pwaBuildArtifacts.test.ts` verifies the same contract in generated `dist/index.html`;
+- permanent RED was demonstrated against both source and fresh production-build output before implementation;
+- targeted source GREEN: 1 file / 3 tests PASS;
+- fresh-build artifact GREEN: 1 file / 9 tests PASS;
+- full ordinary web-release suite: 79 files / 559 tests PASS;
+- full `verify:web-release`: PASS;
+- production PWA build and service-worker generation: PASS.
+
+Independent completed-implementation review:
+
+- complete five-commit bounded branch reviewed from canonical base `5ab58e5639a54fb9b6420895910f4fad54c1c4ae` through implementation head `0c8c79e39c6179e14d86e6722bb58d4348cf0e0d`;
+- whole-branch topology and diff checks: PASS;
+- implementation commit confirmed as `index.html` only, 1 insertion / 1 deletion;
+- single browser viewport authority confirmed;
+- permanent source and build regressions confirmed;
+- independent source contract: 1 file / 3 tests PASS;
+- independent TypeScript typecheck: PASS;
+- independent fresh production build: PASS;
+- independent artifact contract: 1 file / 9 tests PASS;
+- built `dist/index.html` confirmed to preserve the unrestricted viewport contract;
+- no substantive blocker remains.
+
+No Firebase deployment, production cloud mutation, persisted-data migration, Storage enablement, billing change, responsive-layout redesign, task-branch push, or unrelated accessibility work occurred.
+
+Status is `COMPLETE_PENDING_PROMOTION`.
+
+The next required boundary is an independent completed-branch review of the full WORK-017 change set and completion governance evidence before any promotion to canonical `main`.

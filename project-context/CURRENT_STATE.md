@@ -318,11 +318,11 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-016 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-017 - IN_PROGRESS
+- Active bounded work item: WORK-017 - COMPLETE_PENDING_PROMOTION
 
 ## Current bounded work
 
-WORK-017 - Viewport User-Scaling Accessibility - is IN_PROGRESS on 	ask/work-017-viewport-scaling-v1. The viewport contract is DESIGN_FROZEN and permanent RED is established at `6e3a396dfbdbcf7b8d2cf528db87001722fe5884`: both source and fresh production-build evidence confirm that the current maximum-scale=1.0, user-scalable=no declaration violates the required user-scaling contract. The frozen implementation boundary is the viewport-content line in repository-root index.html.
+WORK-017 - Viewport User-Scaling Accessibility - is COMPLETE_PENDING_PROMOTION on `task/work-017-viewport-scaling-v1`. Technical implementation is complete at `0c8c79e39c6179e14d86e6722bb58d4348cf0e0d`: repository-root `index.html` now preserves `width=device-width, initial-scale=1.0` while omitting `user-scalable` and `maximum-scale`. Permanent source and fresh-build regressions, full web-release verification, and independent completed-implementation review all pass.
 
 WORK-016 - Source URL Protocol Hardening - is COMPLETE / PROMOTED. Its independently reviewed candidate was fast-forward promoted to canonical `main` at `6ef1aa2d8bd80e0267391037830ea1946ce88034`; focused source-URL contract regression, full web-release verification, production-build, and PWA-artifact verification all passed after promotion.
 
@@ -369,4 +369,4 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: implement the frozen WORK-017 viewport contract by changing only the browser viewport content in repository-root `index.html`, then run targeted source GREEN, fresh-build artifact GREEN, and full `verify:web-release`. No Firebase deployment is authorized.
+Next action: perform an independent completed-branch review of WORK-017 from canonical base `5ab58e5639a54fb9b6420895910f4fad54c1c4ae` through the COMPLETE_PENDING_PROMOTION checkpoint. Do not promote, push the task branch, deploy Firebase, or mutate production data until that review passes.
