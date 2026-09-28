@@ -324,9 +324,9 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 
 WORK-015 - ReviewEvent History Query Scaling - is COMPLETE_PENDING_PROMOTION on `task/work-015-reviewevent-query-scaling-v1`. Bounded 10-card Firestore multi-card retrieval, application rerouting, offline/cache characterization, emulator/rules verification, and full web-release verification are complete.
 
-It addresses `DISC-002` MSR-03: simultaneous equivalent normal imports can currently race because duplicate detection occurs before persistence while each import generates independent opaque entity IDs.
+It addresses `DISC-002` MSR-04: Review, Library, and Insights aggregate workflows repeatedly retrieved ReviewEvent history one card at a time, causing avoidable persistent-query amplification as the card set grows.
 
-The bounded objective is to establish owner-scoped persistence-level uniqueness for the existing normalized import fingerprint while preserving KnowledgeItem/ReviewCard bundle atomicity, restore semantics, and the existing offline-first architecture.
+The bounded objective is to replace aggregate per-card history fan-out with bounded multi-card retrieval while preserving exact per-card chronology, ReviewService pending/failed-event authority, offline/cache behavior, scheduling semantics, and backup/restore isolation.
 
 WORK-013 remains COMPLETE / PROMOTED.
 
