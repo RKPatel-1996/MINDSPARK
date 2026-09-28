@@ -1,6 +1,6 @@
 # WORK-016 - Source URL Protocol Hardening
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `cd31db21174f3a833873ea33e9fa0e21c192a7b8`
 
@@ -282,10 +282,43 @@ Existing test/build stderr included jsdom IndexedDB availability messages, React
 
 ### Completion boundary
 
-WORK-016 is technically complete but is not yet authorized for promotion.
+At this checkpoint, WORK-016 was technically complete but had not yet been authorized for promotion.
 
-Status is `COMPLETE_PENDING_PROMOTION`.
+Status at this checkpoint was `COMPLETE_PENDING_PROMOTION`.
 
-The next required boundary is an independent completed-branch review of the full WORK-016 change set and governance evidence. Promotion to canonical `main` must not occur until that review passes.
+The next required boundary at this checkpoint was an independent completed-branch review of the full WORK-016 change set and governance evidence. That review and the subsequent technical promotion are recorded below.
 
 No Firebase deployment, production-data migration, Storage enablement, billing change, or task-branch push is authorized by this checkpoint.
+
+## Promotion closure
+
+WORK-016 independent review and canonical technical promotion are complete.
+
+Independent review:
+
+- reviewed the complete six-commit bounded branch after `COMPLETE_PENDING_PROMOTION`;
+- confirmed the shared HTTP/HTTPS source-URL policy, new-import protocol enforcement, Library and Review navigation guards, inert legacy display behavior, stored-data compatibility, Backup V1 compatibility, scope isolation, and governance evidence;
+- confirmed the legacy `sourceReferenceSchema`, Backup V1 production contract, Firebase configuration, Firestore rules/indexes, Storage configuration, and deployment configuration remained unchanged;
+- permanent WORK-016 contract regression passed 8 files / 80 tests;
+- independent TypeScript typecheck passed;
+- one stale current-state wording issue was identified during completion review and corrected before promotion;
+- no technical implementation defect remained open.
+
+Canonical technical promotion:
+
+- reviewed promotion candidate: `6ef1aa2d8bd80e0267391037830ea1946ce88034`;
+- implementation candidate within that branch: `8fad43ac427d8be468874917ae906c6dcd65d6b3`;
+- candidate was fast-forward promoted to canonical `main`;
+- post-promotion WORK-016 contract regression: 8 files / 80 tests PASS;
+- ordinary web-release suite: 79 files / 558 tests PASS;
+- TypeScript typecheck: PASS;
+- production PWA build: PASS;
+- PWA service-worker generation: PASS;
+- PWA artifact verification: 8 / 8 PASS;
+- complete `verify:web-release`: PASS;
+- post-verification worktree: CLEAN;
+- technical promotion was pushed and `main == origin/main == 6ef1aa2d8bd80e0267391037830ea1946ce88034` was verified before this governance closure.
+
+No Firebase deployment, production cloud mutation, persisted-data migration, Firestore security-rule deployment, Firestore-index deployment, Storage enablement, billing change, backup-format redesign, Markdown-link redesign, or task-branch push occurred.
+
+WORK-016 is COMPLETE / PROMOTED.
