@@ -1,6 +1,6 @@
 # WORK-018 - Library Keyboard and Inspector Accessibility
 
-Status: REGISTERED / NOT_STARTED
+Status: IN_PROGRESS
 
 Base: `a4aa2c3d1f344609db8c10c37e8705d2992de872`
 
@@ -67,3 +67,23 @@ Permanent regression coverage must demonstrate:
 Registration only. No production implementation has begun.
 
 Next: create the task branch, freeze the minimal interaction/focus design against current LibraryView structure, establish permanent RED tests, then implement the smallest production change.
+## Start and reconnaissance checkpoint
+
+WORK-018 has started on `task/work-018-library-keyboard-accessibility-v1`.
+
+Current phase: `IN_PROGRESS / RECONNAISSANCE`.
+
+The registered MSR-08 boundary remains unchanged. Before permanent RED is committed, the exact current implementation and test harness will be inspected to freeze:
+
+- card semantic element/role strategy;
+- normal-mode Enter and Space activation behavior;
+- Select-mode Enter and Space behavior;
+- inspector dialog naming semantics;
+- focus target on inspector open;
+- originating-card focus restoration on Close and Escape;
+- behavior when the originating card is no longer rendered;
+- smallest permanent regression-test surface.
+
+No production implementation is authorized by this checkpoint.
+
+MSS-02 remains separate and unconsumed.
