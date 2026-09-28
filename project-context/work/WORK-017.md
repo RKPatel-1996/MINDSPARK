@@ -179,3 +179,30 @@ A fresh PWA build-artifact verification must independently fail against the same
 If permanent RED confirms the reconnaissance, the expected production mutation is limited to the viewport-content line in repository-root `index.html`.
 
 No manifest change, Vite configuration change, React change, Android-native change, Firebase change, responsive-layout redesign, or unrelated accessibility modification is authorized.
+
+## Permanent RED checkpoint
+
+Design-contract checkpoint:
+
+`c4228c3598e2147abf471596aa325074c947477e`
+
+Permanent RED test checkpoint:
+
+`6e3a396dfbdbcf7b8d2cf528db87001722fe5884`
+
+RED evidence:
+
+- TypeScript typecheck passed with the permanent regressions present;
+- source pwaManifest.test.ts failed specifically on the new user-scaling viewport contract against the current index.html;
+- a fresh production PWA build completed and the new pwaBuildArtifacts.test.ts viewport contract failed against generated dist/index.html;
+- the current failure is therefore demonstrated both at source authority and built-artifact authority;
+- index.html remained unchanged while RED evidence was established;
+- no manifest, Vite, React, Android-native, Firebase, or other production source was modified.
+
+The frozen production implementation boundary is now one viewport-content change in repository-root index.html.
+
+The required target content is:
+
+`width=device-width, initial-scale=1.0`
+
+The next boundary is the minimal production implementation followed by targeted GREEN, fresh-build artifact GREEN, and full web-release verification.
