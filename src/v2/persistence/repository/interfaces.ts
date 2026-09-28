@@ -21,12 +21,26 @@ export interface Settings {
   reserveHorizonHours: number;
 }
 
+export type UniqueKnowledgeBundleResult =
+  | {
+      status: 'created';
+    }
+  | {
+      status: 'duplicate';
+      existingKnowledgeItemId: string;
+    };
+
 export interface KnowledgeRepository {
   get(id: string): Promise<KnowledgeItem | null>;
   list(): Promise<KnowledgeItem[]>;
   create(item: KnowledgeItem): Promise<void>;
   createBundle(item: KnowledgeItem, cards: ReviewCard[]): Promise<void>;
   createKnowledgeBundle?(item: KnowledgeItem, cards: ReviewCard[]): Promise<void>;
+  createUniqueKnowledgeBundle?(
+    fingerprint: string,
+    item: KnowledgeItem,
+    cards: ReviewCard[]
+  ): Promise<UniqueKnowledgeBundleResult>;
   update(item: KnowledgeItem): Promise<void>;
   archive(id: string): Promise<void>;
   updateStatus(id: string, status: KnowledgeStatus, updatedAt: string): Promise<void>;

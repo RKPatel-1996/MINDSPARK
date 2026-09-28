@@ -10,6 +10,7 @@ import type {
   ReceivedEventPage,
   ReceivedReviewEvent,
   Settings,
+  UniqueKnowledgeBundleResult,
 } from '../repository/interfaces';
 import type { KnowledgeItem, KnowledgeStatus } from '../../domain/knowledge';
 import type { ReviewCard } from '../../domain/card';
@@ -24,6 +25,7 @@ import {
 
 export class InMemoryKnowledgeRepository implements KnowledgeRepository {
   private items = new Map<string, KnowledgeItem>();
+  private importClaims = new Map<string, string>();
   private cardRepo?: InMemoryReviewCardRepository;
 
   constructor(cardRepo?: InMemoryReviewCardRepository) {
@@ -77,6 +79,37 @@ export class InMemoryKnowledgeRepository implements KnowledgeRepository {
 
   async createKnowledgeBundle(item: KnowledgeItem, cards: ReviewCard[]): Promise<void> {
     return this.createBundle(item, cards);
+  }
+
+  async createUniqueKnowledgeBundle(
+    fingerprint: string,
+    item: KnowledgeItem,
+    cards: ReviewCard[]
+  ): Promise<UniqueKnowledgeBundleResult> {
+    const existingKnowledgeItemId = this.importClaims.get(fingerprint);
+
+    if (existingKnowledgeItemId) {
+      return {
+        status: 'duplicate',
+        existingKnowledgeItemId,
+      };
+    }
+
+    // Claim synchronously before the first asynchronous yield. JavaScript's
+    // run-to-completion semantics make this the in-memory atomicity boundary
+    // for competing callers sharing this repository instance.
+    this.importClaims.set(fingerprint, item.id);
+
+    try {
+      await this.createBundle(item, cards);
+      return { status: 'created' };
+    } catch (error) {
+      // A failed bundle must not strand uniqueness authority.
+      if (this.importClaims.get(fingerprint) === item.id) {
+        this.importClaims.delete(fingerprint);
+      }
+      throw error;
+    }
   }
 
   async update(item: KnowledgeItem): Promise<void> {
@@ -143,6 +176,7 @@ export class InMemoryKnowledgeRepository implements KnowledgeRepository {
 
   clear(): void {
     this.items.clear();
+    this.importClaims.clear();
   }
 }
 

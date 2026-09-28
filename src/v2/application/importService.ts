@@ -207,11 +207,34 @@ export async function importDraftPayload(
   // Passing the normalized draft is perfectly safe, as parsing is idempotent
   const transformed = transformDraftToDomain(inspection.normalizedDraft, registry);
 
-  // Persist knowledge item and all associated cards as an atomic bundle
-  if (repos.knowledge.createKnowledgeBundle) {
-    await repos.knowledge.createKnowledgeBundle(transformed.knowledgeItem, transformed.cards);
+  // The preview/list duplicate check above is only an early UX optimization.
+  // A repository may provide a persistence-level uniqueness authority for the
+  // final correctness decision.
+  if (repos.knowledge.createUniqueKnowledgeBundle) {
+    const persistenceResult = await repos.knowledge.createUniqueKnowledgeBundle(
+      inspection.fingerprint,
+      transformed.knowledgeItem,
+      transformed.cards
+    );
+
+    if (persistenceResult.status === 'duplicate') {
+      return {
+        ok: false,
+        status: 'duplicate',
+        existingKnowledgeItemId: persistenceResult.existingKnowledgeItemId,
+        fingerprint: inspection.fingerprint,
+      };
+    }
+  } else if (repos.knowledge.createKnowledgeBundle) {
+    await repos.knowledge.createKnowledgeBundle(
+      transformed.knowledgeItem,
+      transformed.cards
+    );
   } else {
-    await repos.knowledge.createBundle(transformed.knowledgeItem, transformed.cards);
+    await repos.knowledge.createBundle(
+      transformed.knowledgeItem,
+      transformed.cards
+    );
   }
 
   return {
