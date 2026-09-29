@@ -4,8 +4,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  AlertTriangle,
-  Check,
   CloudUpload,
   Loader2,
   X,
@@ -178,9 +176,7 @@ export const GlobalOffsiteBackupControl:
 
     const buttonText = backingUp
       ? 'Backing up...'
-      : backupDue
-        ? 'Backup due'
-        : 'Backup now';
+      : 'Backup due';
 
     const handleBackup = async () => {
       if (backingUp) {
@@ -293,26 +289,28 @@ export const GlobalOffsiteBackupControl:
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={handleBackup}
-          disabled={backingUp}
-          aria-label={buttonText}
-          title={title}
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--surface-color)] px-4 py-2.5 text-sm font-medium font-ui paper-shadow hover:bg-[var(--bg-color)] disabled:opacity-60"
-        >
-          {backingUp ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : backupDue ? (
-            <AlertTriangle className="w-4 h-4" />
-          ) : (
-            <Check className="w-4 h-4" />
-          )}
-
-          <CloudUpload className="w-4 h-4" />
-
-          <span>{buttonText}</span>
-        </button>
+        {(backupDue || backingUp) && (
+          <button
+            type="button"
+            onClick={handleBackup}
+            disabled={backingUp}
+            aria-label={buttonText}
+            title={title}
+            className="inline-flex items-center justify-center rounded-full border border-[var(--color-error)] bg-[var(--surface-color)] p-2.5 text-[var(--color-error)] paper-shadow hover:bg-[var(--bg-color)] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-error)]"
+          >
+            {backingUp ? (
+              <Loader2
+                className="w-4 h-4 animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <CloudUpload
+                className="w-4 h-4"
+                aria-hidden="true"
+              />
+            )}
+          </button>
+        )}
       </div>
     );
   };
