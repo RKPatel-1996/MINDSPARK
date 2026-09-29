@@ -1,7 +1,7 @@
 # MindSpark - Current State
 
 Status: VERIFIED
-Verified: 2026-09-27
+Verified: 2026-09-29
 Verification authority: live local Git repository, canonical `main`, repository-native tests, and authoritative repository documentation
 
 ## Project identity
@@ -317,21 +317,23 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Most recently completed bounded work item: WORK-018 - COMPLETE / PROMOTED
-- Active bounded work item: WORK-020 - REGISTERED
+- Most recently completed bounded work item: WORK-020 - COMPLETE / PROMOTED
+- Active bounded work item: NONE
 
 WORK-018 - Library Keyboard and Inspector Accessibility - is COMPLETE / PROMOTED. Its independently reviewed branch was fast-forward promoted to canonical `main` at `b9be3d371c53f433e8efe5ad48f4ef6b233e24e4`. It closes the confirmed `DISC-002` MSR-08 defect through keyboard-equivalent normal-card activation, preservation of native Select-mode checkbox authority, labelled modal-dialog semantics, focus entry, and Close/Escape focus restoration. MSS-02 remains separate and unconsumed.
 
 ## Current bounded work
 ### WORK-020 - Backup Due Indicator UX
 
-Status: REGISTERED.
+Status: COMPLETE / PROMOTED.
 
 Production responsive smoke testing identified that the persistent floating global off-site backup pill can overlap application controls on narrow/mobile layouts.
 
 Reconnaissance confirmed the existing status engine already has the intended timing contract: no successful backup is due immediately, successful status remains current for 24 hours, and status changes notify the global control.
 
-WORK-020 is therefore a bounded presentation-only repair: show a small red global backup icon only while backup is due and render no global backup control while backup status is current. Backup execution, persistence, archive format, retention, credential handling, and the 24-hour threshold remain unchanged.
+WORK-020 is complete and promoted. The persistent global backup pill was replaced by a compact red due-only icon. No global backup control is rendered while the last successful backup is less than 24 hours old. Successful backup immediately removes the indicator; failed backup leaves the due indicator available. Backup execution, persistence, archive format, retention, credential handling, and the exact 24-hour threshold remain unchanged.
+
+Canonical reviewed promotion candidate: `9ee7299dc3ae92364d826698b11b5a8c089889d9`. Post-promotion focused regressions, TypeScript, full web-release verification, production build, and PWA-artifact verification passed.
 
 WORK-019 remains reserved for DISC-002 MSS-02 and is not consumed by this work.
 
@@ -382,6 +384,6 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: WORK-020 - Backup Due Indicator UX - is REGISTERED as the active bounded production-fix item. Its scope is limited to replacing the persistent global backup pill with a due-only compact indicator while preserving the existing backup engine and exact 24-hour status contract. WORK-019 remains reserved for the separate `DISC-002` MSS-02 browser backup resource-exhaustion work.
+Next action: no bounded WORK item is currently active. WORK-019 remains reserved for the separate `DISC-002` MSS-02 browser backup resource-exhaustion work and has not been registered or started.
 
 Production release checkpoint: the verified MindSpark PWA is live from GitHub Pages at the canonical `MINDSPARK` site. Owner-bound Firestore rules and the required Firestore indexes were deployed to `mindspark-b8-test`. Firebase Storage was not deployed and remains optional/not required for the current text/code/math core workflow. Google Authentication was manually smoke-tested successfully after production domain/key configuration.

@@ -1,6 +1,6 @@
 # WORK-020 - Backup Due Indicator UX
 
-Status: REGISTERED
+Status: COMPLETE / PROMOTED
 
 Base: `c3bfc7d76be6b9a7ea60d7df1d053255aae0564e`
 
@@ -140,3 +140,36 @@ Status: `COMPLETE_PENDING_PROMOTION`.
 No task-branch push, Firebase deployment, cloud mutation, production-data change, archive-format change, or WORK-019 / MSS-02 implementation occurred.
 
 Next boundary: independent completed-branch review. Canonical `main` must not change without explicit promotion authorization.
+## Promotion closure
+
+WORK-020 independent completed-branch review and canonical promotion are complete.
+
+Independent review confirmed:
+
+- whole-branch scope: PASS;
+- production/test boundary: PASS;
+- compact red icon-only due presentation contract: PASS;
+- permanent WORK-020 regressions: PASS;
+- exact 24-hour backup-status contract: PASS;
+- independent TypeScript verification: PASS;
+- independent full web-release verification: PASS;
+- repository integrity: PASS.
+
+Canonical promotion:
+
+- technical implementation commit: `8fa00e30ae83e73f13ede4d9cfdef46432b4ec76`;
+- reviewed promotion candidate: `9ee7299dc3ae92364d826698b11b5a8c089889d9`;
+- candidate was fast-forward promoted to canonical `main`;
+- focused WORK-020 and backup-status regressions passed after promotion;
+- TypeScript passed after promotion;
+- full `verify:web-release` passed after promotion;
+- canonical worktree remained clean;
+- technical promotion was pushed and `main == origin/main == 9ee7299dc3ae92364d826698b11b5a8c089889d9` was verified before this governance closure.
+
+WORK-020 replaces the persistent global `Backup due` / `Backup now` pill with a compact red due-only icon. No global backup control is shown while the last successful backup remains within the existing 24-hour freshness window.
+
+WORK-019 / DISC-002 MSS-02 remains separate, reserved, and unimplemented.
+
+No Firebase deployment, GitHub Pages deployment, Storage enablement, billing change, production-data mutation, backup-format change, task-branch push, or branch deletion occurred.
+
+WORK-020 is COMPLETE / PROMOTED.
