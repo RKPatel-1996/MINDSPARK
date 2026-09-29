@@ -24,9 +24,10 @@ At the start of substantive work:
 1. Read repository `AGENTS.md`.
 2. Read this file.
 3. Read `CURRENT_STATE.md`.
-4. Read `work/ACTIVE.md` and the referenced WORK file.
-5. Verify live Git state before making `CURRENT` or `VERIFIED` claims.
-6. Load only the subsystem documents required by the active work.
+4. Read `work/ACTIVE.md` and the referenced WORK file when one is active.
+5. If `ACTIVE_WORK: NONE` and the user is discussing a newly noticed bug, usability issue, or minor improvement, inspect `field-observations/REGISTRY.md`.
+6. Verify live Git state before making `CURRENT` or `VERIFIED` claims.
+7. Load only the subsystem documents required by the current task.
 
 ## Evidence labels
 
@@ -41,3 +42,16 @@ At the start of substantive work:
 Every substantial task should have one bounded `WORK-###.md` record. `work/ACTIVE.md` points to the single current item. Completed work moves to `history/` or is marked complete and replaced deliberately.
 
 Do not use `CURRENT_STATE.md` as a substitute for `git status`, `git rev-parse`, tests, or authoritative subsystem documents. It is a concise handoff snapshot and must be corrected whenever live evidence differs.
+## Field-use observations
+
+Minor bugs, UI friction, production observations, and improvement ideas discovered during normal use are tracked in `field-observations/REGISTRY.md`.
+
+The observation registry is deliberately lighter than bounded WORK governance:
+
+- an `OBSERVED` item is not yet a verified defect;
+- a `CONFIRMED` item has current supporting evidence;
+- implementation begins only after an item is deliberately promoted to a bounded `WORK-###` record;
+- resolved or declined observations remain traceable;
+- observation records never authorize deployment, cloud mutation, destructive action, or canonical promotion.
+
+This prevents normal product use from consuming a WORK number for every small observation while still preserving useful findings across chats.

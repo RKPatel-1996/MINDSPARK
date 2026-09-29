@@ -31,24 +31,41 @@ At that verified promotion checkpoint:
 
 This `CURRENT_STATE.md` is part of the subsequent governance-closure update; use live Git for the exact latest HEAD and remote synchronization state.
 
-## Current verification baseline
+## Current verification and production baseline
 
-Canonical `npm run verify:web-release`:
+Canonical source baseline before this documentation-only catch-up:
 
-- TypeScript `tsc --noEmit`: PASS
-- ordinary Vitest suite: 63 files / 456 tests PASS
-- production Vite build: PASS
-- PWA build-artifact suite: 8 / 8 PASS
-- canonical `git diff --check`: PASS
-- canonical worktree after verification: clean
+`e48c175e281b3a4f4e481905f6561fa56bf71d09`
 
-Known non-blocking output:
+At the current verified WORK-020 production checkpoint:
 
-- existing-style React `act(...)` warnings remain in some tests
-- Rollup reports Zod annotation warnings
-- Vite reports the existing large-chunk advisory
+- canonical `main == origin/main == e48c175e281b3a4f4e481905f6561fa56bf71d09`;
+- canonical worktree: clean;
+- TypeScript `tsc --noEmit`: PASS;
+- ordinary Vitest suite: 79 files / 566 tests PASS;
+- production Vite build: PASS;
+- PWA build-artifact suite: 9 / 9 PASS;
+- configured Firebase production build identity: PASS;
+- live GitHub Pages branch: `b3a6c4448f4a52b7ba7e140275400bf8e1966437`;
+- live primary application asset: `assets/index-W4d2R7Dg.js`;
+- live primary JavaScript: HTTP 200;
+- live service worker: HTTP 200;
+- production Firebase project: `mindspark-b8-test`;
+- Google Authentication production sign-in: manually smoke-tested PASS;
+- owner-bound Firestore rules and required indexes: deployed;
+- Firebase Storage: not deployed and not required for normal text/code/math use;
+- WORK-020 Backup Due Indicator UX: live;
+- no Firebase deployment, Storage deployment, or production-data mutation occurred during the WORK-020 Pages-only release.
+
+Known non-blocking verification output:
+
+- existing React `act(...)` warnings remain in some tests;
+- IndexedDB-unavailable messages occur in jsdom backup-credential tests where the fallback path is under test;
+- Rollup reports existing Zod annotation warnings.
 
 None failed the authoritative release gate.
+
+The GitHub Pages deployment commit is a generated deployment artifact and does not replace canonical `main` as source authority.
 
 ## Completed governed work
 
@@ -386,4 +403,21 @@ Current durable-gap state:
 
 Next action: no bounded WORK item is currently active. WORK-019 remains reserved for the separate `DISC-002` MSS-02 browser backup resource-exhaustion work and has not been registered or started.
 
-Production release checkpoint: the verified MindSpark PWA is live from GitHub Pages at the canonical `MINDSPARK` site. Owner-bound Firestore rules and the required Firestore indexes were deployed to `mindspark-b8-test`. Firebase Storage was not deployed and remains optional/not required for the current text/code/math core workflow. Google Authentication was manually smoke-tested successfully after production domain/key configuration.
+Production release checkpoint: the verified MindSpark PWA is live from GitHub Pages at the canonical `MINDSPARK` site. Canonical source before this documentation-only update is `e48c175e281b3a4f4e481905f6561fa56bf71d09`. The live Pages deployment is `b3a6c4448f4a52b7ba7e140275400bf8e1966437` and serves `assets/index-W4d2R7Dg.js`. Owner-bound Firestore rules and the required Firestore indexes are deployed to `mindspark-b8-test`. Firebase Storage remains undeployed and optional/not required for the current text/code/math core workflow. Google Authentication was manually smoke-tested successfully after production domain/key configuration. WORK-020 is live and removes the persistent backup pill in favor of the compact due-only indicator.
+## Field-use issue intake
+
+Normal product use may reveal small bugs, usability problems, responsive-layout issues, accessibility observations, performance concerns, or polish opportunities that do not yet justify a bounded WORK item.
+
+These are recorded in:
+
+`project-context/field-observations/REGISTRY.md`
+
+Lifecycle:
+
+`OBSERVED -> CONFIRMED -> PROMOTED_TO_WORK -> RESOLVED`
+
+Items may also become `CLOSED`.
+
+A field observation is not implementation authority. Before substantive implementation, confirm the current behavior and deliberately promote the item into a bounded `WORK-###` record.
+
+When `ACTIVE_WORK: NONE`, future chats may use the field-observation registry as an intake/backlog reference while still following the user's immediate request.
