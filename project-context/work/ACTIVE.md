@@ -2,18 +2,20 @@
 
 ACTIVE_WORK: WORK-020
 
-Status: REGISTERED
+Status: IN_PROGRESS / RED ESTABLISHED
 
 Title: Backup Due Indicator UX
 
-Base: `c3bfc7d76be6b9a7ea60d7df1d053255aae0564e`
+Base: `d0768f0d7cc69251615e0bfff25dbbfd9207b45b`
 
-Planned branch: `task/work-020-backup-due-indicator-ux-v1`
+Branch: `task/work-020-backup-due-indicator-ux-v1`
 
-Boundary: governance registration only. No WORK-020 production implementation has begun.
+Objective: replace the persistent global off-site backup pill with a compact red due-only icon. No global backup control is rendered while backup status is current.
 
-Objective: replace the persistent global off-site backup pill with a small red due-only indicator. The indicator is visible when no successful backup exists or when the last successful backup is at least 24 hours old, and is absent while backup status is current.
+Permanent RED is established against the unchanged production presentation baseline and the RED tests typecheck successfully.
+
+Production implementation has not begun.
 
 WORK-019 remains reserved for the separate DISC-002 MSS-02 browser backup resource-exhaustion work.
 
-Next: synchronize this registration to `origin/main` after explicit authorization, then create the WORK-020 task branch and establish permanent RED tests before production-source changes.
+Next: implement the smallest change in `GlobalOffsiteBackupControl.tsx`, then verify focused backup regressions, TypeScript, and full web-release integration before completion review.

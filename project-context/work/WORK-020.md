@@ -80,3 +80,29 @@ The production release that exposed this responsive issue remains deployed. Fire
 WORK-019 remains reserved for the separate MSS-02 browser backup resource-exhaustion work.
 
 Next: push this governance registration to canonical `origin/main` after explicit authorization, create `task/work-020-backup-due-indicator-ux-v1`, establish permanent RED tests against the unchanged presentation baseline, then implement the smallest UI-only change.
+## Start and permanent RED checkpoint
+
+WORK-020 has started on `task/work-020-backup-due-indicator-ux-v1`.
+
+Current phase: `IN_PROGRESS / RED ESTABLISHED`.
+
+Permanent regression coverage was established before production-source modification.
+
+RED authority:
+
+- `GlobalOffsiteBackupControl.tsx` remains unchanged from the registered WORK-020 baseline;
+- no-success and >=24-hour-due states must retain an accessible due action while removing the persistent visible text pill;
+- the due action must become a compact red icon-only global control;
+- a successful backup must remove the global backup action immediately;
+- a successful upload with retention-cleanup warning must also remove the global action because a durable recovery point was created;
+- a recent successful backup must render no global backup action;
+- failed backup must leave the due action available;
+- missing-PAT routing to Backup settings remains preserved;
+- the focused permanent WORK-020 suite fails against the unchanged production presentation baseline as expected;
+- the new RED tests typecheck successfully.
+
+No backup engine, status persistence, archive format, credential handling, Firebase, production data, or deployment behavior has been modified.
+
+WORK-019 / DISC-002 MSS-02 remains separate and unconsumed.
+
+Next: implement the smallest production-only presentation change in `GlobalOffsiteBackupControl.tsx`, then run the permanent WORK-020 suite and broader backup/release regressions.
