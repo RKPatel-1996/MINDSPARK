@@ -334,12 +334,23 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-004: RESOLVED
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
-- Most recently completed bounded work item: WORK-020 - COMPLETE / PROMOTED
+- Most recently completed bounded work item: WORK-021 - COMPLETE / PROMOTED
 - Active bounded work item: NONE
 
 WORK-018 - Library Keyboard and Inspector Accessibility - is COMPLETE / PROMOTED. Its independently reviewed branch was fast-forward promoted to canonical `main` at `b9be3d371c53f433e8efe5ad48f4ef6b233e24e4`. It closes the confirmed `DISC-002` MSR-08 defect through keyboard-equivalent normal-card activation, preservation of native Select-mode checkbox authority, labelled modal-dialog semantics, focus entry, and Close/Escape focus restoration. MSS-02 remains separate and unconsumed.
 
 ## Current bounded work
+
+### WORK-021 - Production Baseline and Field Observation Intake
+
+Status: COMPLETE / PROMOTED.
+
+The documentation-only production-baseline catch-up and field-observation intake were promoted to canonical `main` at `1980e1fdbb9fe91609269b9de8e3ea4c9b1baeb9`.
+
+Future sessions now have a current production handoff plus the lightweight `field-observations/REGISTRY.md` intake for bugs, usability problems, and minor improvements discovered during normal application use. Field observations remain non-authoritative until verified and deliberately promoted into bounded WORK.
+
+No product code, Firebase state, production data, or deployment behavior changed in WORK-021.
+
 ### WORK-020 - Backup Due Indicator UX
 
 Status: COMPLETE / PROMOTED.

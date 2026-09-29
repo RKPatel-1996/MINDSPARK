@@ -1,6 +1,6 @@
 # WORK-021 - Production Baseline and Field Observation Intake
 
-Status: COMPLETE_PENDING_PROMOTION
+Status: COMPLETE / PROMOTED
 
 Base: `e48c175e281b3a4f4e481905f6561fa56bf71d09`
 
@@ -73,6 +73,14 @@ No application source, tests, dependencies, Firebase configuration, cloud state,
 
 ## Completion boundary
 
-This local commit completes the documentation catch-up itself.
+The documentation catch-up was promoted and synchronized to canonical `main` / `origin/main` at:
 
-Promotion to `origin/main` remains a separate explicit authorization boundary.
+`1980e1fdbb9fe91609269b9de8e3ea4c9b1baeb9`
+
+The production handoff and field-observation intake are therefore canonical.
+
+`ACTIVE_WORK` remains `NONE`. WORK-019 remains reserved for the separate DISC-002 MSS-02 browser backup resource-exhaustion work and has not been started.
+
+No application source, tests, dependencies, Firebase configuration, cloud state, production data, or deployment behavior changed as part of WORK-021.
+
+WORK-021 is COMPLETE / PROMOTED.
