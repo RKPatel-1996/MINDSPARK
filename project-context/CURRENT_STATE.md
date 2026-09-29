@@ -318,11 +318,22 @@ Local Git remains authoritative. AI Studio state and ZIP snapshots are not canon
 - GAP-005: RESOLVED
 - WORK-010: COMPLETE / PROMOTED
 - Most recently completed bounded work item: WORK-018 - COMPLETE / PROMOTED
-- Active bounded work item: NONE
+- Active bounded work item: WORK-020 - REGISTERED
 
 WORK-018 - Library Keyboard and Inspector Accessibility - is COMPLETE / PROMOTED. Its independently reviewed branch was fast-forward promoted to canonical `main` at `b9be3d371c53f433e8efe5ad48f4ef6b233e24e4`. It closes the confirmed `DISC-002` MSR-08 defect through keyboard-equivalent normal-card activation, preservation of native Select-mode checkbox authority, labelled modal-dialog semantics, focus entry, and Close/Escape focus restoration. MSS-02 remains separate and unconsumed.
 
 ## Current bounded work
+### WORK-020 - Backup Due Indicator UX
+
+Status: REGISTERED.
+
+Production responsive smoke testing identified that the persistent floating global off-site backup pill can overlap application controls on narrow/mobile layouts.
+
+Reconnaissance confirmed the existing status engine already has the intended timing contract: no successful backup is due immediately, successful status remains current for 24 hours, and status changes notify the global control.
+
+WORK-020 is therefore a bounded presentation-only repair: show a small red global backup icon only while backup is due and render no global backup control while backup status is current. Backup execution, persistence, archive format, retention, credential handling, and the 24-hour threshold remain unchanged.
+
+WORK-019 remains reserved for DISC-002 MSS-02 and is not consumed by this work.
 
 WORK-017 - Viewport User-Scaling Accessibility - is COMPLETE / PROMOTED. Its independently reviewed candidate was fast-forward promoted to canonical `main` at `574797e004d1e7f913e637ac486b64d67711142b`; post-promotion focused viewport regression, TypeScript typecheck, the 79-file / 559-test ordinary suite, full web-release verification, production PWA build, and 9-test PWA artifact verification all passed. Canonical source now preserves `width=device-width, initial-scale=1.0` without `user-scalable` or `maximum-scale`. No Firebase deployment occurred.
 
@@ -371,4 +382,6 @@ Current durable-gap state:
 - `GAP-004` - RESOLVED by WORK-010
 - `GAP-005` - RESOLVED by WORK-011; ReviewEvent Firestore create validation now enforces feasible, representation-aware domain parity
 
-Next action: register `DISC-002` MSS-02 browser backup resource exhaustion as the next bounded work item before substantive implementation. WORK-018 is COMPLETE / PROMOTED. No Firebase deployment is authorized.
+Next action: WORK-020 - Backup Due Indicator UX - is REGISTERED as the active bounded production-fix item. Its scope is limited to replacing the persistent global backup pill with a due-only compact indicator while preserving the existing backup engine and exact 24-hour status contract. WORK-019 remains reserved for the separate `DISC-002` MSS-02 browser backup resource-exhaustion work.
+
+Production release checkpoint: the verified MindSpark PWA is live from GitHub Pages at the canonical `MINDSPARK` site. Owner-bound Firestore rules and the required Firestore indexes were deployed to `mindspark-b8-test`. Firebase Storage was not deployed and remains optional/not required for the current text/code/math core workflow. Google Authentication was manually smoke-tested successfully after production domain/key configuration.

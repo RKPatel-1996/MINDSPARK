@@ -1,9 +1,19 @@
 # Active Work
 
-ACTIVE_WORK: NONE
+ACTIVE_WORK: WORK-020
 
-Status: No bounded WORK item is currently active.
+Status: REGISTERED
 
-Most recently completed: `WORK-018` - Library Keyboard and Inspector Accessibility.
+Title: Backup Due Indicator UX
 
-Closure: WORK-018 was independently reviewed and fast-forward promoted to canonical `main` at `b9be3d371c53f433e8efe5ad48f4ef6b233e24e4`; permanent WORK-018 accessibility regressions, focused Library regressions, TypeScript typecheck, full web-release verification, production build, and PWA-artifact verification passed after promotion. Final governance synchronization is recorded on canonical `main`. No Firebase deployment occurred.
+Base: `c3bfc7d76be6b9a7ea60d7df1d053255aae0564e`
+
+Planned branch: `task/work-020-backup-due-indicator-ux-v1`
+
+Boundary: governance registration only. No WORK-020 production implementation has begun.
+
+Objective: replace the persistent global off-site backup pill with a small red due-only indicator. The indicator is visible when no successful backup exists or when the last successful backup is at least 24 hours old, and is absent while backup status is current.
+
+WORK-019 remains reserved for the separate DISC-002 MSS-02 browser backup resource-exhaustion work.
+
+Next: synchronize this registration to `origin/main` after explicit authorization, then create the WORK-020 task branch and establish permanent RED tests before production-source changes.
