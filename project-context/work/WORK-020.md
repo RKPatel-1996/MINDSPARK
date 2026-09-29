@@ -106,3 +106,37 @@ No backup engine, status persistence, archive format, credential handling, Fireb
 WORK-019 / DISC-002 MSS-02 remains separate and unconsumed.
 
 Next: implement the smallest production-only presentation change in `GlobalOffsiteBackupControl.tsx`, then run the permanent WORK-020 suite and broader backup/release regressions.
+## Completion checkpoint
+
+WORK-020 implementation is complete on the bounded task branch.
+
+Technical implementation commit:
+
+`8fa00e30ae83e73f13ede4d9cfdef46432b4ec76`
+
+Verified behavior:
+
+- no recorded successful backup renders a compact red icon-only global backup action;
+- a backup at least 24 hours old renders the same due-only action;
+- a recent successful backup renders no global backup action;
+- the persistent visible `Backup due` / `Backup now` pill is removed;
+- the due action retains an accessible name while remaining icon-only;
+- successful backup removes the global due action immediately;
+- successful recovery-point upload with retention-cleanup warning also removes the due action;
+- failed backup without a successful recovery point leaves the due action available;
+- missing-PAT activation continues to route to Backup settings;
+- the existing 24-hour status threshold and same-page status notification contract remain unchanged.
+
+Verification:
+
+- permanent WORK-020 backup-control regression suite: PASS;
+- off-site backup status contract suite: PASS;
+- TypeScript typecheck: PASS;
+- full `verify:web-release`: PASS;
+- implementation scope remained limited to `GlobalOffsiteBackupControl.tsx`.
+
+Status: `COMPLETE_PENDING_PROMOTION`.
+
+No task-branch push, Firebase deployment, cloud mutation, production-data change, archive-format change, or WORK-019 / MSS-02 implementation occurred.
+
+Next boundary: independent completed-branch review. Canonical `main` must not change without explicit promotion authorization.
